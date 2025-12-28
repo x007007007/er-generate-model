@@ -7,14 +7,12 @@ entity User {
     last_login : datetime
     is_active : boolean
 }
-
 entity Profile {
     * id : int
     user_id : int <<FK>>
     bio : string
     avatar_url : string
 }
-
 entity Post {
     * id : int
     author_id : int <<FK>>
@@ -23,13 +21,15 @@ entity Post {
     created_at : datetime
     status : string <<enum:draft,published,archived>>
 }
-
 entity Tag {
     * id : int
     name : string
 }
-
-User -- Profile : "1:1"
-User "1" -- "0..*" Post : "writes"
-Post "0..*" -- "0..*" Tag : "many-to-many"
+entity PostTags {
+    post_id : int <<FK>>
+    tag_id : int <<FK>>
+}
+User ||--|| Profile : has
+User ||--o{ Post : writes
+Post }|--|{ Tag : tagged_with
 @enduml
