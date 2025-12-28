@@ -1,0 +1,14 @@
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import declarative_base, relationship
+
+Base = declarative_base()
+
+{% for entity in model.entities.values() %}
+class {{ entity.name }}(Base):
+    __tablename__ = '{{ entity.name|lower }}'
+    
+    {% for col in entity.columns %}
+    {{ col.name }} = Column({{ 'Integer' if 'int' in col.type.lower() else 'String(255)' }}, primary_key={{ col.is_pk }}, nullable={{ col.nullable }}{% if col.comment %}, comment="{{ col.comment }}"{% endif %})
+    {% endfor %}
+
+{% endfor %}

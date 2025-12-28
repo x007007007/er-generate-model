@@ -1,0 +1,34 @@
+[project]
+name = "x007007007-er"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "xxc", email = "x007007007@hotmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "jinja2>=3.1.2",
+    "antlr4-python3-runtime>=4.13.1",
+    "sqlalchemy>=2.0.0",
+    "click>=8.1.0",
+]
+
+[project.scripts]
+er-convert = "x007007007.er.cli:main"
+
+[tool.uv]
+index-url = "https://mirrors.aliyun.com/pypi/simple/"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/x007007007"]
+
+[dependency-groups]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]

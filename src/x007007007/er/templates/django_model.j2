@@ -1,0 +1,14 @@
+from django.db import models
+
+{% for entity in model.entities.values() %}
+class {{ entity.name }}(models.Model):
+    {% for col in entity.columns %}
+    {{ col.name }} = models.{{ 'IntegerField' if 'int' in col.type.lower() else 'CharField' }}({% if not 'int' in col.type.lower() %}max_length=255, {% endif %}primary_key={{ col.is_pk }}, null={{ col.nullable }}{% if col.comment %}, help_text="{{ col.comment }}"{% endif %})
+    {% endfor %}
+    
+    {% if entity.comment %}
+    class Meta:
+        verbose_name = "{{ entity.comment }}"
+    {% endif %}
+
+{% endfor %}

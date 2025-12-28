@@ -1,0 +1,35 @@
+erDiagram
+    USER {
+        int id PK
+        string username
+        string password
+        string email
+        datetime last_login
+        boolean is_active
+    }
+    PROFILE {
+        int id PK
+        int user_id FK
+        string bio
+        string avatar_url
+    }
+    POST {
+        int id PK
+        int author_id FK
+        string title
+        string content
+        datetime created_at
+        string status "enum:draft,published,archived"
+    }
+    TAG {
+        int id PK
+        string name
+    }
+    POST_TAGS {
+        int post_id FK
+        int tag_id FK
+    }
+
+    USER ||--|| PROFILE : "has"
+    USER ||--o{ POST : "writes"
+    POST }|--|{ TAG : "tagged_with"
