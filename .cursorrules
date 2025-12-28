@@ -1,0 +1,31 @@
+# Cursor AI 项目代码规范
+
+## 代码质量要求
+
+### 异常处理规范
+- **禁止滥用 try-except**：只有在真正需要处理异常的地方才使用 try-except
+- 不要使用 try-except 来掩盖错误或跳过验证
+- 只在以下情况使用 try-except：
+  - 外部资源操作（文件、网络、数据库）可能失败
+  - 需要优雅降级或提供替代方案
+  - 需要清理资源（使用 finally）
+
+### 参数验证规范
+- **必须使用 assert 进行函数参数验证**
+- assert 用于检查函数参数的有效性和范围
+- assert 语句应包含清晰的错误消息
+- 示例：
+  ```python
+  def parse(self, content: str) -> ERModel:
+      assert isinstance(content, str), "Content must be a string"
+      assert len(content) > 0, "Content cannot be empty"
+      # ...
+  ```
+
+### 其他代码规范
+- 使用类型提示（type hints）
+- 保持函数单一职责
+- 避免代码重复
+- 使用有意义的变量和函数名
+- 添加必要的文档字符串
+

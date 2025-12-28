@@ -1,14 +1,63 @@
 from django.db import models
+{%- for entity in model.entities.values() %}
 
-{% for entity in model.entities.values() %}
 class {{ entity.name }}(models.Model):
-    {% for col in entity.columns %}
-    {{ col.name }} = models.{{ 'IntegerField' if 'int' in col.type.lower() else 'CharField' }}({% if not 'int' in col.type.lower() %}max_length=255, {% endif %}primary_key={{ col.is_pk }}, null={{ col.nullable }}{% if col.comment %}, help_text="{{ col.comment }}"{% endif %})
-    {% endfor %}
-    
-    {% if entity.comment %}
+{%- set fk_columns = {} %}
+{%- for rel in model.relationships %}
+{%- if rel.right_entity == entity.name and rel.right_column %}
+{%- set _ = fk_columns.update({rel.right_column: rel}) %}
+{%- endif %}
+{%- endfor %}
+{%- for col in entity.columns %}
+{%- if col.name in fk_columns %}
+{%- set rel = fk_columns[col.name] %}
+{%- if rel.relation_type == 'one-to-one' %}
+    {{ col.name.replace('_id', '') if col.name.endswith('_id') else col.name }} = models.OneToOneField('{{ rel.left_entity }}', on_delete=models.CASCADE, related_name='{{ entity.name|lower }}_rel'{% if col.comment %}, help_text="{{ col.comment }}"{% endif %})
+{%- else %}
+    {{ col.name.replace('_id', '') if col.name.endswith('_id') else col.name }} = models.ForeignKey('{{ rel.left_entity }}', on_delete=models.CASCADE, related_name='{{ entity.name|lower }}_set'{% if col.comment %}, help_text="{{ col.comment }}"{% endif %})
+{%- endif %}
+{%- else %}
+{%- set field_type, params = col | django_field_type %}
+{%- set param_list = [] %}
+{%- if 'max_length' in params %}
+{%- set _ = param_list.append('max_length=' + params.max_length|string) %}
+{%- endif %}
+{%- if 'max_digits' in params %}
+{%- set _ = param_list.append('max_digits=' + params.max_digits|string) %}
+{%- endif %}
+{%- if 'decimal_places' in params %}
+{%- set _ = param_list.append('decimal_places=' + params.decimal_places|string) %}
+{%- endif %}
+{%- if col.is_pk %}
+{%- set _ = param_list.append('primary_key=True') %}
+{%- endif %}
+{%- if not col.nullable %}
+{%- set _ = param_list.append('null=' + col.nullable|string) %}
+{%- endif %}
+{%- if col.default %}
+{%- set _ = param_list.append('default=' + col.default|string) %}
+{%- endif %}
+{%- if col.comment %}
+{%- set _ = param_list.append('help_text="' + col.comment + '"') %}
+{%- endif %}
+    {{ col.name }} = models.{{ field_type }}({% if param_list %}{{ param_list|join(', ') }}{% endif %})
+{%- endif %}
+{%- endfor %}
+{%- for rel in model.relationships %}
+{%- if rel.left_entity == entity.name %}
+{%- if rel.relation_type == 'many-to-many' %}
+    {{ rel.right_entity|lower }}_set = models.ManyToManyField('{{ rel.right_entity }}', related_name='{{ entity.name|lower }}_set')
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- set table_name = entity.name|lower %}
+{%- if table_prefix %}
+{%- set table_name = table_prefix + '_' + table_name %}
+{%- endif %}
     class Meta:
+        app_label = '{{ app_label }}'
+        db_table = '{{ table_name }}'
+{%- if entity.comment %}
         verbose_name = "{{ entity.comment }}"
-    {% endif %}
-
-{% endfor %}
+{%- endif %}
+{%- endfor %}

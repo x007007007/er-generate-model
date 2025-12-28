@@ -1,7 +1,7 @@
 [project]
 name = "x007007007-er"
 version = "0.1.0"
-description = "Add your description here"
+description = "ER Diagram Converter and Code Generator"
 readme = "README.md"
 authors = [
     { name = "xxc", email = "x007007007@hotmail.com" }

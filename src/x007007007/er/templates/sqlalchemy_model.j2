@@ -1,14 +1,114 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, Date, DateTime, Time, Text, Float, Numeric, JSON, Table
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
+{%- for entity in model.entities.values() %}
 
-{% for entity in model.entities.values() %}
 class {{ entity.name }}(Base):
-    __tablename__ = '{{ entity.name|lower }}'
-    
-    {% for col in entity.columns %}
-    {{ col.name }} = Column({{ 'Integer' if 'int' in col.type.lower() else 'String(255)' }}, primary_key={{ col.is_pk }}, nullable={{ col.nullable }}{% if col.comment %}, comment="{{ col.comment }}"{% endif %})
-    {% endfor %}
-
-{% endfor %}
+{%- set table_name = entity.name|lower %}
+{%- if table_prefix %}
+{%- set table_name = table_prefix + '_' + table_name %}
+{%- endif %}
+    __tablename__ = '{{ table_name }}'
+{%- for col in entity.columns %}
+{%- if col.is_fk %}
+{%- set rel = none %}
+{%- for r in model.relationships %}
+{%- if r.right_column == col.name and r.right_entity == entity.name %}
+{%- set rel = r %}
+{%- endif %}
+{%- endfor %}
+{%- if rel %}
+{%- set fk_table_name = rel.left_entity|lower %}
+{%- if table_prefix %}
+{%- set fk_table_name = table_prefix + '_' + fk_table_name %}
+{%- endif %}
+    {{ col.name }} = Column(Integer, ForeignKey('{{ fk_table_name }}.id'){% if not col.nullable %}, nullable={{ col.nullable }}{% endif %}{% if col.comment %}, comment="{{ col.comment }}"{% endif %})
+{%- else %}
+{%- set column_type, params = col | sqlalchemy_column_type %}
+{%- set param_list = [] %}
+{%- if col.is_pk %}
+{%- set _ = param_list.append('primary_key=True') %}
+{%- endif %}
+{%- if not col.nullable %}
+{%- set _ = param_list.append('nullable=' + col.nullable|string) %}
+{%- endif %}
+{%- if col.comment %}
+{%- set _ = param_list.append('comment="' + col.comment + '"') %}
+{%- endif %}
+    {{ col.name }} = Column({{ column_type }}{% if param_list %}, {{ param_list|join(', ') }}{% endif %})
+{%- endif %}
+{%- else %}
+{%- set column_type, params = col | sqlalchemy_column_type %}
+{%- set param_list = [] %}
+{%- if col.is_pk %}
+{%- set _ = param_list.append('primary_key=True') %}
+{%- endif %}
+{%- if not col.nullable %}
+{%- set _ = param_list.append('nullable=' + col.nullable|string) %}
+{%- endif %}
+{%- if col.default %}
+{%- set _ = param_list.append('default=' + col.default|string) %}
+{%- endif %}
+{%- if col.comment %}
+{%- set _ = param_list.append('comment="' + col.comment + '"') %}
+{%- endif %}
+{%- if 'max_length' in params %}
+    {{ col.name }} = Column({{ column_type }}({{ params.max_length }}){% if param_list %}, {{ param_list|join(', ') }}{% endif %})
+{%- else %}
+    {{ col.name }} = Column({{ column_type }}{% if param_list %}, {{ param_list|join(', ') }}{% endif %})
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- for rel in model.relationships %}
+{%- if rel.right_entity == entity.name %}
+{%- if rel.relation_type == 'one-to-one' %}
+    {{ rel.left_entity|lower }}_rel = relationship("{{ rel.left_entity }}", uselist=False, back_populates="{{ entity.name|lower }}_rel")
+{%- elif rel.relation_type == 'one-to-many' %}
+    {{ rel.left_entity|lower }}_rel = relationship("{{ rel.left_entity }}", back_populates="{{ entity.name|lower }}_set")
+{%- elif rel.relation_type == 'many-to-many' %}
+{%- set assoc_table = [rel.left_entity|lower, rel.right_entity|lower] | sort | join('_') + '_association' %}
+{%- if table_prefix %}
+{%- set assoc_table = table_prefix + '_' + assoc_table %}
+{%- endif %}
+    {{ rel.left_entity|lower }}_set = relationship("{{ rel.left_entity }}", secondary="{{ assoc_table }}", back_populates="{{ entity.name|lower }}_set")
+{%- endif %}
+{%- elif rel.left_entity == entity.name %}
+{%- if rel.relation_type == 'one-to-one' %}
+    {{ rel.right_entity|lower }}_rel = relationship("{{ rel.right_entity }}", uselist=False, back_populates="{{ entity.name|lower }}_rel")
+{%- elif rel.relation_type == 'one-to-many' %}
+    {{ rel.right_entity|lower }}_set = relationship("{{ rel.right_entity }}", back_populates="{{ entity.name|lower }}_rel")
+{%- elif rel.relation_type == 'many-to-many' %}
+{%- set assoc_table = [rel.left_entity|lower, rel.right_entity|lower] | sort | join('_') + '_association' %}
+{%- if table_prefix %}
+{%- set assoc_table = table_prefix + '_' + assoc_table %}
+{%- endif %}
+    {{ rel.right_entity|lower }}_set = relationship("{{ rel.right_entity }}", secondary="{{ assoc_table }}", back_populates="{{ entity.name|lower }}_set")
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- endfor %}
+{%- set many_to_many_tables = {} %}
+{%- for rel in model.relationships %}
+{%- if rel.relation_type == 'many-to-many' %}
+{%- set assoc_table = [rel.left_entity|lower, rel.right_entity|lower] | sort | join('_') + '_association' %}
+{%- if table_prefix %}
+{%- set assoc_table = table_prefix + '_' + assoc_table %}
+{%- endif %}
+{%- if assoc_table not in many_to_many_tables %}
+{%- set _ = many_to_many_tables.update({assoc_table: [rel.left_entity, rel.right_entity]}) %}
+{%- set left_table = rel.left_entity|lower %}
+{%- set right_table = rel.right_entity|lower %}
+{%- if table_prefix %}
+{%- set left_table = table_prefix + '_' + left_table %}
+{%- set right_table = table_prefix + '_' + right_table %}
+{%- endif %}
+{{ assoc_table }} = Table(
+    '{{ assoc_table }}',
+    Base.metadata,
+    Column('{{ rel.left_entity|lower }}_id', Integer, ForeignKey('{{ left_table }}.id')),
+    Column('{{ rel.right_entity|lower }}_id', Integer, ForeignKey('{{ right_table }}.id'))
+)
+{%- endif %}
+{%- endif %}
+{%- endfor %}
