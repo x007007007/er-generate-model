@@ -1,0 +1,22 @@
+@startuml
+{%- for entity in model.entities.values() %}
+entity [[ entity.name ]]{% if entity.comment %} as "[[ entity.comment ]]"{% endif %} {
+{%- for col in entity.columns %}
+    {% if col.is_pk %}* {% endif %}[[ col.name ]] : [[ col.type ]]{% if col.is_fk or (col.comment and 'enum:' in col.comment) %} <<{% if col.is_fk %}FK{% if col.comment and 'enum:' in col.comment %}:{% endif %}{% endif %}{% if col.comment and 'enum:' in col.comment %}[[ col.comment ]]{% endif %}>>{% endif %}
+{%- endfor %}
+}
+{%- if not loop.last %}
+
+{%- endif %}
+{%- endfor %}
+{%- if model.relationships %}
+{%- for rel in model.relationships %}
+{%- if rel.left_cardinality or rel.right_cardinality %}
+[[ rel.left_entity ]] "[[ rel.left_cardinality or '' ]]" [[ rel.relation_type | plantuml_relation_symbol ]] "[[ rel.right_cardinality or '' ]]" [[ rel.right_entity ]]{% if rel.right_label %} : [[ rel.right_label ]]{% elif rel.left_label %} : [[ rel.left_label ]]{% endif %}
+{%- else %}
+[[ rel.left_entity ]] [[ rel.relation_type | plantuml_relation_symbol ]] [[ rel.right_entity ]]{% if rel.right_label %} : [[ rel.right_label ]]{% elif rel.left_label %} : [[ rel.left_label ]]{% endif %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+@enduml
+

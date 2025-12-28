@@ -1,0 +1,20 @@
+erDiagram
+{%- for entity in model.entities.values() %}
+{%- if entity.comment %}
+    // [[ entity.comment ]]
+{%- endif %}
+    [[ entity.name ]] {
+{%- for col in entity.columns %}
+        [[ col.type ]] [[ col.name ]]{% if col.is_pk %} PK{% endif %}{% if col.is_fk %} FK{% endif %}{% if col.comment %} "[[ col.comment ]]"{% endif %}
+{%- endfor %}
+    }
+{%- if not loop.last %}
+
+{%- endif %}
+{%- endfor %}
+{%- if model.relationships %}
+{%- for rel in model.relationships %}
+    [[ rel.left_entity ]] [[ rel.relation_type | mermaid_relation_symbol ]] [[ rel.right_entity ]]{% if rel.right_label %} : "[[ rel.right_label ]]"{% elif rel.left_label %} : "[[ rel.left_label ]]"{% endif %}
+{%- endfor %}
+{%- endif %}
+
