@@ -14,10 +14,15 @@ dependencies = [
     "click>=8.1.0",
     "toml>=0.10.2",
     "pydantic>=2.0.0",
+    "langchain>=0.1.0",
+    "langchain-community>=0.0.20",
+    "langchain-deepseek>=0.1.0",
+    "python-dotenv>=1.0.0",
 ]
 
 [project.scripts]
 er-convert = "x007007007.er.cli:main"
+er-ai = "x007007007.er_ai.cli:main"
 
 [tool.uv]
 index-url = "https://mirrors.aliyun.com/pypi/simple/"

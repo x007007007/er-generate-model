@@ -44,7 +44,7 @@ def main():
 @click.argument('input_source')
 @click.option('--input-type', '-t', type=click.Choice(['mermaid', 'plantuml', 'db', 'toml']), default='mermaid', help='Input type')
 @click.option('--format', '-f', type=click.Choice(['django', 'sqlalchemy', 'mermaid', 'plantuml']), default='django', help='Output format')
-@click.option('--output', '-o', type=click.File('w'), default=sys.stdout, help='Output file')
+@click.option('--output', '-o', type=click.Path(), default=None, help='Output file path (default: stdout, UTF-8 encoded)')
 @click.option('--app-label', '-a', type=str, default=None, help='Django app label (default: filename without extension)')
 @click.option('--table-prefix', '-p', type=str, default=None, help='Table name prefix (default: filename without extension)')
 def convert(input_source, input_type, format, output, app_label, table_prefix):
@@ -105,7 +105,15 @@ def convert(input_source, input_type, format, output, app_label, table_prefix):
     else:
         raise ValueError(f"Unknown format: {format}")
     
-    output.write(result)
+    # 处理输出文件（使用UTF-8编码）
+    if output:
+        # 如果指定了输出文件，使用UTF-8编码打开
+        with open(output, 'w', encoding='utf-8') as output_file:
+            output_file.write(result)
+    else:
+        # 使用标准输出
+        sys.stdout.write(result)
+    
     logger.info(f"Successfully converted {input_source} to {format}")
 
 if __name__ == '__main__':

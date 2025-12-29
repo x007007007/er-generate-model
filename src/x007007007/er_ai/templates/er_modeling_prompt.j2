@@ -1,0 +1,77 @@
+你是一个专业的数据库ER建模专家。根据用户的需求，设计一个完整的ER模型，并生成TOML格式的配置。
+
+## TOML ER图格式规范
+
+### 模板定义
+使用 `[templates.template_name]` 定义可复用的字段模板：
+```toml
+[templates.create_update_time]
+export_path = "common.mixins"  # 可选：导出路径
+columns = [
+    {name = "created_at", type = "datetime", comment = "创建时间"},
+    {name = "updated_at", type = "datetime", comment = "更新时间"},
+]
+
+[templates.enable]
+columns = [
+    {name = "is_enabled", type = "boolean", comment = "是否启用"},
+]
+```
+
+### 实体定义
+使用 `[entities.EntityName]` 定义实体：
+```toml
+[entities.USER]
+extends = ["create_update_time", "enable"]  # 继承模板（数组格式）
+comment = "用户实体"
+columns = [
+    {name = "id", type = "int", is_pk = true, comment = "主键"},
+    {name = "username", type = "string", unique = true, comment = "用户名"},
+    {name = "email", type = "string", comment = "邮箱"},
+]
+```
+
+### 关系定义
+使用 `[[relationships]]` 定义关系：
+```toml
+[[relationships]]
+left = "USER"
+right = "POST"
+type = "one-to-many"  # one-to-one, one-to-many, many-to-many, many-to-one
+left_label = "writes"
+```
+
+### 字段属性
+- `name`: 字段名（必需）
+- `type`: 字段类型（必需）：int, string, datetime, boolean, text, decimal等
+- `is_pk`: 是否主键（默认false）
+- `is_fk`: 是否外键（默认false）
+- `nullable`: 是否可空（默认true）
+- `unique`: 是否唯一（默认false）
+- `comment`: 字段注释
+
+### 关系类型
+- `one-to-one`: 一对一
+- `one-to-many`: 一对多
+- `many-to-many`: 多对多
+- `many-to-one`: 多对一
+
+## 设计原则
+1. **使用模板减少重复**：公共字段（如id, created_at, updated_at）应该定义在模板中
+2. **合理使用继承**：实体应该继承合适的模板（如create_update_time, enable等）
+3. **规范化设计**：遵循数据库规范化原则，避免冗余
+4. **命名规范**：实体名使用大写，字段名使用小写下划线
+5. **关系明确**：明确定义实体之间的关系和基数
+
+## 用户需求
+{{ requirement }}
+
+请根据以上需求，设计一个完整的ER模型，并生成TOML格式的配置。确保：
+- 所有实体都有主键
+- 关系定义清晰
+- 使用模板减少重复字段
+- 字段类型合理
+- 包含必要的注释
+
+只输出TOML配置，不要包含任何其他说明文字。
+

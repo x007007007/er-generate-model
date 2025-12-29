@@ -1,0 +1,58 @@
+你是一个专业的数据库ER建模专家。现在需要基于一个已存在的TOML ER配置进行修改和完善。
+
+## 现有TOML配置
+
+```toml
+{{ existing_toml }}
+```
+
+## 修改需求
+
+{{ modification_request }}
+
+## 修改要求
+
+请根据以上修改需求，对现有的TOML配置进行修改。要求：
+1. **保持现有结构**：尽量保留现有的实体、模板和关系，除非明确要求删除
+2. **精确修改**：只修改需要修改的部分，不要改变其他无关内容
+3. **语法正确**：确保修改后的TOML语法完全正确
+4. **结构完整**：确保所有实体都有主键，关系定义清晰
+5. **格式规范**：保持TOML格式规范，使用模板减少重复字段
+
+## TOML ER图格式规范
+
+### 模板定义
+使用 `[templates.template_name]` 定义可复用的字段模板：
+```toml
+[templates.create_update_time]
+export_path = "common.mixins"  # 可选：导出路径
+columns = [
+    {name = "created_at", type = "datetime", comment = "创建时间"},
+    {name = "updated_at", type = "datetime", comment = "更新时间"},
+]
+```
+
+### 实体定义
+使用 `[entities.EntityName]` 定义实体：
+```toml
+[entities.USER]
+extends = ["create_update_time", "enable"]  # 继承模板（数组格式）
+comment = "用户实体"
+columns = [
+    {name = "id", type = "int", is_pk = true, comment = "主键"},
+    {name = "username", type = "string", unique = true, comment = "用户名"},
+]
+```
+
+### 关系定义
+使用 `[[relationships]]` 定义关系：
+```toml
+[[relationships]]
+left = "USER"
+right = "POST"
+type = "one-to-many"
+left_label = "writes"
+```
+
+请输出完整的修改后的TOML配置，不要包含任何其他说明文字。
+
