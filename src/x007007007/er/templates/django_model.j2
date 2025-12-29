@@ -1,14 +1,70 @@
 from django.db import models
+{%- if model.templates %}
+{# 生成基类导入 #}
+{%- set base_imports = [] %}
+{%- for template_name, template_info in model.templates.items() %}
+{%- if template_info.export_path %}
+{%- set base_class_name = template_name | title | replace('_', '') + 'Mixin' %}
+{%- if template_info.export_path not in base_imports %}
+{%- set _ = base_imports.append(template_info.export_path) %}
+from {{ template_info.export_path }} import {{ base_class_name }}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
 {%- for entity in model.entities.values() %}
+{# 为每个实体生成QuerySet和Manager类（在Model类外部） #}
+# Custom QuerySet for {{ entity.name }}
+class {{ entity.name }}QuerySet(models.QuerySet):
+    # TODO: Add custom queryset methods here
+    # Example:
+    # def active(self):
+    #     return self.filter(is_active=True)
+    pass
 
-class {{ entity.name }}(models.Model):
+# Custom Manager for {{ entity.name }}
+class {{ entity.name }}Manager(models.Manager):
+    def get_queryset(self):
+        return {{ entity.name }}QuerySet(self.model, using=self._db)
+    
+    # TODO: Add custom manager methods here
+    # Example:
+    # def active(self):
+    #     return self.get_queryset().active()
+    pass
+
+{%- set base_classes = [] %}
+{%- if entity.extends %}
+{%- for template_name in entity.extends %}
+{%- if template_name in model.templates and model.templates[template_name].export_path %}
+{%- set base_class_name = template_name | title | replace('_', '') + 'Mixin' %}
+{%- set _ = base_classes.append(base_class_name) %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% else %}models.Model{% endif %}):
 {%- set fk_columns = {} %}
 {%- for rel in model.relationships %}
 {%- if rel.right_entity == entity.name and rel.right_column %}
 {%- set _ = fk_columns.update({rel.right_column: rel}) %}
 {%- endif %}
 {%- endfor %}
+{%- set inherited_column_names = [] %}
+{%- if entity.extends %}
+{%- for template_name in entity.extends %}
+{%- if template_name in model.templates %}
+{%- if model.templates[template_name].export_path %}
+{# 只有有export_path的模板字段才排除，没有export_path的会展开 #}
+{%- for col in model.templates[template_name].columns %}
+{%- set _ = inherited_column_names.append(col.name) %}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
 {%- for col in entity.columns %}
+{%- if col.name not in inherited_column_names %}
 {%- if col.name in fk_columns %}
 {%- set rel = fk_columns[col.name] %}
 {%- if rel.relation_type == 'one-to-one' %}
@@ -42,6 +98,7 @@ class {{ entity.name }}(models.Model):
 {%- endif %}
     {{ col.name }} = models.{{ field_type }}({% if param_list %}{{ param_list|join(', ') }}{% endif %})
 {%- endif %}
+{%- endif %}
 {%- endfor %}
 {%- for rel in model.relationships %}
 {%- if rel.left_entity == entity.name %}
@@ -50,6 +107,7 @@ class {{ entity.name }}(models.Model):
 {%- endif %}
 {%- endif %}
 {%- endfor %}
+    objects = {{ entity.name }}Manager()
 {%- set table_name = entity.name|lower %}
 {%- if table_prefix %}
 {%- set table_name = table_prefix + '_' + table_name %}

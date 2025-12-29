@@ -1,0 +1,9 @@
+[templates.audit_fields]
+columns = [
+    {name = "id", type = "int"},
+]
+
+[entities.USER]
+extends = "audit_fields"
+columns = []
+

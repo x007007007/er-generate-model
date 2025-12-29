@@ -66,6 +66,14 @@ def generate_outputs():
             "table_prefix": "",
             "parser": None,
             "model": ERModel()
+        },
+        # Complex test case
+        {
+            "name": "complex",
+            "input": "input.mermaid",
+            "app_label": "complex",
+            "table_prefix": "complex",
+            "parser": parser
         }
     ]
     

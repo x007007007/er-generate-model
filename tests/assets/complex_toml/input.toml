@@ -1,0 +1,92 @@
+# TOML格式ER图示例 - 支持多模板继承和代码生成
+
+# 定义可复用的字段模板
+# export_path: 如果设置，会生成基类代码并导出到指定路径；如果不设置，只引用不导出
+[templates.create_update_time]
+export_path = "common.mixins"  # 生成基类到 common.mixins 模块
+columns = [
+    {name = "created_at", type = "datetime", comment = "Creation timestamp"},
+    {name = "updated_at", type = "datetime", comment = "Update timestamp"},
+]
+
+[templates.enable]
+# 不设置export_path，只引用不导出
+columns = [
+    {name = "is_enabled", type = "boolean", comment = "Whether the record is enabled"},
+]
+
+[templates.name]
+export_path = "common.mixins"  # 生成基类到 common.mixins 模块
+columns = [
+    {name = "name", type = "string", comment = "Name field"},
+]
+
+[templates.audit_fields]
+# 不设置export_path，只引用不导出
+columns = [
+    {name = "id", type = "int", is_pk = true, comment = "Primary key"},
+]
+
+# 实体定义 - 支持多模板继承
+[entities.USER]
+extends = ["audit_fields", "create_update_time", "enable"]
+comment = "User entity represents system users"
+columns = [
+    {name = "username", type = "string", unique = true, comment = "Unique username"},
+    {name = "password", type = "string", comment = "Encrypted password"},
+    {name = "email", type = "string", comment = "User email address"},
+    {name = "last_login", type = "datetime", nullable = true, comment = "Last login timestamp"},
+]
+
+[entities.PROFILE]
+extends = ["audit_fields", "create_update_time"]
+comment = "User profile information"
+columns = [
+    {name = "user_id", type = "int", is_fk = true, comment = "Foreign key to USER"},
+    {name = "bio", type = "string", nullable = true, comment = "User biography"},
+    {name = "avatar_url", type = "string", nullable = true, comment = "Avatar image URL"},
+]
+
+[entities.POST]
+extends = ["audit_fields", "create_update_time", "enable"]
+comment = "Blog post entity"
+columns = [
+    {name = "author_id", type = "int", is_fk = true, comment = "Foreign key to USER (author)"},
+    {name = "title", type = "string", comment = "Post title"},
+    {name = "content", type = "text", comment = "Post content"},
+    {name = "status", type = "string", comment = "enum:draft,published,archived - Post status"},
+]
+
+[entities.TAG]
+extends = ["audit_fields", "create_update_time", "name"]
+comment = "Tag entity for categorizing posts"
+columns = [
+    # name字段已从name模板继承，这里可以覆盖或省略
+]
+
+[entities.POST_TAGS]
+comment = "Junction table for many-to-many relationship"
+columns = [
+    {name = "post_id", type = "int", is_fk = true, comment = "Foreign key to POST"},
+    {name = "tag_id", type = "int", is_fk = true, comment = "Foreign key to TAG"},
+]
+
+# 关系定义
+[[relationships]]
+left = "USER"
+right = "PROFILE"
+type = "one-to-one"
+left_label = "has"
+
+[[relationships]]
+left = "USER"
+right = "POST"
+type = "one-to-many"
+left_label = "writes"
+
+[[relationships]]
+left = "POST"
+right = "TAG"
+type = "many-to-many"
+left_label = "tagged_with"
+

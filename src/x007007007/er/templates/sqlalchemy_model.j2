@@ -2,15 +2,51 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, Date, DateT
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
+{%- if model.templates %}
+{# 生成基类导入 #}
+{%- set base_imports = [] %}
+{%- for template_name, template_info in model.templates.items() %}
+{%- if template_info.export_path %}
+{%- set base_class_name = template_name | title | replace('_', '') + 'Mixin' %}
+{%- if template_info.export_path not in base_imports %}
+{%- set _ = base_imports.append(template_info.export_path) %}
+from {{ template_info.export_path }} import {{ base_class_name }}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
 {%- for entity in model.entities.values() %}
+{%- set base_classes = [] %}
+{%- if entity.extends %}
+{%- for template_name in entity.extends %}
+{%- if template_name in model.templates and model.templates[template_name].export_path %}
+{%- set base_class_name = template_name | title | replace('_', '') + 'Mixin' %}
+{%- set _ = base_classes.append(base_class_name) %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
 
-class {{ entity.name }}(Base):
+class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% else %}Base{% endif %}):
 {%- set table_name = entity.name|lower %}
 {%- if table_prefix %}
 {%- set table_name = table_prefix + '_' + table_name %}
 {%- endif %}
     __tablename__ = '{{ table_name }}'
+{%- set inherited_column_names = [] %}
+{%- if entity.extends %}
+{%- for template_name in entity.extends %}
+{%- if template_name in model.templates %}
+{%- if model.templates[template_name].export_path %}
+{# 只有有export_path的模板字段才排除，没有export_path的会展开 #}
+{%- for col in model.templates[template_name].columns %}
+{%- set _ = inherited_column_names.append(col.name) %}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
 {%- for col in entity.columns %}
+{%- if col.name not in inherited_column_names %}
 {%- if col.is_fk %}
 {%- set rel = none %}
 {%- for r in model.relationships %}
@@ -57,6 +93,7 @@ class {{ entity.name }}(Base):
     {{ col.name }} = Column({{ column_type }}({{ params.max_length }}){% if param_list %}, {{ param_list|join(', ') }}{% endif %})
 {%- else %}
     {{ col.name }} = Column({{ column_type }}{% if param_list %}, {{ param_list|join(', ') }}{% endif %})
+{%- endif %}
 {%- endif %}
 {%- endif %}
 {%- endfor %}

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 
 @dataclass
 class Column:
@@ -33,11 +33,14 @@ class Entity:
     name: str
     columns: List[Column] = field(default_factory=list)
     comment: Optional[str] = None
+    extends: List[str] = field(default_factory=list)  # 继承的模板列表
+    export_path: Optional[str] = None  # 导出路径，None表示不导出（只引用）
 
 @dataclass
 class ERModel:
     entities: Dict[str, Entity] = field(default_factory=dict)
     relationships: List[Relationship] = field(default_factory=list)
+    templates: Dict[str, Dict[str, Any]] = field(default_factory=dict)  # 模板信息，包含columns和export_path
 
     def add_entity(self, entity: Entity):
         assert isinstance(entity, Entity), "entity must be an Entity instance"

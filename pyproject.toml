@@ -12,6 +12,8 @@ dependencies = [
     "antlr4-python3-runtime>=4.13.1",
     "sqlalchemy>=2.0.0",
     "click>=8.1.0",
+    "toml>=0.10.2",
+    "pydantic>=2.0.0",
 ]
 
 [project.scripts]

@@ -1,0 +1,12 @@
+[templates.create_update_time]
+export_path = "common.mixins"
+columns = [
+    {name = "created_at", type = "datetime"},
+]
+
+[entities.USER]
+extends = ["create_update_time"]
+columns = [
+    {name = "username", type = "string"},
+]
+

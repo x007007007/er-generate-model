@@ -1,0 +1,5 @@
+[entities.USER]
+columns = [
+    {name = "username", type = "string"},
+]
+

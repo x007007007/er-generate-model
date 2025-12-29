@@ -3,14 +3,12 @@ import logging
 import sys
 import os
 from pathlib import Path
-# Use ANTLR parser as default, it will fallback to regex parser if ANTLR is not available
 from x007007007.er.parser.antlr.plantuml_antlr_parser import PlantUMLAntlrParser
+from x007007007.er.parser.antlr.mermaid_antlr_parser import MermaidAntlrParser
+from x007007007.er.parser.toml_parser import TomlERParser
 from x007007007.er.db_parser import DBParser
 from x007007007.er.renderers import DjangoRenderer, SQLAlchemyRenderer
 from x007007007.er.converters import MermaidConverter, PlantUMLConverter
-
-# Use ANTLR parser as default, it will fallback to regex parser if ANTLR is not available
-from x007007007.er.parser.antlr.mermaid_antlr_parser import MermaidAntlrParser
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
@@ -44,7 +42,7 @@ def main():
 
 @main.command()
 @click.argument('input_source')
-@click.option('--input-type', '-t', type=click.Choice(['mermaid', 'plantuml', 'db']), default='mermaid', help='Input type')
+@click.option('--input-type', '-t', type=click.Choice(['mermaid', 'plantuml', 'db', 'toml']), default='mermaid', help='Input type')
 @click.option('--format', '-f', type=click.Choice(['django', 'sqlalchemy', 'mermaid', 'plantuml']), default='django', help='Output format')
 @click.option('--output', '-o', type=click.File('w'), default=sys.stdout, help='Output file')
 @click.option('--app-label', '-a', type=str, default=None, help='Django app label (default: filename without extension)')
@@ -53,7 +51,7 @@ def convert(input_source, input_type, format, output, app_label, table_prefix):
     """Convert ER diagram file to code."""
     assert isinstance(input_source, str), "input_source must be a string"
     assert len(input_source) > 0, "input_source cannot be empty"
-    assert input_type in ['mermaid', 'plantuml', 'db'], "Invalid input_type"
+    assert input_type in ['mermaid', 'plantuml', 'db', 'toml'], "Invalid input_type"
     assert format in ['django', 'sqlalchemy', 'mermaid', 'plantuml'], "Invalid format"
     
     # Determine app_label and table_prefix
@@ -62,6 +60,7 @@ def convert(input_source, input_type, format, output, app_label, table_prefix):
     if table_prefix is None:
         table_prefix = get_default_table_prefix(input_source)
     
+    # Parse input
     if input_type == 'db':
         parser = DBParser()
         model = parser.parse(input_source)
@@ -81,16 +80,31 @@ def convert(input_source, input_type, format, output, app_label, table_prefix):
         
         if input_type == 'mermaid':
             parser = MermaidAntlrParser()
-        else:
+        elif input_type == 'plantuml':
             parser = PlantUMLAntlrParser()
+        elif input_type == 'toml':
+            parser = TomlERParser()
+        else:
+            raise ValueError(f"Unknown input type: {input_type}")
+        
         model = parser.parse(content)
     
+    # Render or convert output
     if format == 'django':
         renderer = DjangoRenderer(app_label=app_label, table_prefix=table_prefix)
-    else:
+        result = renderer.render(model)
+    elif format == 'sqlalchemy':
         renderer = SQLAlchemyRenderer(table_prefix=table_prefix)
-        
-    result = renderer.render(model)
+        result = renderer.render(model)
+    elif format == 'mermaid':
+        converter = MermaidConverter()
+        result = converter.convert(model)
+    elif format == 'plantuml':
+        converter = PlantUMLConverter()
+        result = converter.convert(model)
+    else:
+        raise ValueError(f"Unknown format: {format}")
+    
     output.write(result)
     logger.info(f"Successfully converted {input_source} to {format}")
 

@@ -1,0 +1,16 @@
+[entities.USER]
+columns = [
+    {name = "id", type = "int", is_pk = true},
+    {name = "username", type = "string"},
+]
+
+[entities.POST]
+columns = [
+    {name = "id", type = "int", is_pk = true},
+]
+
+[[relationships]]
+left = "USER"
+right = "POST"
+type = "one-to-many"
+

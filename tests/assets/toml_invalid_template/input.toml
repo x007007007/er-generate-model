@@ -1,0 +1,6 @@
+[entities.USER]
+extends = ["nonexistent_template"]
+columns = [
+    {name = "id", type = "int"},
+]
+

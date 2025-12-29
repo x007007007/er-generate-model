@@ -1,0 +1,12 @@
+[templates.audit_fields]
+columns = [
+    {name = "id", type = "int", is_pk = true},
+    {name = "created_at", type = "datetime"},
+]
+
+[entities.USER]
+extends = ["audit_fields"]
+columns = [
+    {name = "username", type = "string"},
+]
+

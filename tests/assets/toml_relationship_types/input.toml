@@ -1,0 +1,19 @@
+[entities.USER]
+columns = [{name = "id", type = "int", is_pk = true}]
+
+[entities.POST]
+columns = [{name = "id", type = "int", is_pk = true}]
+
+[entities.TAG]
+columns = [{name = "id", type = "int", is_pk = true}]
+
+[[relationships]]
+left = "USER"
+right = "POST"
+type = "1:N"
+
+[[relationships]]
+left = "POST"
+right = "TAG"
+type = "N:M"
+

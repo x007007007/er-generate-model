@@ -1,0 +1,36 @@
+{# SQLAlchemy基类模板 - 用于生成可继承的基类 #}
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, Date, DateTime, Time, Text, Float, Numeric, JSON
+from sqlalchemy.orm import declarative_base
+
+Base = declarative_base()
+{%- for template_name, template_info in model.templates.items() %}
+{%- if template_info.export_path %}
+{%- set base_class_name = template_name | title | replace('_', '') + 'Mixin' %}
+
+class {{ base_class_name }}(Base):
+    __abstract__ = True
+{%- for col in template_info.columns %}
+{%- set column_type, params = col | sqlalchemy_column_type %}
+{%- set param_list = [] %}
+{%- if col.is_pk %}
+{%- set _ = param_list.append('primary_key=True') %}
+{%- endif %}
+{%- if not col.nullable %}
+{%- set _ = param_list.append('nullable=' + col.nullable|string) %}
+{%- endif %}
+{%- if col.comment %}
+{%- set _ = param_list.append('comment="' + col.comment + '"') %}
+{%- endif %}
+{%- if 'max_length' in params %}
+    {{ col.name }} = Column({{ column_type }}({{ params.max_length }}){% if param_list %}, {{ param_list|join(', ') }}{% endif %})
+{%- else %}
+    {{ col.name }} = Column({{ column_type }}{% if param_list %}, {{ param_list|join(', ') }}{% endif %})
+{%- endif %}
+{%- endfor %}
+{%- if template_info.export_path %}
+    # Export path: {{ template_info.export_path }}
+{%- endif %}
+
+{%- endif %}
+{%- endfor %}
+
