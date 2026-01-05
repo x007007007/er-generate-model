@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     { name = "xxc", email = "x007007007@hotmail.com" }
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 dependencies = [
     "jinja2>=3.1.2",
     "antlr4-python3-runtime>=4.13.1",
@@ -23,6 +23,7 @@ dependencies = [
 [project.scripts]
 er-convert = "x007007007.er.cli:main"
 er-ai = "x007007007.er_ai.cli:main"
+er-mcp = "x007007007.er_mcp.cli:main"
 
 [tool.uv]
 index-url = "https://mirrors.aliyun.com/pypi/simple/"
@@ -30,6 +31,26 @@ index-url = "https://mirrors.aliyun.com/pypi/simple/"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+addopts = "--cov=src/x007007007/er --cov=src/x007007007/er_mcp --cov-report=term-missing --cov-report=html --cov-fail-under=80"
+
+[tool.coverage.run]
+source = ["src/x007007007"]
+omit = [
+    "*/generated/*",
+    "*/__pycache__/*",
+    "*/tests/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/x007007007"]
