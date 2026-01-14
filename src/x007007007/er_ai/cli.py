@@ -6,6 +6,7 @@ import logging
 import sys
 from pathlib import Path
 from dotenv import load_dotenv
+from x007007007.er.version import get_version
 from x007007007.er_ai.modeler import ERModeler
 
 # 加载.env文件（从项目根目录或当前工作目录）
@@ -21,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 @click.group()
+@click.version_option(version=get_version(), prog_name="er-ai")
 def main():
     """AI-powered ER modeling tool using LangChain and DeepSeek."""
     pass

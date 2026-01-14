@@ -3,6 +3,7 @@ import logging
 import sys
 import os
 from pathlib import Path
+from x007007007.er.version import get_version
 from x007007007.er.parser.antlr.plantuml_antlr_parser import PlantUMLAntlrParser
 from x007007007.er.parser.antlr.mermaid_antlr_parser import MermaidAntlrParser
 from x007007007.er.parser.toml_parser import TomlERParser
@@ -36,6 +37,7 @@ def get_default_table_prefix(input_source: str) -> str:
     return ''
 
 @click.group()
+@click.version_option(version=get_version(), prog_name="er-convert")
 def main():
     """ER Diagram Converter and Code Generator."""
     pass

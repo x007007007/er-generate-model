@@ -1,6 +1,6 @@
 [project]
 name = "x007007007-er"
-version = "0.1.0"
+dynamic = ["version"]
 description = "ER Diagram Converter and Code Generator"
 readme = "README.md"
 authors = [
@@ -55,8 +55,17 @@ exclude_lines = [
 [tool.hatch.build.targets.wheel]
 packages = ["src/x007007007"]
 
+[tool.setuptools_scm]
+# 配置setuptools-scm
+# 使用guess-next-dev版本方案，在tag上显示准确版本
+fallback_version = "0.1.0.dev0"
+
 [dependency-groups]
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
 ]
+
+[build-system]
+requires = ["setuptools>=45", "setuptools-scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"

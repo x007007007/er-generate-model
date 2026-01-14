@@ -2,6 +2,52 @@
 
 本文档记录 ER Diagram Converter 项目的所有重要变更。
 
+## [Unreleased]
+
+### 新增功能
+
+#### 版本管理系统
+- ✅ **setuptools-scm 集成**：使用 setuptools-scm 从 git tag 自动管理版本
+  - 无需手动维护版本号
+  - 支持开发版本号（如 `0.1.0.dev10`）
+  - 支持从 git tag 生成正式版本号
+- ✅ **版本查看命令**：所有 CLI 工具支持 `--version` 参数
+  - `er-convert --version`：查看 ER 转换工具版本
+  - `er-ai --version`：查看 AI 建模工具版本
+  - `er-mcp --version`：查看 MCP 服务器版本
+- ✅ **公共版本模块**：新增 `src/x007007007/er/version.py`
+  - 提供 `get_version()` 函数供所有模块使用
+  - 导出 `__version__` 变量
+  - 避免代码重复
+
+### 改进
+
+#### 构建系统
+- ✅ **pyproject.toml 配置**：
+  - 添加 `setuptools-scm[toml]>=6.2` 到构建依赖
+  - 配置 `[tool.setuptools_scm]` 部分
+  - 设置 fallback 版本为 `0.1.0.dev0`
+- ✅ **动态版本**：版本号从 git 仓库自动获取
+  - 有 tag 时使用 tag 版本
+  - 无 tag 时生成开发版本号（基于提交数）
+
+#### CLI 改进
+- ✅ **统一版本显示**：所有 CLI 工具使用统一的版本获取方式
+- ✅ **代码复用**：通过公共 `version.py` 模块避免重复代码
+
+### 技术细节
+
+#### 依赖更新
+- `setuptools>=45`：现代 setuptools 版本
+- `setuptools-scm[toml]>=6.2`：版本管理插件
+
+#### 版本号规则
+- **正式版本**：`v0.1.0` tag → `0.1.0`
+- **开发版本**：无 tag 或有新提交 → `0.1.0.dev10`（数字为距离最近 tag 的提交数）
+- **未安装**：显示 `unknown`
+
+---
+
 ## [0.1.0] - 2024年12月
 
 ### 新增功能
