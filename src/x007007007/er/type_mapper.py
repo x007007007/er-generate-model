@@ -61,6 +61,16 @@ class TypeMapper:
             'sqlalchemy': 'JSON',
             'patterns': [r'json', r'jsonb']
         },
+        'uuid': {
+            'django': 'UUIDField',
+            'sqlalchemy': 'UUID',
+            'patterns': [r'uuid', r'guid']
+        },
+        'file': {
+            'django': 'FileField',
+            'sqlalchemy': 'String',
+            'patterns': [r'file', r'upload']
+        },
     }
     
     @classmethod

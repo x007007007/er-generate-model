@@ -93,10 +93,12 @@ class MermaidERModelVisitor(MermaidERVisitor):
         # Check for modifiers
         is_pk = False
         is_fk = False
+        is_unique = False
         if ctx.columnModifiers():
             modifiers_text = ctx.columnModifiers().getText()
             is_pk = 'PK' in modifiers_text
             is_fk = 'FK' in modifiers_text
+            is_unique = 'UK' in modifiers_text
         
         # Get comment
         comment = None
@@ -110,6 +112,7 @@ class MermaidERModelVisitor(MermaidERVisitor):
             type=column_type,
             is_pk=is_pk,
             is_fk=is_fk,
+            unique=is_unique,
             comment=comment
         )
         self.current_entity.columns.append(column)

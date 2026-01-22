@@ -8,7 +8,7 @@ from x007007007.er.parser.antlr.plantuml_antlr_parser import PlantUMLAntlrParser
 from x007007007.er.parser.antlr.mermaid_antlr_parser import MermaidAntlrParser
 from x007007007.er.parser.toml_parser import TomlERParser
 from x007007007.er.db_parser import DBParser
-from x007007007.er.renderers import DjangoRenderer, SQLAlchemyRenderer
+from x007007007.er.renderers import DjangoRenderer, SQLAlchemyRenderer, DjangoPackageRenderer
 from x007007007.er.converters import MermaidConverter, PlantUMLConverter
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
@@ -47,9 +47,11 @@ def main():
 @click.option('--input-type', '-t', type=click.Choice(['mermaid', 'plantuml', 'db', 'toml']), default='mermaid', help='Input type')
 @click.option('--format', '-f', type=click.Choice(['django', 'sqlalchemy', 'mermaid', 'plantuml']), default='django', help='Output format')
 @click.option('--output', '-o', type=click.Path(), default=None, help='Output file path (default: stdout, UTF-8 encoded)')
+@click.option('--output-dir', '-d', type=click.Path(), default=None, help='Output directory for multi-file output (Django package mode)')
 @click.option('--app-label', '-a', type=str, default=None, help='Django app label (default: filename without extension)')
 @click.option('--table-prefix', '-p', type=str, default=None, help='Table name prefix (default: filename without extension)')
-def convert(input_source, input_type, format, output, app_label, table_prefix):
+@click.option('--split-models', is_flag=True, help='Split Django models into separate files (one per model)')
+def convert(input_source, input_type, format, output, output_dir, app_label, table_prefix, split_models):
     """Convert ER diagram file to code."""
     assert isinstance(input_source, str), "input_source must be a string"
     assert len(input_source) > 0, "input_source cannot be empty"
@@ -93,8 +95,19 @@ def convert(input_source, input_type, format, output, app_label, table_prefix):
     
     # Render or convert output
     if format == 'django':
-        renderer = DjangoRenderer(app_label=app_label, table_prefix=table_prefix)
-        result = renderer.render(model)
+        if split_models or output_dir:
+            # Multi-file mode
+            if not output_dir:
+                logger.error("--output-dir is required when using --split-models")
+                sys.exit(1)
+            renderer = DjangoPackageRenderer(app_label=app_label, table_prefix=table_prefix)
+            renderer.write_to_directory(model, output_dir)
+            logger.info(f"Successfully generated Django models package in {output_dir}")
+            return
+        else:
+            # Single file mode
+            renderer = DjangoRenderer(app_label=app_label, table_prefix=table_prefix)
+            result = renderer.render(model)
     elif format == 'sqlalchemy':
         renderer = SQLAlchemyRenderer(table_prefix=table_prefix)
         result = renderer.render(model)

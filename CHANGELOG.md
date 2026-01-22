@@ -6,6 +6,21 @@
 
 ### 新增功能
 
+#### Django模型多文件生成
+- ✅ **DjangoPackageRenderer**：新增多文件Django模型渲染器
+  - 每个模型生成独立的Python文件
+  - 自动生成 `__init__.py` 导入所有模型
+  - 更好的代码组织和可维护性
+- ✅ **CLI支持**：新增命令行选项支持多文件输出
+  - `--split-models`：启用多文件模式
+  - `--output-dir, -d`：指定输出目录
+  - 示例：`er-convert convert input.mmd -f django --split-models -d models/`
+- ✅ **模板优化**：
+  - `django_model_single.j2`：单个模型文件模板
+  - `django_init.j2`：包初始化文件模板
+  - 改进的代码格式和文档字符串
+  - 添加 `__str__` 方法
+
 #### 版本管理系统
 - ✅ **setuptools-scm 集成**：使用 setuptools-scm 从 git tag 自动管理版本
   - 无需手动维护版本号

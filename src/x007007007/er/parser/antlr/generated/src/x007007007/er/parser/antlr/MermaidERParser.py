@@ -10,36 +10,40 @@ else:
 
 def serializedATN():
     return [
-        4,1,16,97,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,17,106,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,1,0,1,0,
         1,0,1,0,5,0,31,8,0,10,0,12,0,34,9,0,1,0,1,0,1,1,1,1,3,1,40,8,1,1,
         2,1,2,1,2,5,2,45,8,2,10,2,12,2,48,9,2,1,2,1,2,1,3,1,3,1,4,1,4,1,
         4,3,4,57,8,4,1,4,3,4,60,8,4,1,5,1,5,1,6,1,6,1,7,1,7,1,7,1,7,1,7,
-        1,7,3,7,72,8,7,1,8,1,8,1,9,1,9,1,9,1,9,1,9,3,9,81,8,9,1,10,1,10,
-        1,11,1,11,3,11,87,8,11,1,12,1,12,1,12,5,12,92,8,12,10,12,12,12,95,
-        9,12,1,12,0,0,13,0,2,4,6,8,10,12,14,16,18,20,22,24,0,2,3,0,1,3,8,
-        12,14,16,1,0,8,11,96,0,26,1,0,0,0,2,39,1,0,0,0,4,41,1,0,0,0,6,51,
-        1,0,0,0,8,53,1,0,0,0,10,61,1,0,0,0,12,63,1,0,0,0,14,71,1,0,0,0,16,
-        73,1,0,0,0,18,75,1,0,0,0,20,82,1,0,0,0,22,86,1,0,0,0,24,88,1,0,0,
-        0,26,32,5,5,0,0,27,31,3,4,2,0,28,31,3,18,9,0,29,31,3,2,1,0,30,27,
-        1,0,0,0,30,28,1,0,0,0,30,29,1,0,0,0,31,34,1,0,0,0,32,30,1,0,0,0,
-        32,33,1,0,0,0,33,35,1,0,0,0,34,32,1,0,0,0,35,36,5,0,0,1,36,1,1,0,
-        0,0,37,40,5,12,0,0,38,40,8,0,0,0,39,37,1,0,0,0,39,38,1,0,0,0,40,
-        3,1,0,0,0,41,42,3,6,3,0,42,46,5,1,0,0,43,45,3,8,4,0,44,43,1,0,0,
-        0,45,48,1,0,0,0,46,44,1,0,0,0,46,47,1,0,0,0,47,49,1,0,0,0,48,46,
-        1,0,0,0,49,50,5,2,0,0,50,5,1,0,0,0,51,52,5,12,0,0,52,7,1,0,0,0,53,
-        54,3,10,5,0,54,56,3,12,6,0,55,57,3,14,7,0,56,55,1,0,0,0,56,57,1,
-        0,0,0,57,59,1,0,0,0,58,60,3,16,8,0,59,58,1,0,0,0,59,60,1,0,0,0,60,
-        9,1,0,0,0,61,62,5,12,0,0,62,11,1,0,0,0,63,64,5,12,0,0,64,13,1,0,
-        0,0,65,72,5,6,0,0,66,72,5,7,0,0,67,68,5,6,0,0,68,72,5,7,0,0,69,70,
-        5,7,0,0,70,72,5,6,0,0,71,65,1,0,0,0,71,66,1,0,0,0,71,67,1,0,0,0,
-        71,69,1,0,0,0,72,15,1,0,0,0,73,74,5,13,0,0,74,17,1,0,0,0,75,76,3,
-        6,3,0,76,77,3,20,10,0,77,78,3,6,3,0,78,80,5,3,0,0,79,81,3,22,11,
-        0,80,79,1,0,0,0,80,81,1,0,0,0,81,19,1,0,0,0,82,83,7,1,0,0,83,21,
-        1,0,0,0,84,87,5,13,0,0,85,87,3,24,12,0,86,84,1,0,0,0,86,85,1,0,0,
-        0,87,23,1,0,0,0,88,93,5,12,0,0,89,90,5,4,0,0,90,92,5,12,0,0,91,89,
-        1,0,0,0,92,95,1,0,0,0,93,91,1,0,0,0,93,94,1,0,0,0,94,25,1,0,0,0,
-        95,93,1,0,0,0,10,30,32,39,46,56,59,71,80,86,93
+        1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,3,7,81,8,7,1,8,1,8,1,9,1,
+        9,1,9,1,9,1,9,3,9,90,8,9,1,10,1,10,1,11,1,11,3,11,96,8,11,1,12,1,
+        12,1,12,5,12,101,8,12,10,12,12,12,104,9,12,1,12,0,0,13,0,2,4,6,8,
+        10,12,14,16,18,20,22,24,0,2,3,0,1,3,9,13,15,17,1,0,9,12,110,0,26,
+        1,0,0,0,2,39,1,0,0,0,4,41,1,0,0,0,6,51,1,0,0,0,8,53,1,0,0,0,10,61,
+        1,0,0,0,12,63,1,0,0,0,14,80,1,0,0,0,16,82,1,0,0,0,18,84,1,0,0,0,
+        20,91,1,0,0,0,22,95,1,0,0,0,24,97,1,0,0,0,26,32,5,5,0,0,27,31,3,
+        4,2,0,28,31,3,18,9,0,29,31,3,2,1,0,30,27,1,0,0,0,30,28,1,0,0,0,30,
+        29,1,0,0,0,31,34,1,0,0,0,32,30,1,0,0,0,32,33,1,0,0,0,33,35,1,0,0,
+        0,34,32,1,0,0,0,35,36,5,0,0,1,36,1,1,0,0,0,37,40,5,13,0,0,38,40,
+        8,0,0,0,39,37,1,0,0,0,39,38,1,0,0,0,40,3,1,0,0,0,41,42,3,6,3,0,42,
+        46,5,1,0,0,43,45,3,8,4,0,44,43,1,0,0,0,45,48,1,0,0,0,46,44,1,0,0,
+        0,46,47,1,0,0,0,47,49,1,0,0,0,48,46,1,0,0,0,49,50,5,2,0,0,50,5,1,
+        0,0,0,51,52,5,13,0,0,52,7,1,0,0,0,53,54,3,10,5,0,54,56,3,12,6,0,
+        55,57,3,14,7,0,56,55,1,0,0,0,56,57,1,0,0,0,57,59,1,0,0,0,58,60,3,
+        16,8,0,59,58,1,0,0,0,59,60,1,0,0,0,60,9,1,0,0,0,61,62,5,13,0,0,62,
+        11,1,0,0,0,63,64,5,13,0,0,64,13,1,0,0,0,65,81,5,6,0,0,66,81,5,7,
+        0,0,67,81,5,8,0,0,68,69,5,6,0,0,69,81,5,7,0,0,70,71,5,7,0,0,71,81,
+        5,6,0,0,72,73,5,6,0,0,73,81,5,8,0,0,74,75,5,8,0,0,75,81,5,6,0,0,
+        76,77,5,7,0,0,77,81,5,8,0,0,78,79,5,8,0,0,79,81,5,7,0,0,80,65,1,
+        0,0,0,80,66,1,0,0,0,80,67,1,0,0,0,80,68,1,0,0,0,80,70,1,0,0,0,80,
+        72,1,0,0,0,80,74,1,0,0,0,80,76,1,0,0,0,80,78,1,0,0,0,81,15,1,0,0,
+        0,82,83,5,14,0,0,83,17,1,0,0,0,84,85,3,6,3,0,85,86,3,20,10,0,86,
+        87,3,6,3,0,87,89,5,3,0,0,88,90,3,22,11,0,89,88,1,0,0,0,89,90,1,0,
+        0,0,90,19,1,0,0,0,91,92,7,1,0,0,92,21,1,0,0,0,93,96,5,14,0,0,94,
+        96,3,24,12,0,95,93,1,0,0,0,95,94,1,0,0,0,96,23,1,0,0,0,97,102,5,
+        13,0,0,98,99,5,4,0,0,99,101,5,13,0,0,100,98,1,0,0,0,101,104,1,0,
+        0,0,102,100,1,0,0,0,102,103,1,0,0,0,103,25,1,0,0,0,104,102,1,0,0,
+        0,10,30,32,39,46,56,59,80,89,95,102
     ]
 
 class MermaidERParser ( Parser ):
@@ -53,11 +57,11 @@ class MermaidERParser ( Parser ):
     sharedContextCache = PredictionContextCache()
 
     literalNames = [ "<INVALID>", "'{'", "'}'", "':'", "'-'", "'erDiagram'", 
-                     "'PK'", "'FK'", "'||--||'", "<INVALID>", "<INVALID>", 
+                     "'PK'", "'FK'", "'UK'", "'||--||'", "<INVALID>", "<INVALID>", 
                      "'}o--||'" ]
 
     symbolicNames = [ "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                      "<INVALID>", "ER_DIAGRAM", "PK", "FK", "ONE_TO_ONE", 
+                      "<INVALID>", "ER_DIAGRAM", "PK", "FK", "UK", "ONE_TO_ONE", 
                       "ONE_TO_MANY", "MANY_TO_MANY", "MANY_TO_ONE", "IDENTIFIER", 
                       "STRING", "WS", "NEWLINE", "COMMENT" ]
 
@@ -88,15 +92,16 @@ class MermaidERParser ( Parser ):
     ER_DIAGRAM=5
     PK=6
     FK=7
-    ONE_TO_ONE=8
-    ONE_TO_MANY=9
-    MANY_TO_MANY=10
-    MANY_TO_ONE=11
-    IDENTIFIER=12
-    STRING=13
-    WS=14
-    NEWLINE=15
-    COMMENT=16
+    UK=8
+    ONE_TO_ONE=9
+    ONE_TO_MANY=10
+    MANY_TO_MANY=11
+    MANY_TO_ONE=12
+    IDENTIFIER=13
+    STRING=14
+    WS=15
+    NEWLINE=16
+    COMMENT=17
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -173,7 +178,7 @@ class MermaidERParser ( Parser ):
             self.state = 32
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 12528) != 0):
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 25072) != 0):
                 self.state = 30
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
@@ -268,16 +273,16 @@ class MermaidERParser ( Parser ):
             self.state = 39
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [12]:
+            if token in [13]:
                 self.enterOuterAlt(localctx, 1)
                 self.state = 37
                 self.match(MermaidERParser.IDENTIFIER)
                 pass
-            elif token in [4, 5, 6, 7, 13]:
+            elif token in [4, 5, 6, 7, 8, 14]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 38
                 _la = self._input.LA(1)
-                if _la <= 0 or (((_la) & ~0x3f) == 0 and ((1 << _la) & 122638) != 0):
+                if _la <= 0 or (((_la) & ~0x3f) == 0 and ((1 << _la) & 245262) != 0):
                     self._errHandler.recoverInline(self)
                 else:
                     self._errHandler.reportMatch(self)
@@ -347,7 +352,7 @@ class MermaidERParser ( Parser ):
             self.state = 46
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==12:
+            while _la==13:
                 self.state = 43
                 self.columnDef()
                 self.state = 48
@@ -469,7 +474,7 @@ class MermaidERParser ( Parser ):
             self.state = 56
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==6 or _la==7:
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & 448) != 0):
                 self.state = 55
                 self.columnModifiers()
 
@@ -477,7 +482,7 @@ class MermaidERParser ( Parser ):
             self.state = 59
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==13:
+            if _la==14:
                 self.state = 58
                 self.columnComment()
 
@@ -598,6 +603,9 @@ class MermaidERParser ( Parser ):
         def FK(self):
             return self.getToken(MermaidERParser.FK, 0)
 
+        def UK(self):
+            return self.getToken(MermaidERParser.UK, 0)
+
         def getRuleIndex(self):
             return MermaidERParser.RULE_columnModifiers
 
@@ -624,7 +632,7 @@ class MermaidERParser ( Parser ):
         self.enterRule(localctx, 14, self.RULE_columnModifiers)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 71
+            self.state = 80
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,6,self._ctx)
             if la_ == 1:
@@ -639,16 +647,49 @@ class MermaidERParser ( Parser ):
 
             elif la_ == 3:
                 self.state = 67
-                self.match(MermaidERParser.PK)
-                self.state = 68
-                self.match(MermaidERParser.FK)
+                self.match(MermaidERParser.UK)
                 pass
 
             elif la_ == 4:
+                self.state = 68
+                self.match(MermaidERParser.PK)
                 self.state = 69
                 self.match(MermaidERParser.FK)
+                pass
+
+            elif la_ == 5:
                 self.state = 70
+                self.match(MermaidERParser.FK)
+                self.state = 71
                 self.match(MermaidERParser.PK)
+                pass
+
+            elif la_ == 6:
+                self.state = 72
+                self.match(MermaidERParser.PK)
+                self.state = 73
+                self.match(MermaidERParser.UK)
+                pass
+
+            elif la_ == 7:
+                self.state = 74
+                self.match(MermaidERParser.UK)
+                self.state = 75
+                self.match(MermaidERParser.PK)
+                pass
+
+            elif la_ == 8:
+                self.state = 76
+                self.match(MermaidERParser.FK)
+                self.state = 77
+                self.match(MermaidERParser.UK)
+                pass
+
+            elif la_ == 9:
+                self.state = 78
+                self.match(MermaidERParser.UK)
+                self.state = 79
+                self.match(MermaidERParser.FK)
                 pass
 
 
@@ -697,7 +738,7 @@ class MermaidERParser ( Parser ):
         self.enterRule(localctx, 16, self.RULE_columnComment)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 73
+            self.state = 82
             self.match(MermaidERParser.STRING)
         except RecognitionException as re:
             localctx.exception = re
@@ -756,19 +797,19 @@ class MermaidERParser ( Parser ):
         self.enterRule(localctx, 18, self.RULE_relationship)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 75
+            self.state = 84
             self.entityName()
-            self.state = 76
+            self.state = 85
             self.relationSymbol()
-            self.state = 77
+            self.state = 86
             self.entityName()
-            self.state = 78
+            self.state = 87
             self.match(MermaidERParser.T__2)
-            self.state = 80
+            self.state = 89
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,7,self._ctx)
             if la_ == 1:
-                self.state = 79
+                self.state = 88
                 self.relationshipLabel()
 
 
@@ -827,9 +868,9 @@ class MermaidERParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 82
+            self.state = 91
             _la = self._input.LA(1)
-            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 3840) != 0)):
+            if not((((_la) & ~0x3f) == 0 and ((1 << _la) & 7680) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -882,17 +923,17 @@ class MermaidERParser ( Parser ):
         localctx = MermaidERParser.RelationshipLabelContext(self, self._ctx, self.state)
         self.enterRule(localctx, 22, self.RULE_relationshipLabel)
         try:
-            self.state = 86
+            self.state = 95
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [13]:
+            if token in [14]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 84
+                self.state = 93
                 self.match(MermaidERParser.STRING)
                 pass
-            elif token in [12]:
+            elif token in [13]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 85
+                self.state = 94
                 self.relationshipLabelText()
                 pass
             else:
@@ -946,18 +987,18 @@ class MermaidERParser ( Parser ):
         self.enterRule(localctx, 24, self.RULE_relationshipLabelText)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 88
+            self.state = 97
             self.match(MermaidERParser.IDENTIFIER)
-            self.state = 93
+            self.state = 102
             self._errHandler.sync(self)
             _alt = self._interp.adaptivePredict(self._input,9,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
-                    self.state = 89
+                    self.state = 98
                     self.match(MermaidERParser.T__3)
-                    self.state = 90
+                    self.state = 99
                     self.match(MermaidERParser.IDENTIFIER) 
-                self.state = 95
+                self.state = 104
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,9,self._ctx)
 

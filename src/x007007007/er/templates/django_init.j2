@@ -1,0 +1,11 @@
+"""Django models package."""
+
+{%- for info in entity_info %}
+from .{{ info.filename }} import {{ info.name }}
+{%- endfor %}
+
+__all__ = [
+{%- for name in entity_names %}
+    '{{ name }}',
+{%- endfor %}
+]

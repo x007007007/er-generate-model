@@ -1,0 +1,68 @@
+erDiagram
+    User ||--o{ UploadedFileModel : "上传"
+    ConversationSessionModel ||--o{ UploadedFileModel : "关联(可选)"
+    FileTypeModel ||--o{ UploadedFileModel : "类型识别"
+    UploadedFileModel ||--o{ UploadedFileModel : "父子关系"
+    UploadedFileModel ||--|| FileProcessingTaskModel : "处理任务"
+    FileProcessingTaskModel ||--o{ FileProcessingResultModel : "处理结果"
+
+    User {
+        int id PK
+        string username
+        string email
+    }
+
+    ConversationSessionModel {
+        uuid session_uuid PK
+        uuid user_id FK
+        string title
+        boolean is_active
+    }
+
+    FileTypeModel {
+        uuid id PK
+        string name UK "文件类型名称"
+        string mime_type UK "MIME类型"
+        datetime created_at
+        datetime updated_at
+    }
+
+    UploadedFileModel {
+        uuid id PK
+        uuid user_id FK "用户(必须)"
+        uuid session_id FK "会话(可选)"
+        uuid parent_file_id FK "父文件(层级关系)"
+        uuid file_type_id FK "文件类型"
+        file file "文件存储(S3)"
+        string filename "文件名"
+        bigint file_size "文件大小"
+        string detected_mime_type "检测到的MIME类型"
+        string detected_charset "检测到的字符集(文本)"
+        datetime created_at
+        datetime updated_at
+    }
+
+    FileProcessingTaskModel {
+        uuid id PK
+        uuid uploaded_file_id FK "上传文件(一对一)"
+        string status "处理状态: pending/processing/completed/failed/cancelled"
+        int progress "处理进度(0-100)"
+        datetime started_at "开始时间"
+        datetime completed_at "完成时间"
+        text error_message "错误信息"
+        json processing_config "处理配置"
+        datetime created_at
+        datetime updated_at
+    }
+
+    FileProcessingResultModel {
+        uuid id PK
+        uuid processing_task_id FK "处理任务"
+        string result_type "结果类型: text/table/image/structured/mixed"
+        json content "结果内容(JSON)"
+        text summary "内容摘要"
+        boolean is_indexed "是否已索引到知识库"
+        json index_info "索引信息(向量ID/图节点ID等)"
+        datetime created_at
+        datetime updated_at
+    }

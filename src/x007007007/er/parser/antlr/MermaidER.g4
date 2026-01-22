@@ -17,11 +17,12 @@ columnDef: columnType columnName columnModifiers? columnComment?;
 
 columnType: IDENTIFIER;
 columnName: IDENTIFIER;
-columnModifiers: (PK | FK | PK FK | FK PK);
+columnModifiers: (PK | FK | UK | PK FK | FK PK | PK UK | UK PK | FK UK | UK FK);
 columnComment: STRING;
 
 PK: 'PK';
 FK: 'FK';
+UK: 'UK';
 
 relationship: entityName relationSymbol entityName ':' relationshipLabel?;
 

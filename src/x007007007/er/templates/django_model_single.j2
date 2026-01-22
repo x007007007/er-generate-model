@@ -1,37 +1,41 @@
 from django.db import models
-{%- if model.templates %}
+{%- if entity.extends %}
 {# 生成基类导入 #}
-{%- set base_imports = [] %}
-{%- for template_name, template_info in model.templates.items() %}
-{%- if template_info.export_path %}
+{%- for template_name in entity.extends %}
+{%- if template_name in model.templates and model.templates[template_name].export_path %}
 {%- set base_class_name = template_name | title | replace('_', '') + 'Mixin' %}
-{%- if template_info.export_path not in base_imports %}
-{%- set _ = base_imports.append(template_info.export_path) %}
-from {{ template_info.export_path }} import {{ base_class_name }}
-{%- endif %}
+from {{ model.templates[template_name].export_path }} import {{ base_class_name }}
 {%- endif %}
 {%- endfor %}
 {%- endif %}
-{%- for entity in model.entities.values() %}
-{# 为每个实体生成QuerySet和Manager类（在Model类外部） #}
+{%- set fk_imports = [] %}
+{%- for rel in model.relationships %}
+{%- if (rel.right_entity == entity.name or rel.left_entity == entity.name) and rel.left_entity != entity.name %}
+{%- if rel.left_entity not in fk_imports %}
+{%- set _ = fk_imports.append(rel.left_entity) %}
+{%- endif %}
+{%- endif %}
+{%- if rel.right_entity == entity.name and rel.left_entity != entity.name %}
+{%- if rel.left_entity not in fk_imports %}
+{%- set _ = fk_imports.append(rel.left_entity) %}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+
+
 # Custom QuerySet for {{ entity.name }}
 class {{ entity.name }}QuerySet(models.QuerySet):
-    # TODO: Add custom queryset methods here
-    # Example:
-    # def active(self):
-    #     return self.filter(is_active=True)
+    """Custom QuerySet for {{ entity.name }}."""
     pass
+
 
 # Custom Manager for {{ entity.name }}
 class {{ entity.name }}Manager(models.Manager):
+    """Custom Manager for {{ entity.name }}."""
+    
     def get_queryset(self):
         return {{ entity.name }}QuerySet(self.model, using=self._db)
-    
-    # TODO: Add custom manager methods here
-    # Example:
-    # def active(self):
-    #     return self.get_queryset().active()
-    pass
+
 
 {%- set base_classes = [] %}
 {%- if entity.extends %}
@@ -44,6 +48,9 @@ class {{ entity.name }}Manager(models.Manager):
 {%- endif %}
 
 class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% else %}models.Model{% endif %}):
+{%- if entity.comment %}
+    """{{ entity.comment }}"""
+{%- endif %}
 {%- set fk_columns = {} %}
 {%- for rel in model.relationships %}
 {%- if rel.right_entity == entity.name and rel.right_column %}
@@ -55,7 +62,7 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- for template_name in entity.extends %}
 {%- if template_name in model.templates %}
 {%- if model.templates[template_name].export_path %}
-{# 只有有export_path的模板字段才排除，没有export_path的会展开 #}
+{# 只有有export_path的模板字段才排除 #}
 {%- for col in model.templates[template_name].columns %}
 {%- set _ = inherited_column_names.append(col.name) %}
 {%- endfor %}
@@ -68,9 +75,23 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- if col.name in fk_columns %}
 {%- set rel = fk_columns[col.name] %}
 {%- if rel.relation_type == 'one-to-one' %}
-    {{ col.name.replace('_id', '') if col.name.endswith('_id') else col.name }} = models.OneToOneField('{{ rel.left_entity }}', on_delete=models.CASCADE, related_name='{{ entity.name|lower }}_rel'{% if col.comment %}, help_text="{{ col.comment }}"{% endif %})
+    {{ col.name.replace('_id', '') if col.name.endswith('_id') else col.name }} = models.OneToOneField(
+        '{{ rel.left_entity }}',
+        on_delete=models.CASCADE,
+        related_name='{{ entity.name|lower }}_rel'
+{%- if col.comment %},
+        help_text="{{ col.comment }}"
+{%- endif %}
+    )
 {%- else %}
-    {{ col.name.replace('_id', '') if col.name.endswith('_id') else col.name }} = models.ForeignKey('{{ rel.left_entity }}', on_delete=models.CASCADE, related_name='{{ entity.name|lower }}_set'{% if col.comment %}, help_text="{{ col.comment }}"{% endif %})
+    {{ col.name.replace('_id', '') if col.name.endswith('_id') else col.name }} = models.ForeignKey(
+        '{{ rel.left_entity }}',
+        on_delete=models.CASCADE,
+        related_name='{{ entity.name|lower }}_set'
+{%- if col.comment %},
+        help_text="{{ col.comment }}"
+{%- endif %}
+    )
 {%- endif %}
 {%- else %}
 {%- set field_type, params = col | django_field_type %}
@@ -106,19 +127,27 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- for rel in model.relationships %}
 {%- if rel.left_entity == entity.name %}
 {%- if rel.relation_type == 'many-to-many' %}
-    {{ rel.right_entity|lower }}_set = models.ManyToManyField('{{ rel.right_entity }}', related_name='{{ entity.name|lower }}_set')
+    {{ rel.right_entity|lower }}_set = models.ManyToManyField(
+        '{{ rel.right_entity }}',
+        related_name='{{ entity.name|lower }}_set'
+    )
 {%- endif %}
 {%- endif %}
 {%- endfor %}
+    
     objects = {{ entity.name }}Manager()
 {%- set table_name = entity.name|lower %}
 {%- if table_prefix %}
 {%- set table_name = table_prefix + '_' + table_name %}
 {%- endif %}
+    
     class Meta:
         app_label = '{{ app_label }}'
         db_table = '{{ table_name }}'
 {%- if entity.comment %}
         verbose_name = "{{ entity.comment }}"
+        verbose_name_plural = "{{ entity.comment }}"
 {%- endif %}
-{%- endfor %}
+    
+    def __str__(self):
+        return f"{{ entity.name }}(id={self.pk})"
