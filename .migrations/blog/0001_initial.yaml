@@ -1,0 +1,315 @@
+version: '1.0'
+name: initial
+namespace: blog
+dependencies: []
+operations:
+- type: CreateTable
+  table_name: file_processing_result_model
+  columns:
+  - name: id
+    type: uuid
+    primary_key: true
+    nullable: true
+    unique: false
+  - name: processing_task_id
+    type: uuid
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: 处理任务
+  - name: result_type
+    type: string
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: '结果类型: text/table/image/structured/mixed'
+  - name: content
+    type: json
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: 结果内容(JSON)
+  - name: summary
+    type: text
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: 内容摘要
+  - name: is_indexed
+    type: boolean
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: 是否已索引到知识库
+  - name: index_info
+    type: json
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: 索引信息(向量ID/图节点ID等)
+  - name: created_at
+    type: datetime
+    primary_key: false
+    nullable: true
+    unique: false
+  - name: updated_at
+    type: datetime
+    primary_key: false
+    nullable: true
+    unique: false
+- type: CreateTable
+  table_name: file_processing_task_model
+  columns:
+  - name: id
+    type: uuid
+    primary_key: true
+    nullable: true
+    unique: false
+  - name: uploaded_file_id
+    type: uuid
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: 上传文件(一对一)
+  - name: status
+    type: string
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: '处理状态: pending/processing/completed/failed/cancelled'
+  - name: progress
+    type: int
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: 处理进度(0-100)
+  - name: started_at
+    type: datetime
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: 开始时间
+  - name: completed_at
+    type: datetime
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: 完成时间
+  - name: error_message
+    type: text
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: 错误信息
+  - name: processing_config
+    type: json
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: 处理配置
+  - name: created_at
+    type: datetime
+    primary_key: false
+    nullable: true
+    unique: false
+  - name: updated_at
+    type: datetime
+    primary_key: false
+    nullable: true
+    unique: false
+- type: CreateTable
+  table_name: user
+  columns:
+  - name: id
+    type: int
+    primary_key: true
+    nullable: true
+    unique: false
+  - name: username
+    type: string
+    primary_key: false
+    nullable: true
+    unique: false
+  - name: email
+    type: string
+    primary_key: false
+    nullable: true
+    unique: false
+- type: CreateTable
+  table_name: uploaded_file_model
+  columns:
+  - name: id
+    type: uuid
+    primary_key: true
+    nullable: true
+    unique: false
+  - name: user_id
+    type: uuid
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: 用户(必须)
+  - name: session_id
+    type: uuid
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: 会话(可选)
+  - name: parent_file_id
+    type: uuid
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: 父文件(层级关系)
+  - name: file_type_id
+    type: uuid
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: 文件类型
+  - name: file
+    type: file
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: 文件存储(S3)
+  - name: filename
+    type: string
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: 文件名
+  - name: file_size
+    type: bigint
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: 文件大小
+  - name: detected_mime_type
+    type: string
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: 检测到的MIME类型
+  - name: detected_charset
+    type: string
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: 检测到的字符集(文本)
+  - name: created_at
+    type: datetime
+    primary_key: false
+    nullable: true
+    unique: false
+  - name: updated_at
+    type: datetime
+    primary_key: false
+    nullable: true
+    unique: false
+- type: CreateTable
+  table_name: conversation_session_model
+  columns:
+  - name: session_uuid
+    type: uuid
+    primary_key: true
+    nullable: true
+    unique: false
+  - name: user_id
+    type: uuid
+    primary_key: false
+    nullable: true
+    unique: false
+  - name: title
+    type: string
+    primary_key: false
+    nullable: true
+    unique: false
+  - name: is_active
+    type: boolean
+    primary_key: false
+    nullable: true
+    unique: false
+- type: CreateTable
+  table_name: file_type_model
+  columns:
+  - name: id
+    type: uuid
+    primary_key: true
+    nullable: true
+    unique: false
+  - name: name
+    type: string
+    primary_key: false
+    nullable: true
+    unique: false
+  - name: '"文件类型名称"string'
+    type: UK
+    primary_key: false
+    nullable: true
+    unique: false
+  - name: UK
+    type: mime_type
+    primary_key: false
+    nullable: true
+    unique: false
+    comment: MIME类型
+  - name: created_at
+    type: datetime
+    primary_key: false
+    nullable: true
+    unique: false
+  - name: updated_at
+    type: datetime
+    primary_key: false
+    nullable: true
+    unique: false
+- type: AddForeignKey
+  table_name: user
+  foreign_key:
+    column_name: uploaded_file_model_id
+    reference_table: uploaded_file_model
+    reference_column: user_id
+    on_delete: CASCADE
+    on_update: CASCADE
+- type: AddForeignKey
+  table_name: conversation_session_model
+  foreign_key:
+    column_name: uploaded_file_model_id
+    reference_table: uploaded_file_model
+    reference_column: user_id
+    on_delete: CASCADE
+    on_update: CASCADE
+- type: AddForeignKey
+  table_name: file_type_model
+  foreign_key:
+    column_name: uploaded_file_model_id
+    reference_table: uploaded_file_model
+    reference_column: user_id
+    on_delete: CASCADE
+    on_update: CASCADE
+- type: AddForeignKey
+  table_name: uploaded_file_model
+  foreign_key:
+    column_name: uploaded_file_model_id
+    reference_table: uploaded_file_model
+    reference_column: user_id
+    on_delete: CASCADE
+    on_update: CASCADE
+- type: AddForeignKey
+  table_name: uploaded_file_model
+  foreign_key:
+    column_name: file_processing_task_model_id
+    reference_table: file_processing_task_model
+    reference_column: uploaded_file_id
+    on_delete: CASCADE
+    on_update: CASCADE
+- type: AddForeignKey
+  table_name: file_processing_task_model
+  foreign_key:
+    column_name: file_processing_result_model_id
+    reference_table: file_processing_result_model
+    reference_column: processing_task_id
+    on_delete: CASCADE
+    on_update: CASCADE
+created_at: 2026-01-24 00:42:54.950417

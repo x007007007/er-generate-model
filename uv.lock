@@ -2062,6 +2062,7 @@ dependencies = [
     { name = "langchain-deepseek" },
     { name = "pydantic" },
     { name = "python-dotenv" },
+    { name = "pyyaml" },
     { name = "sqlalchemy" },
     { name = "toml" },
 ]
@@ -2082,6 +2083,7 @@ requires-dist = [
     { name = "langchain-deepseek", specifier = ">=0.1.0" },
     { name = "pydantic", specifier = ">=2.0.0" },
     { name = "python-dotenv", specifier = ">=1.0.0" },
+    { name = "pyyaml", specifier = ">=6.0.0" },
     { name = "sqlalchemy", specifier = ">=2.0.0" },
     { name = "toml", specifier = ">=0.10.2" },
 ]

@@ -1,0 +1,215 @@
+# ER Migrations - 迁移文件格式示例
+
+# 示例1: 初始迁移 - 创建表
+version: "1.0"
+name: "initial"
+namespace: "blog"
+dependencies: []
+operations:
+  - type: CreateTable
+    table_name: user
+    columns:
+      - name: id
+        type: uuid
+        primary_key: true
+        nullable: false
+      - name: username
+        type: string
+        max_length: 255
+        nullable: false
+      - name: email
+        type: string
+        max_length: 255
+        nullable: false
+  
+  - type: CreateTable
+    table_name: post
+    columns:
+      - name: id
+        type: uuid
+        primary_key: true
+        nullable: false
+      - name: author_id
+        type: uuid
+        nullable: false
+      - name: title
+        type: string
+        max_length: 255
+        nullable: false
+      - name: content
+        type: text
+        nullable: false
+  
+  - type: AddForeignKey
+    table_name: post
+    foreign_key:
+      column_name: author_id
+      reference_table: user
+      reference_column: id
+      on_delete: CASCADE
+
+---
+
+# 示例2: 添加列和索引
+version: "1.0"
+name: "add_user_fields"
+namespace: "blog"
+dependencies: ["blog.0001_initial"]
+operations:
+  # 添加可空列
+  - type: AddColumn
+    table_name: user
+    column:
+      name: bio
+      type: string
+      max_length: 500
+      nullable: true
+  
+  # 添加带默认值的列
+  - type: AddColumn
+    table_name: post
+    column:
+      name: view_count
+      type: int
+      default: 0
+      nullable: false
+  
+  # 添加唯一索引
+  - type: AddIndex
+    table_name: user
+    index:
+      name: idx_user_email_unique
+      columns: [email]
+      unique: true
+  
+  # 添加复合索引
+  - type: AddIndex
+    table_name: post
+    index:
+      name: idx_post_author_created
+      columns: [author_id, created_at]
+      unique: false
+
+---
+
+# 示例3: 修改列属性（只记录新值，不记录旧值）
+version: "1.0"
+name: "alter_columns"
+namespace: "blog"
+dependencies: ["blog.0002_add_user_fields"]
+operations:
+  # 修改列类型
+  - type: AlterColumn
+    table_name: post
+    column_name: view_count
+    new_type: bigint
+  
+  # 修改字符串长度
+  - type: AlterColumn
+    table_name: user
+    column_name: username
+    new_max_length: 150
+  
+  # 修改可空性
+  - type: AlterColumn
+    table_name: user
+    column_name: bio
+    new_nullable: false
+  
+  # 同时修改多个属性
+  - type: AlterColumn
+    table_name: user
+    column_name: email
+    new_max_length: 320
+    new_nullable: false
+
+---
+
+# 示例4: 删除和重命名操作
+version: "1.0"
+name: "cleanup_schema"
+namespace: "blog"
+dependencies: ["blog.0003_alter_columns"]
+operations:
+  # 删除列
+  - type: RemoveColumn
+    table_name: user
+    column_name: deprecated_field
+  
+  # 重命名列
+  - type: RenameColumn
+    table_name: post
+    old_name: content
+    new_name: body
+  
+  # 删除索引
+  - type: RemoveIndex
+    table_name: post
+    index_name: idx_post_old_index
+  
+  # 删除表
+  - type: DropTable
+    table_name: temp_data
+
+---
+
+# 示例5: 跨命名空间依赖
+version: "1.0"
+name: "initial"
+namespace: "comments"
+dependencies: ["blog.0001_initial", "auth.0001_initial"]
+operations:
+  - type: CreateTable
+    table_name: comment
+    columns:
+      - name: id
+        type: uuid
+        primary_key: true
+        nullable: false
+      - name: post_id
+        type: uuid
+        nullable: false
+      - name: author_id
+        type: uuid
+        nullable: false
+      - name: content
+        type: text
+        nullable: false
+  
+  # 引用blog命名空间的表
+  - type: AddForeignKey
+    table_name: comment
+    foreign_key:
+      column_name: post_id
+      reference_table: blog.post
+      reference_column: id
+      on_delete: CASCADE
+  
+  # 引用auth命名空间的表
+  - type: AddForeignKey
+    table_name: comment
+    foreign_key:
+      column_name: author_id
+      reference_table: auth.user
+      reference_column: id
+      on_delete: CASCADE
+
+---
+
+# 示例6: 修改外键行为
+version: "1.0"
+name: "alter_foreign_keys"
+namespace: "blog"
+dependencies: ["blog.0004_cleanup_schema"]
+operations:
+  # 修改外键的删除行为
+  - type: AlterForeignKey
+    table_name: post
+    constraint_name: fk_post_author_id
+    new_on_delete: SET_NULL
+  
+  # 修改外键的更新行为
+  - type: AlterForeignKey
+    table_name: post
+    constraint_name: fk_post_author_id
+    new_on_update: RESTRICT
