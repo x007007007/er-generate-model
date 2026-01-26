@@ -1,0 +1,45 @@
+[project]
+name = "x007007007-er-django"
+version = "0.1.0"
+description = "Django integration for ER diagram and migration system"
+readme = "README.md"
+authors = [
+    { name = "xxc", email = "x007007007@hotmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "django>=4.2.0",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0.0",
+    "jinja2>=3.1.2",
+    "click>=8.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-django>=4.5.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/x007007007/er"
+Repository = "https://github.com/x007007007/er"
+Documentation = "https://github.com/x007007007/er/tree/main/packages/er-django"
+
+[build-system]
+requires = ["setuptools>=45", "setuptools-scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["x007007007.er_django"]
+package-dir = {"" = "src"}
+
+[tool.setuptools.package-data]
+"x007007007.er_django" = ["management/commands/*.py"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "tests.settings"
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]

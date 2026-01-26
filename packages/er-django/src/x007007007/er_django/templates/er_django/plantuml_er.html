@@ -1,0 +1,14 @@
+{% load er_filters %}@startuml
+!define ENTITY(name) entity name
+!define ATTRIBUTE(type, name) type name
+
+{% for entity in entities %}
+{% if entity.comment %}' {{ entity.comment }}{% endif %}
+entity {{ entity.name }} {
+{% for col in entity.columns %}  {{ col.type }} {{ col.name }}{% if col.is_pk %} <<PK>>{% endif %}{% if col.is_fk %} <<FK>>{% endif %}{% if col.unique %} <<UK>>{% endif %}{% if col.comment %} -- {{ col.comment }}{% endif %}
+{% endfor %}}
+
+{% endfor %}{% for rel in relationships %}
+{{ rel.left_entity }} {{ rel.relation_type|plantuml_relation }} {{ rel.right_entity }}{% if rel.left_label %} : {{ rel.left_label }}{% elif rel.right_label %} : {{ rel.right_label }}{% endif %}
+{% endfor %}
+@enduml
