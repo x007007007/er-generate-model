@@ -274,3 +274,19 @@ class TestConverterBugs:
         assert fk.column_name == "author_id", "外键列名应该是left_column"
         assert fk.reference_table == "user", "引用表应该是right_entity"
         assert fk.reference_column == "id", "引用列应该是right_column"
+
+
+
+class TestStateRebuildWithRemoveColumn:
+    """测试状态重建时正确处理RemoveColumn操作 - 已移至test_state_rebuild.py"""
+    pass
+
+
+class TestStateRebuildWithDropTable:
+    """测试状态重建时正确处理DropTable操作 - 已移至test_state_rebuild.py"""
+    pass
+
+
+class TestStateRebuildWithAlterColumn:
+    """测试状态重建时正确处理AlterColumn操作 - 已移至test_state_rebuild.py"""
+    pass

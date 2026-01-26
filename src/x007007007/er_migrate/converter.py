@@ -95,23 +95,70 @@ class ERConverter:
         Returns:
             ForeignKeyDefinition对象
         """
+        # 根据关系类型确定外键位置
+        # one-to-many: 外键在right_entity (many side)
+        # many-to-one: 外键在left_entity (many side)
+        # one-to-one: 外键在有FK列的一侧
+        
+        if relationship.relation_type == "one-to-many":
+            # User ||--o{ Post
+            # 外键在Post (right_entity)，指向User (left_entity)
+            fk_table = relationship.right_entity
+            reference_table = relationship.left_entity
+            fk_column = relationship.right_column
+            reference_column = relationship.left_column
+        elif relationship.relation_type == "many-to-one":
+            # Post }o--|| User
+            # 外键在Post (left_entity)，指向User (right_entity)
+            fk_table = relationship.left_entity
+            reference_table = relationship.right_entity
+            fk_column = relationship.left_column
+            reference_column = relationship.right_column
+        elif relationship.relation_type == "one-to-one":
+            # A ||--|| B
+            # 外键可以在任一侧，根据哪一侧有FK列来决定
+            if relationship.right_column:
+                # FK在right_entity
+                fk_table = relationship.right_entity
+                reference_table = relationship.left_entity
+                fk_column = relationship.right_column
+                reference_column = relationship.left_column
+            elif relationship.left_column:
+                # FK在left_entity
+                fk_table = relationship.left_entity
+                reference_table = relationship.right_entity
+                fk_column = relationship.left_column
+                reference_column = relationship.right_column
+            else:
+                # 默认：外键在left_entity
+                fk_table = relationship.left_entity
+                reference_table = relationship.right_entity
+                fk_column = relationship.left_column
+                reference_column = relationship.right_column
+        else:  # many-to-many
+            # 默认：外键在left_entity
+            fk_table = relationship.left_entity
+            reference_table = relationship.right_entity
+            fk_column = relationship.left_column
+            reference_column = relationship.right_column
+        
         # 转换表名为snake_case
-        reference_table = self._to_snake_case(relationship.right_entity)
+        reference_table_snake = self._to_snake_case(reference_table)
         
         # 如果没有明确的列名，使用默认的命名规则
-        column_name = relationship.left_column
-        if not column_name:
+        if not fk_column:
             # 默认使用 {reference_table}_id
-            column_name = f"{reference_table}_id"
+            column_name = f"{reference_table_snake}_id"
+        else:
+            column_name = fk_column
         
-        reference_column = relationship.right_column
         if not reference_column:
             # 默认使用 id
             reference_column = "id"
         
         return ForeignKeyDefinition(
             column_name=column_name,
-            reference_table=reference_table,
+            reference_table=reference_table_snake,
             reference_column=reference_column,
             on_delete="CASCADE",
             on_update="CASCADE"

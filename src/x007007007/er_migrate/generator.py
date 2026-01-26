@@ -7,7 +7,7 @@ from x007007007.er.models import ERModel
 from .converter import ERConverter
 from .differ import ERDiffer
 from .file_manager import FileManager
-from .models import Migration, Operation, CreateTable, AddColumn, AddForeignKey
+from .models import Migration, Operation, CreateTable, AddColumn, AddForeignKey, RemoveColumn, DropTable, AlterColumn, RenameTable
 
 
 class MigrationGenerator:
@@ -87,7 +87,7 @@ class MigrationGenerator:
         # 现在简单实现：从最后一个迁移推断状态
         # 这是一个简化版本，完整版本需要state_builder.py
         
-        from x007007007.er.models import Entity, Column
+        from x007007007.er.models import Entity, Column, Relationship
         
         rebuilt_model = ERModel()
         
@@ -135,6 +135,83 @@ class MigrationGenerator:
                             unique=op.column.unique
                         )
                         entity.columns.append(col)
+                
+                elif isinstance(op, RemoveColumn):
+                    # 从实体中删除列
+                    entity_name = self._to_pascal_case(op.table_name)
+                    if entity_name in rebuilt_model.entities:
+                        entity = rebuilt_model.entities[entity_name]
+                        # 过滤掉要删除的列
+                        entity.columns = [col for col in entity.columns if col.name != op.column_name]
+                
+                elif isinstance(op, DropTable):
+                    # 删除实体
+                    entity_name = self._to_pascal_case(op.table_name)
+                    if entity_name in rebuilt_model.entities:
+                        del rebuilt_model.entities[entity_name]
+                
+                elif isinstance(op, RenameTable):
+                    # 重命名实体
+                    old_entity_name = self._to_pascal_case(op.old_name)
+                    new_entity_name = self._to_pascal_case(op.new_name)
+                    if old_entity_name in rebuilt_model.entities:
+                        entity = rebuilt_model.entities[old_entity_name]
+                        # 更新实体名称
+                        entity.name = new_entity_name
+                        # 在字典中重命名
+                        rebuilt_model.entities[new_entity_name] = entity
+                        del rebuilt_model.entities[old_entity_name]
+                
+                elif isinstance(op, AlterColumn):
+                    # 修改列属性
+                    entity_name = self._to_pascal_case(op.table_name)
+                    if entity_name in rebuilt_model.entities:
+                        entity = rebuilt_model.entities[entity_name]
+                        # 找到要修改的列
+                        for col in entity.columns:
+                            if col.name == op.column_name:
+                                # 应用修改（只更新非None的字段）
+                                if op.new_type is not None:
+                                    col.type = op.new_type
+                                if op.new_max_length is not None:
+                                    col.max_length = op.new_max_length
+                                if op.new_nullable is not None:
+                                    col.nullable = op.new_nullable
+                                if op.new_default is not None:
+                                    col.default = op.new_default
+                                if op.new_precision is not None:
+                                    col.precision = op.new_precision
+                                if op.new_scale is not None:
+                                    col.scale = op.new_scale
+                                break
+                
+                elif isinstance(op, AddForeignKey):
+                    # 重建关系信息
+                    # 从外键定义推断关系
+                    left_entity = self._to_pascal_case(op.table_name)
+                    right_entity = self._to_pascal_case(op.foreign_key.reference_table)
+                    
+                    # 创建关系对象
+                    rel = Relationship(
+                        left_entity=left_entity,
+                        right_entity=right_entity,
+                        relation_type="many-to-one",  # 外键通常表示多对一关系
+                        left_column=op.foreign_key.column_name,
+                        right_column=op.foreign_key.reference_column
+                    )
+                    
+                    # 添加关系（避免重复）
+                    # 检查是否已存在相同的关系
+                    rel_exists = any(
+                        r.left_entity == rel.left_entity and
+                        r.right_entity == rel.right_entity and
+                        r.left_column == rel.left_column and
+                        r.right_column == rel.right_column
+                        for r in rebuilt_model.relationships
+                    )
+                    
+                    if not rel_exists:
+                        rebuilt_model.add_relationship(rel)
         
         return rebuilt_model
     

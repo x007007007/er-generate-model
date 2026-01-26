@@ -45,28 +45,54 @@ class ERDiffer:
         old_table_names = set(old_tables.keys())
         new_table_names = set(new_tables.keys())
         
-        # 1. 检测删除的表
-        for table_name in old_table_names - new_table_names:
-            operations.append(DropTable(table_name=table_name))
+        # 检测可能的表重命名
+        dropped_tables = old_table_names - new_table_names
+        created_tables = new_table_names - old_table_names
         
-        # 2. 检测新增的表
-        for table_name in new_table_names - old_table_names:
-            entity = new_tables[table_name]
-            table_name_converted, columns = self.converter.convert_entity(entity)
-            operations.append(CreateTable(
-                table_name=table_name_converted,
-                columns=columns
-            ))
+        rename_mapping = self._detect_table_renames(
+            {name: old_tables[name] for name in dropped_tables},
+            {name: new_tables[name] for name in created_tables}
+        )
+        
+        # 1. 处理重命名的表
+        from .models import RenameTable
+        for old_name, new_name in rename_mapping.items():
+            operations.append(RenameTable(old_name=old_name, new_name=new_name))
             
-            # 添加索引
-            indexes = self.converter.extract_indexes(entity)
-            for idx in indexes:
-                operations.append(AddIndex(
-                    table_name=table_name_converted,
-                    index=idx
-                ))
+            # 重命名后，检测列变更
+            old_entity = old_tables[old_name]
+            new_entity = new_tables[new_name]
+            
+            col_ops = self._diff_columns(new_name, old_entity, new_entity)
+            operations.extend(col_ops)
+            
+            idx_ops = self._diff_indexes(new_name, old_entity, new_entity)
+            operations.extend(idx_ops)
         
-        # 3. 检测现有表的变更
+        # 2. 检测删除的表（排除已重命名的）
+        for table_name in dropped_tables:
+            if table_name not in rename_mapping:
+                operations.append(DropTable(table_name=table_name))
+        
+        # 3. 检测新增的表（排除已重命名的）
+        for table_name in created_tables:
+            if table_name not in rename_mapping.values():
+                entity = new_tables[table_name]
+                table_name_converted, columns = self.converter.convert_entity(entity)
+                operations.append(CreateTable(
+                    table_name=table_name_converted,
+                    columns=columns
+                ))
+                
+                # 添加索引
+                indexes = self.converter.extract_indexes(entity)
+                for idx in indexes:
+                    operations.append(AddIndex(
+                        table_name=table_name_converted,
+                        index=idx
+                    ))
+        
+        # 4. 检测现有表的变更（未重命名的）
         for table_name in old_table_names & new_table_names:
             old_entity = old_tables[table_name]
             new_entity = new_tables[table_name]
@@ -79,7 +105,7 @@ class ERDiffer:
             idx_ops = self._diff_indexes(table_name, old_entity, new_entity)
             operations.extend(idx_ops)
         
-        # 4. 检测外键关系
+        # 5. 检测外键关系
         fk_ops = self._diff_relationships(old_model, new_model)
         operations.extend(fk_ops)
         
@@ -254,6 +280,72 @@ class ERDiffer:
         
         return indexed_cols
     
+    def _detect_table_renames(self, dropped_tables: Dict[str, Entity], 
+                             created_tables: Dict[str, Entity]) -> Dict[str, str]:
+        """
+        检测表重命名（启发式算法）
+        
+        如果一个表被删除，另一个表被创建，且列结构相似度>80%，
+        则推断为重命名操作
+        
+        Args:
+            dropped_tables: 被删除的表字典 {table_name: entity}
+            created_tables: 被创建的表字典 {table_name: entity}
+            
+        Returns:
+            重命名映射 {old_name: new_name}
+        """
+        rename_mapping = {}
+        
+        # 对每个被删除的表，找最相似的被创建的表
+        for old_name, old_entity in dropped_tables.items():
+            best_match = None
+            best_similarity = 0.0
+            
+            for new_name, new_entity in created_tables.items():
+                # 如果新表已经被匹配过，跳过
+                if new_name in rename_mapping.values():
+                    continue
+                
+                # 计算列结构相似度
+                similarity = self._calculate_column_similarity(old_entity, new_entity)
+                
+                if similarity > best_similarity:
+                    best_similarity = similarity
+                    best_match = new_name
+            
+            # 如果相似度超过阈值（80%），认为是重命名
+            if best_match and best_similarity >= 0.8:
+                rename_mapping[old_name] = best_match
+        
+        return rename_mapping
+    
+    def _calculate_column_similarity(self, entity1: Entity, entity2: Entity) -> float:
+        """
+        计算两个实体的列结构相似度
+        
+        Args:
+            entity1: 实体1
+            entity2: 实体2
+            
+        Returns:
+            相似度（0.0-1.0）
+        """
+        # 提取列名集合
+        cols1 = {col.name for col in entity1.columns}
+        cols2 = {col.name for col in entity2.columns}
+        
+        # 如果任一实体没有列，返回0
+        if not cols1 or not cols2:
+            return 0.0
+        
+        # 计算交集和并集
+        intersection = cols1 & cols2
+        union = cols1 | cols2
+        
+        # Jaccard相似度
+        return len(intersection) / len(union)
+    
     def _diff_relationships(self, old_model: ERModel, new_model: ERModel) -> List[Operation]:
         """
         检测关系（外键）的变更
@@ -310,7 +402,28 @@ class ERDiffer:
         for rel in model.relationships:
             # 转换关系为外键
             fk = self.converter.convert_relationship(rel)
-            table_name = self.converter._to_snake_case(rel.left_entity)
+            
+            # 根据关系类型确定外键所在的表
+            if rel.relation_type == "one-to-many":
+                # 外键在right_entity (many side)
+                fk_table = rel.right_entity
+            elif rel.relation_type == "many-to-one":
+                # 外键在left_entity (many side)
+                fk_table = rel.left_entity
+            elif rel.relation_type == "one-to-one":
+                # 外键在有FK列的一侧
+                if rel.right_column:
+                    fk_table = rel.right_entity
+                elif rel.left_column:
+                    fk_table = rel.left_entity
+                else:
+                    # 默认：外键在left_entity
+                    fk_table = rel.left_entity
+            else:  # many-to-many
+                # 默认：外键在left_entity
+                fk_table = rel.left_entity
+            
+            table_name = self.converter._to_snake_case(fk_table)
             
             # 使用(table_name, column_name)作为key
             fk_key = (table_name, fk.column_name)

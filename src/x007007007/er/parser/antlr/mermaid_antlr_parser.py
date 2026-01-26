@@ -147,20 +147,165 @@ class MermaidERModelVisitor(MermaidERVisitor):
             label = label_text.strip('"') if label_text.startswith('"') else label_text
         
         # Try to find foreign key column
+        # For one-to-many: FK is in right_entity, referencing left_entity
+        # For many-to-one: FK is in left_entity, referencing right_entity
+        # For one-to-one: FK can be in either entity, prefer right_entity
+        left_column = None
         right_column = None
-        if right_entity in self.model.entities:
-            right_entity_obj = self.model.entities[right_entity]
-            for col in right_entity_obj.columns:
-                if col.is_fk:
-                    if left_entity.lower() in col.name.lower() or col.name.endswith('_id'):
-                        right_column = col.name
-                        break
+        
+        if rel_type == "one-to-many":
+            # FK is in right_entity
+            if right_entity in self.model.entities:
+                right_entity_obj = self.model.entities[right_entity]
+                # Look for a column that matches the left entity name
+                left_entity_lower = left_entity.lower()
+                
+                # Try multiple matching strategies, preferring more specific matches
+                best_match = None
+                best_score = 0
+                
+                for col in right_entity_obj.columns:
+                    if not col.is_fk:
+                        continue
+                    
+                    col_name_lower = col.name.lower()
+                    score = 0
+                    
+                    # Strategy 1: Exact match with entity name (highest score)
+                    if left_entity_lower == col_name_lower.replace('_id', '').replace('_', ''):
+                        score = 100
+                    # Strategy 2: Entity name is substring of column name
+                    elif left_entity_lower in col_name_lower:
+                        score = 50
+                    else:
+                        # Strategy 3: Match with partial entity name (e.g., "session" in "ConversationSessionModel")
+                        # Split entity name by capital letters and count matching parts
+                        import re
+                        entity_parts = re.findall('[A-Z][a-z]*', left_entity)
+                        for part in entity_parts:
+                            part_lower = part.lower()
+                            if part_lower in col_name_lower:
+                                # Sum up lengths of all matching parts
+                                score += len(part)
+                    
+                    if score > best_score:
+                        best_score = score
+                        best_match = col.name
+                
+                right_column = best_match
+        
+        elif rel_type == "one-to-one":
+            # FK can be in either entity, try both
+            # First try right_entity
+            if right_entity in self.model.entities:
+                right_entity_obj = self.model.entities[right_entity]
+                left_entity_lower = left_entity.lower()
+                
+                best_match = None
+                best_score = 0
+                
+                for col in right_entity_obj.columns:
+                    if not col.is_fk:
+                        continue
+                    
+                    col_name_lower = col.name.lower()
+                    score = 0
+                    
+                    if left_entity_lower == col_name_lower.replace('_id', '').replace('_', ''):
+                        score = 100
+                    elif left_entity_lower in col_name_lower:
+                        score = 50
+                    else:
+                        import re
+                        entity_parts = re.findall('[A-Z][a-z]*', left_entity)
+                        for part in entity_parts:
+                            part_lower = part.lower()
+                            if part_lower in col_name_lower:
+                                score += len(part)
+                    
+                    if score > best_score:
+                        best_score = score
+                        best_match = col.name
+                
+                right_column = best_match
+            
+            # If not found in right_entity, try left_entity
+            if not right_column and left_entity in self.model.entities:
+                left_entity_obj = self.model.entities[left_entity]
+                right_entity_lower = right_entity.lower()
+                
+                best_match = None
+                best_score = 0
+                
+                for col in left_entity_obj.columns:
+                    if not col.is_fk:
+                        continue
+                    
+                    col_name_lower = col.name.lower()
+                    score = 0
+                    
+                    if right_entity_lower == col_name_lower.replace('_id', '').replace('_', ''):
+                        score = 100
+                    elif right_entity_lower in col_name_lower:
+                        score = 50
+                    else:
+                        import re
+                        entity_parts = re.findall('[A-Z][a-z]*', right_entity)
+                        for part in entity_parts:
+                            part_lower = part.lower()
+                            if part_lower in col_name_lower:
+                                score += len(part)
+                    
+                    if score > best_score:
+                        best_score = score
+                        best_match = col.name
+                
+                left_column = best_match
+                        
+        elif rel_type == "many-to-one":
+            # FK is in left_entity
+            if left_entity in self.model.entities:
+                left_entity_obj = self.model.entities[left_entity]
+                # Look for a column that matches the right entity name
+                right_entity_lower = right_entity.lower()
+                
+                best_match = None
+                best_score = 0
+                
+                for col in left_entity_obj.columns:
+                    if not col.is_fk:
+                        continue
+                    
+                    col_name_lower = col.name.lower()
+                    score = 0
+                    
+                    # Strategy 1: Exact match
+                    if right_entity_lower == col_name_lower.replace('_id', '').replace('_', ''):
+                        score = 100
+                    # Strategy 2: Entity name is substring
+                    elif right_entity_lower in col_name_lower:
+                        score = 50
+                    else:
+                        # Strategy 3: Partial match - sum up all matching parts
+                        import re
+                        entity_parts = re.findall('[A-Z][a-z]*', right_entity)
+                        for part in entity_parts:
+                            part_lower = part.lower()
+                            if part_lower in col_name_lower:
+                                score += len(part)
+                    
+                    if score > best_score:
+                        best_score = score
+                        best_match = col.name
+                
+                left_column = best_match
         
         relationship = Relationship(
             left_entity=left_entity,
             right_entity=right_entity,
             relation_type=rel_type,
             right_label=label,
+            left_column=left_column,
             right_column=right_column
         )
         self.model.add_relationship(relationship)

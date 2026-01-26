@@ -1,0 +1,19 @@
+erDiagram
+    User ||--o{ Post : writes
+    
+    User {
+        uuid id PK
+        string username UK
+        string email UK
+        int age
+        boolean is_active
+        datetime created_at
+    }
+    
+    Post {
+        uuid id PK
+        uuid author_id FK
+        string title
+        text content
+        datetime created_at
+    }

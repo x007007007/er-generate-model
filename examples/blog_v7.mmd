@@ -1,0 +1,44 @@
+erDiagram
+    User ||--o{ Article : writes
+    Article ||--o{ Comment : has
+    
+    User {
+        uuid id PK
+        string username UK
+        string email UK
+        int age
+        boolean is_active
+        text bio
+        date birth_date
+        time preferred_time
+        bigint total_views
+        datetime created_at
+    }
+    
+    Article {
+        uuid id PK
+        uuid author_id FK
+        string title
+        text content
+        int view_count
+        float rating
+        decimal price
+        string status
+        json metadata
+        varchar slug
+        char code
+        datetime created_at
+        datetime updated_at
+        datetime published_at
+    }
+    
+    Comment {
+        uuid id PK
+        uuid article_id FK
+        string author_name
+        text content
+        smallint likes
+        boolean is_approved
+        double score
+        datetime created_at
+    }
