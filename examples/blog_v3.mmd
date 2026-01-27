@@ -2,18 +2,18 @@ erDiagram
     User ||--o{ Post : writes
     
     User {
-        uuid id PK
-        string username UK
-        string email UK
-        int age
-        boolean is_active
-        datetime created_at
+        uuid id PK "主键-唯一标识符"
+        string username UK "用户名-唯一"
+        string email UK "邮箱-唯一"
+        int age "年龄"
+        boolean is_active "是否激活"
+        datetime created_at "创建时间"
     }
     
     Post {
-        uuid id PK
-        uuid author_id FK
-        string title
-        text content
-        datetime created_at
+        uuid id PK "主键-唯一标识符"
+        uuid author_id FK "作者ID-外键"
+        string title "标题"
+        text content "内容"
+        datetime created_at "创建时间"
     }

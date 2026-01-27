@@ -1,4 +1,4 @@
-# Generated from /Users/xxc/workspace/er-generate-model-main/src/x007007007/er/parser/antlr/PlantUMLER.g4 by ANTLR 4.13.2
+# Generated from src/x007007007/er/parser/antlr/PlantUMLER.g4 by ANTLR 4.13.2
 from antlr4 import *
 if "." in __name__:
     from .PlantUMLERParser import PlantUMLERParser

@@ -1,26 +1,26 @@
 erDiagram
     DataTypeShowcase {
-        uuid id PK
-        string name
-        varchar description
-        char code
-        text content
-        int count
-        integer quantity
-        bigint big_number
-        smallint small_number
-        tinyint tiny_number
-        float rating
-        real weight
-        double score
-        decimal price
-        numeric amount
-        boolean is_active
-        bool is_enabled
-        date birth_date
-        time start_time
-        datetime created_at
-        timestamp updated_at
-        json metadata
-        jsonb settings
+        uuid id PK "主键-UUID类型"
+        string name "字符串-可变长度"
+        varchar description "可变字符-同string"
+        char code "固定长度字符"
+        text content "大文本内容"
+        int count "整数-32位"
+        integer quantity "整数-同int"
+        bigint big_number "大整数-64位"
+        smallint small_number "小整数-16位"
+        tinyint tiny_number "微整数-8位"
+        float rating "浮点数-单精度"
+        real weight "浮点数-同float"
+        double score "浮点数-双精度"
+        decimal price "精确小数-货币"
+        numeric amount "精确小数-同decimal"
+        boolean is_active "布尔值-真假"
+        bool is_enabled "布尔值-同boolean"
+        date birth_date "日期-年月日"
+        time start_time "时间-时分秒"
+        datetime created_at "日期时间-完整"
+        timestamp updated_at "时间戳-Unix"
+        json metadata "JSON对象"
+        jsonb settings "二进制JSON"
     }

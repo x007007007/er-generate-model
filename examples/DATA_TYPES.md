@@ -116,11 +116,11 @@
 ```mermaid
 erDiagram
     User {
-        uuid id PK
-        string username
-        int age
-        boolean is_active
-        datetime created_at
+        uuid id PK "主键-唯一标识符"
+        string username "用户名"
+        int age "年龄"
+        boolean is_active "是否激活"
+        datetime created_at "创建时间"
     }
 ```
 
@@ -129,14 +129,14 @@ erDiagram
 ```mermaid
 erDiagram
     User {
-        uuid id PK
-        string username UK
-        string email UK
-        uuid role_id FK
+        uuid id PK "主键-唯一标识符"
+        string username UK "用户名-唯一约束"
+        string email UK "邮箱-唯一约束"
+        uuid role_id FK "角色ID-外键"
     }
 ```
 
-**注意**：Mermaid ER图语法不支持在列定义中使用引号注释。如果需要添加说明，请在文档中单独说明，或使用表级别的注释。
+**注意**：列注释使用双引号包裹，支持中文和英文字符。
 
 ## 类型映射示例
 

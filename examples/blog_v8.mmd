@@ -2,34 +2,34 @@ erDiagram
     User ||--o{ Article : writes
     
     User {
-        uuid id PK
-        string username UK
-        string email UK
-        int age
-        boolean is_active
-        text bio
-        date birth_date
-        time preferred_time
-        bigint total_views
-        timestamp last_login
-        datetime created_at
+        uuid id PK "主键-唯一标识符"
+        string username UK "用户名-唯一"
+        string email UK "邮箱-唯一"
+        int age "年龄"
+        boolean is_active "是否激活"
+        text bio "个人简介"
+        date birth_date "出生日期"
+        time preferred_time "偏好时间"
+        bigint total_views "总浏览量"
+        timestamp last_login "最后登录时间"
+        datetime created_at "创建时间"
     }
     
     Article {
-        uuid id PK
-        uuid author_id FK
-        string title
-        text content
-        int view_count
-        float rating
-        decimal price
-        string status
-        json metadata
-        varchar slug
-        char code
-        real weight
-        numeric priority
-        datetime created_at
-        datetime updated_at
-        datetime published_at
+        uuid id PK "主键-唯一标识符"
+        uuid author_id FK "作者ID-外键"
+        string title "标题"
+        text content "内容"
+        int view_count "浏览次数"
+        float rating "评分"
+        decimal price "价格"
+        string status "状态"
+        json metadata "元数据"
+        varchar slug "URL别名"
+        char code "代码"
+        real weight "权重"
+        numeric priority "优先级"
+        datetime created_at "创建时间"
+        datetime updated_at "更新时间"
+        datetime published_at "发布时间"
     }

@@ -1,9 +1,10 @@
 #!/bin/bash
-# Generate ANTLR parser code from grammar file
+# Generate ANTLR parser code from grammar files
 # Requires Java 11+ and ANTLR 4.13.2
 
 JAR_FILE="tools/antlr-4.13.2-complete.jar"
-GRAMMAR_FILE="src/x007007007/er/parser/antlr/MermaidER.g4"
+MERMAID_GRAMMAR="src/x007007007/er/parser/antlr/MermaidER.g4"
+PLANTUML_GRAMMAR="src/x007007007/er/parser/antlr/PlantUMLER.g4"
 OUTPUT_DIR="src/x007007007/er/parser/antlr/generated"
 
 # Check if Java is available
@@ -29,14 +30,23 @@ fi
 # Create output directory
 mkdir -p "$OUTPUT_DIR"
 
-# Generate parser code
-echo "Generating ANTLR parser code..."
-java -jar "$JAR_FILE" -Dlanguage=Python3 -visitor -o "$OUTPUT_DIR" "$GRAMMAR_FILE"
+# Generate Mermaid parser code
+echo "Generating Mermaid ER parser code..."
+java -Xmx500M -jar "$JAR_FILE" -Dlanguage=Python3 -visitor -o "$OUTPUT_DIR" "$MERMAID_GRAMMAR"
 
-if [ $? -eq 0 ]; then
-    echo "Successfully generated ANTLR parser code in $OUTPUT_DIR"
-else
-    echo "Error: Failed to generate parser code"
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to generate Mermaid parser code"
     exit 1
 fi
+
+# Generate PlantUML parser code
+echo "Generating PlantUML ER parser code..."
+java -Xmx500M -jar "$JAR_FILE" -Dlanguage=Python3 -visitor -o "$OUTPUT_DIR" "$PLANTUML_GRAMMAR"
+
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to generate PlantUML parser code"
+    exit 1
+fi
+
+echo "Successfully generated ANTLR parser code in $OUTPUT_DIR"
 
