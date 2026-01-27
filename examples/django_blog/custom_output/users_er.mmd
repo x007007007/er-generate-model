@@ -1,0 +1,55 @@
+erDiagram
+    // 用户
+    CustomUser {
+        bigint id PK UK
+        string password
+        datetime last_login
+        boolean is_superuser "指明该用户缺省拥有所有权限。"
+        string username UK "必填；长度为150个字符或以下；只能包含字母、数字、特殊字符“@”、“.”、“-”和“_”。"
+        string first_name
+        string last_name
+        boolean is_staff "指明用户是否可以登录到这个管理站点。"
+        boolean is_active "指明用户是否被认为是活跃的。以反选代替删除帐号。"
+        datetime date_joined
+        string email UK "邮箱地址"
+        string phone "手机号码"
+        string avatar "头像URL"
+        text bio "个人简介"
+        date birth_date "出生日期"
+        string country "国家"
+        string city "城市"
+        boolean is_verified "是否已验证"
+        datetime created_at "创建时间"
+        datetime updated_at "更新时间"
+        
+    }
+
+    // 用户资料
+    UserProfile {
+        bigint id PK UK
+        string user_id FK UK "关联用户"
+        string github_username "GitHub用户名"
+        string twitter_username "Twitter用户名"
+        string linkedin_url "LinkedIn链接"
+        string website_url "个人网站"
+        string language "语言偏好"
+        string timezone "时区"
+        string theme "主题偏好"
+        boolean email_notifications "邮件通知"
+        boolean push_notifications "推送通知"
+        
+    }
+
+    // 用户关注
+    UserFollowing {
+        bigint id PK UK
+        string follower_id FK "关注者"
+        string following_id FK "被关注者"
+        datetime created_at "关注时间"
+        
+    }
+
+    CustomUser ||--o{ UserProfile
+    UserProfile ||--|| CustomUser
+    CustomUser ||--o{ UserFollowing
+    CustomUser ||--o{ UserFollowing
