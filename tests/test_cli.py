@@ -13,7 +13,7 @@ def test_cli_mermaid_to_django(tmp_path):
     expected_file = get_asset_path("cli_django", "django.py")
     
     output_file = tmp_path / "output.py"
-    result = runner.invoke(main, ['convert', input_file, '--format', 'django', '--output', str(output_file)])
+    result = runner.invoke(main, ['convert', input_file, '--input-type', 'mermaid', '--format', 'django', '--output', str(output_file)])
     
     assert result.exit_code == 0
     assert os.path.exists(output_file)
@@ -30,7 +30,7 @@ def test_cli_mermaid_to_sqlalchemy(tmp_path):
     expected_file = get_asset_path("cli_sqlalchemy", "sqlalchemy.py")
     
     output_file = tmp_path / "output_sa.py"
-    result = runner.invoke(main, ['convert', input_file, '--format', 'sqlalchemy', '--output', str(output_file)])
+    result = runner.invoke(main, ['convert', input_file, '--input-type', 'mermaid', '--format', 'sqlalchemy', '--output', str(output_file)])
     
     assert result.exit_code == 0
     assert os.path.exists(output_file)

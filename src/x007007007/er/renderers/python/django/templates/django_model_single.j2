@@ -1,0 +1,153 @@
+from django.db import models
+{%- if entity.extends %}
+{# 生成基类导入 #}
+{%- for template_name in entity.extends %}
+{%- if template_name in model.templates and model.templates[template_name].export_path %}
+{%- set base_class_name = template_name | title | replace('_', '') + 'Mixin' %}
+from {{ model.templates[template_name].export_path }} import {{ base_class_name }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- set fk_imports = [] %}
+{%- for rel in model.relationships %}
+{%- if (rel.right_entity == entity.name or rel.left_entity == entity.name) and rel.left_entity != entity.name %}
+{%- if rel.left_entity not in fk_imports %}
+{%- set _ = fk_imports.append(rel.left_entity) %}
+{%- endif %}
+{%- endif %}
+{%- if rel.right_entity == entity.name and rel.left_entity != entity.name %}
+{%- if rel.left_entity not in fk_imports %}
+{%- set _ = fk_imports.append(rel.left_entity) %}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+
+
+# Custom QuerySet for {{ entity.name }}
+class {{ entity.name }}QuerySet(models.QuerySet):
+    """Custom QuerySet for {{ entity.name }}."""
+    pass
+
+
+# Custom Manager for {{ entity.name }}
+class {{ entity.name }}Manager(models.Manager):
+    """Custom Manager for {{ entity.name }}."""
+    
+    def get_queryset(self):
+        return {{ entity.name }}QuerySet(self.model, using=self._db)
+
+
+{%- set base_classes = [] %}
+{%- if entity.extends %}
+{%- for template_name in entity.extends %}
+{%- if template_name in model.templates and model.templates[template_name].export_path %}
+{%- set base_class_name = template_name | title | replace('_', '') + 'Mixin' %}
+{%- set _ = base_classes.append(base_class_name) %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% else %}models.Model{% endif %}):
+{%- if entity.comment %}
+    """{{ entity.comment }}"""
+{%- endif %}
+{%- set fk_columns = {} %}
+{%- for rel in model.relationships %}
+{%- if rel.right_entity == entity.name and rel.right_column %}
+{%- set _ = fk_columns.update({rel.right_column: rel}) %}
+{%- endif %}
+{%- endfor %}
+{%- set inherited_column_names = [] %}
+{%- if entity.extends %}
+{%- for template_name in entity.extends %}
+{%- if template_name in model.templates %}
+{%- if model.templates[template_name].export_path %}
+{# 只有有export_path的模板字段才排除 #}
+{%- for col in model.templates[template_name].columns %}
+{%- set _ = inherited_column_names.append(col.name) %}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- for col in entity.columns %}
+{%- if col.name not in inherited_column_names %}
+{%- if col.name in fk_columns %}
+{%- set rel = fk_columns[col.name] %}
+{%- if rel.relation_type == 'one-to-one' %}
+    {{ col.name.replace('_id', '') if col.name.endswith('_id') else col.name }} = models.OneToOneField(
+        '{{ rel.left_entity }}',
+        on_delete=models.CASCADE,
+        related_name='{{ entity.name|lower }}_rel'
+{%- if col.comment %},
+        help_text={{ col.comment | code_value }}
+{%- endif %}
+    )
+{%- else %}
+    {{ col.name.replace('_id', '') if col.name.endswith('_id') else col.name }} = models.ForeignKey(
+        '{{ rel.left_entity }}',
+        on_delete=models.CASCADE,
+        related_name='{{ entity.name|lower }}_set'
+{%- if col.comment %},
+        help_text={{ col.comment | code_value }}
+{%- endif %}
+    )
+{%- endif %}
+{%- else %}
+{%- set field_type, params = col | django_field_type %}
+{%- set param_list = [] %}
+{%- if 'max_length' in params %}
+{%- set _ = param_list.append('max_length=' + params.max_length|string) %}
+{%- endif %}
+{%- if 'max_digits' in params %}
+{%- set _ = param_list.append('max_digits=' + params.max_digits|string) %}
+{%- endif %}
+{%- if 'decimal_places' in params %}
+{%- set _ = param_list.append('decimal_places=' + params.decimal_places|string) %}
+{%- endif %}
+{%- if col.is_pk %}
+{%- set _ = param_list.append('primary_key=True') %}
+{%- endif %}
+{%- if col.unique %}
+{%- set _ = param_list.append('unique=True') %}
+{%- endif %}
+{%- if not col.nullable %}
+{%- set _ = param_list.append('null=' + col.nullable|string) %}
+{%- endif %}
+{%- if col.default is not none %}
+{%- set _ = param_list.append('default=' + (col.default | code_value)) %}
+{%- endif %}
+{%- if col.comment %}
+{%- set _ = param_list.append('help_text=' + (col.comment | code_value)) %}
+{%- endif %}
+    {{ col.name }} = models.{{ field_type }}({% if param_list %}{{ param_list|join(', ') }}{% endif %})
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- for rel in model.relationships %}
+{%- if rel.left_entity == entity.name %}
+{%- if rel.relation_type == 'many-to-many' %}
+    {{ rel.right_entity|lower }}_set = models.ManyToManyField(
+        '{{ rel.right_entity }}',
+        related_name='{{ entity.name|lower }}_set'
+    )
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+    
+    objects = {{ entity.name }}Manager()
+{%- set table_name = entity.name|lower %}
+{%- if table_prefix %}
+{%- set table_name = table_prefix + '_' + table_name %}
+{%- endif %}
+    
+    class Meta:
+        app_label = '{{ app_label }}'
+        db_table = '{{ table_name }}'
+{%- if entity.comment %}
+        verbose_name = {{ entity.comment | code_value }}
+        verbose_name_plural = {{ entity.comment | code_value }}
+{%- endif %}
+    
+    def __str__(self):
+        return f"{{ entity.name }}(id={self.pk})"

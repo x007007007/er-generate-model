@@ -1,0 +1,15 @@
+"""Manager for {{ entity.name }} model."""
+from django.db import models
+from .{{ base_filename }}_queryset import {{ entity.name }}QuerySet
+
+
+class {{ entity.name }}Manager(models.Manager):
+    """Custom Manager for {{ entity.name }}."""
+    
+    def get_queryset(self):
+        return {{ entity.name }}QuerySet(self.model, using=self._db)
+    
+    # TODO: Add custom manager methods here
+    # Example:
+    # def active(self):
+    #     return self.get_queryset().active()

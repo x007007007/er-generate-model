@@ -44,7 +44,7 @@ def main():
 
 @main.command()
 @click.argument('input_source')
-@click.option('--input-type', '-t', type=click.Choice(['mermaid', 'plantuml', 'db', 'toml']), default='mermaid', help='Input type')
+@click.option('--input-type', '-t', type=click.Choice(['mermaid', 'plantuml', 'db', 'toml']), default='toml', help='Input type (default: toml)')
 @click.option('--format', '-f', type=click.Choice(['django', 'sqlalchemy', 'mermaid', 'plantuml']), default='django', help='Output format')
 @click.option('--output', '-o', type=click.Path(), default=None, help='Output file path (default: stdout, UTF-8 encoded)')
 @click.option('--output-dir', '-d', type=click.Path(), default=None, help='Output directory for multi-file output (Django package mode)')
