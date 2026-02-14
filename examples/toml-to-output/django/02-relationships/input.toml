@@ -1,0 +1,29 @@
+# Relationship Model Example
+# This example demonstrates a one-to-many relationship between User and Post tables
+
+[entities.USER]
+comment = "User entity - authors of posts"
+columns = [
+    {name = "id", type = "uuid", is_pk = true, comment = "Primary key"},
+    {name = "username", type = "string", unique = true, comment = "Unique username"},
+    {name = "email", type = "string", unique = true, comment = "User email address"},
+    {name = "age", type = "int", comment = "User age"},
+    {name = "is_active", type = "boolean", comment = "Whether the user account is active"},
+    {name = "created_at", type = "datetime", comment = "Account creation timestamp"},
+]
+
+[entities.POST]
+comment = "Post entity - blog posts written by users"
+columns = [
+    {name = "id", type = "uuid", is_pk = true, comment = "Primary key"},
+    {name = "author_id", type = "uuid", is_fk = true, comment = "Foreign key to User"},
+    {name = "title", type = "string", comment = "Post title"},
+    {name = "content", type = "text", comment = "Post content"},
+    {name = "created_at", type = "datetime", comment = "Post creation timestamp"},
+]
+
+[[relationships]]
+left = "USER"
+right = "POST"
+type = "one-to-many"
+right_column = "author_id"

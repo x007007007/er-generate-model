@@ -1,0 +1,43 @@
+# All Data Types Example
+# This example demonstrates all supported data types in the ER diagram converter
+
+[entities.DATA_TYPE_SHOWCASE]
+comment = "Comprehensive showcase of all supported data types"
+columns = [
+    # Primary Key
+    {name = "id", type = "uuid", is_pk = true, comment = "主键-UUID类型"},
+    
+    # String Types
+    {name = "name", type = "string", comment = "字符串-可变长度"},
+    {name = "description", type = "varchar", comment = "可变字符-同string"},
+    {name = "code", type = "char", comment = "固定长度字符"},
+    {name = "content", type = "text", comment = "大文本内容"},
+    
+    # Integer Types
+    {name = "count", type = "int", comment = "整数-32位"},
+    {name = "quantity", type = "integer", comment = "整数-同int"},
+    {name = "big_number", type = "bigint", comment = "大整数-64位"},
+    {name = "small_number", type = "smallint", comment = "小整数-16位"},
+    {name = "tiny_number", type = "tinyint", comment = "微整数-8位"},
+    
+    # Float Types
+    {name = "rating", type = "float", comment = "浮点数-单精度"},
+    {name = "weight", type = "real", comment = "浮点数-同float"},
+    {name = "score", type = "double", comment = "浮点数-双精度"},
+    {name = "price", type = "decimal", comment = "精确小数-货币"},
+    {name = "amount", type = "numeric", comment = "精确小数-同decimal"},
+    
+    # Boolean Types
+    {name = "is_active", type = "boolean", comment = "布尔值-真假"},
+    {name = "is_enabled", type = "bool", comment = "布尔值-同boolean"},
+    
+    # Date and Time Types
+    {name = "birth_date", type = "date", comment = "日期-年月日"},
+    {name = "start_time", type = "time", comment = "时间-时分秒"},
+    {name = "created_at", type = "datetime", comment = "日期时间-完整"},
+    {name = "updated_at", type = "timestamp", comment = "时间戳-Unix"},
+    
+    # JSON Types
+    {name = "metadata", type = "json", comment = "JSON对象"},
+    {name = "settings", type = "jsonb", comment = "二进制JSON"},
+]

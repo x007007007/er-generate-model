@@ -1,0 +1,19 @@
+erDiagram
+    // User entity - authors of posts
+    USER {
+        uuid id PK "Primary key"
+        string username "Unique username"
+        string email "User email address"
+        int age "User age"
+        boolean is_active "Whether the user account is active"
+        datetime created_at "Account creation timestamp"
+    }
+    // Post entity - blog posts written by users
+    POST {
+        uuid id PK "Primary key"
+        uuid author_id FK "Foreign key to User"
+        string title "Post title"
+        text content "Post content"
+        datetime created_at "Post creation timestamp"
+    }
+    USER ||--o{ POST
