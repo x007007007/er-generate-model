@@ -1,0 +1,13 @@
+[templates.base]
+columns = [
+    {name = "id", type = "int", is_pk = true},
+    {name = "name", type = "string", comment = "Base name"},
+]
+
+[entities.USER]
+extends = ["base"]
+columns = [
+    {name = "name", type = "string", comment = "Overridden name"},
+    {name = "email", type = "string"},
+]
+

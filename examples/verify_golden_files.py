@@ -73,7 +73,7 @@ class GoldenFileVerifier:
                     temp_output = temp_path / "output.mmd"
                     
                     cmd = [
-                        "uv", "run", "er-convert", "convert",
+                        "uv", "run", "er-gen-tool convert", "convert",
                         str(input_file),
                         "-f", "mermaid",
                         "-o", str(temp_output)
@@ -111,7 +111,7 @@ class GoldenFileVerifier:
                     temp_output_dir.mkdir()
                     
                     cmd = [
-                        "uv", "run", "er-convert", "convert",
+                        "uv", "run", "er-gen-tool convert", "convert",
                         str(input_file),
                         "-f", platform,
                         "-d", str(temp_output_dir) + "/"

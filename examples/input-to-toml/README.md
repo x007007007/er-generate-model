@@ -32,7 +32,7 @@ TOML 是一种简洁、易读的配置文件格式，可以作为数据模型定
 
 示例：
 ```bash
-uv run er-convert convert input.mmd -t mermaid -o output.toml
+uv run er-gen-tool convert convert input.mmd -t mermaid -o output.toml
 ```
 
 ### 从 Django 转 TOML

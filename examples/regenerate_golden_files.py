@@ -68,7 +68,7 @@ class GoldenFileRegenerator:
                 # Mermaid outputs to a single file
                 output_file = example_dir / "output.mmd"
                 cmd = [
-                    "uv", "run", "er-convert", "convert",
+                    "uv", "run", "er-gen-tool convert", "convert",
                     str(input_file),
                     "-f", "mermaid",
                     "-o", str(output_file)
@@ -78,7 +78,7 @@ class GoldenFileRegenerator:
                 output_dir = example_dir / "output"
                 output_dir.mkdir(exist_ok=True)
                 cmd = [
-                    "uv", "run", "er-convert", "convert",
+                    "uv", "run", "er-gen-tool convert", "convert",
                     str(input_file),
                     "-f", platform,
                     "-d", str(output_dir) + "/"

@@ -19,7 +19,7 @@
 ## 转换命令
 
 ```bash
-uv run er-convert convert input.toml -f django -d output/
+uv run er-gen-tool convert convert input.toml -f django -d output/
 ```
 
 ## 学习要点

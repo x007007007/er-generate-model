@@ -36,10 +36,10 @@ SQLAlchemy 是 Python 最流行的 ORM 框架之一，特点包括：
 
 ```bash
 # 基本转换
-uv run er-convert convert input.toml -f sqlalchemy -d output/
+uv run er-gen-tool convert convert input.toml -f sqlalchemy -d output/
 
 # 指定表前缀
-uv run er-convert convert input.toml -f sqlalchemy -d output/ -p prefix_
+uv run er-gen-tool convert convert input.toml -f sqlalchemy -d output/ -p prefix_
 ```
 
 ## 输出结构

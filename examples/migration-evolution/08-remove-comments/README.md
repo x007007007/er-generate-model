@@ -10,7 +10,7 @@ This version removes the Comment entity from the schema.
 ## Migration Command
 ```bash
 # Generate migration from v7 to v8
-uv run er-convert convert -t mermaid -f django blog.mmd -o models.py
+uv run er-gen-tool convert convert -t mermaid -f django blog.mmd -o models.py
 ```
 
 ## Schema

@@ -51,7 +51,7 @@ uv run python verify_sqlalchemy_types.py
 
 ## Next Steps
 
-These issues indicate bugs in the `er-convert` tool's SQLAlchemy output generator. The tool needs to be fixed to:
+These issues indicate bugs in the `er-gen-tool convert` tool's SQLAlchemy output generator. The tool needs to be fixed to:
 
 1. Handle reserved SQLAlchemy attribute names (metadata, query, etc.)
 2. Correctly map integer size types (bigint → BigInteger, smallint → SmallInteger)

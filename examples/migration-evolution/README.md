@@ -92,13 +92,13 @@
 
 ```bash
 # 生成 Django 模型
-uv run er-convert convert 01-initial/blog.mmd -t mermaid -f django -d output/
+uv run er-gen-tool convert convert 01-initial/blog.mmd -t mermaid -f django -d output/
 
 # 生成 SQLAlchemy 模型
-uv run er-convert convert 03-add-posts/blog.mmd -t mermaid -f sqlalchemy -d output/
+uv run er-gen-tool convert convert 03-add-posts/blog.mmd -t mermaid -f sqlalchemy -d output/
 
 # 生成 TOML 格式
-uv run er-convert convert 05-enhance-features/blog.mmd -t mermaid -o output.toml
+uv run er-gen-tool convert convert 05-enhance-features/blog.mmd -t mermaid -o output.toml
 ```
 
 ### 对比版本差异

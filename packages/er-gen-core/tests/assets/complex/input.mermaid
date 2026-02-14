@@ -1,0 +1,43 @@
+erDiagram
+    // User entity represents system users
+    USER {
+        int id PK "Primary key for user"
+        string username "Unique username"
+        string password "Encrypted password"
+        string email "User email address"
+        datetime last_login "Last login timestamp"
+        boolean is_active "Whether user is active"
+    }
+    // User profile information
+    PROFILE {
+        int id PK "Profile primary key"
+        int user_id FK "Foreign key to USER"
+        string bio "User biography"
+        string avatar_url "Avatar image URL"
+    }
+    // Blog post entity
+    POST {
+        int id PK "Post primary key"
+        int author_id FK "Foreign key to USER (author)"
+        string title "Post title"
+        string content "Post content"
+        datetime created_at "Post creation time"
+        string status "enum:draft,published,archived - Post status"
+    }
+    // Tag entity for categorizing posts
+    TAG {
+        int id PK "Tag primary key"
+        string name "Tag name"
+    }
+    // Junction table for many-to-many relationship
+    POST_TAGS {
+        int post_id FK "Foreign key to POST"
+        int tag_id FK "Foreign key to TAG"
+    }
+
+    // One-to-one relationship: User has one profile
+    USER ||--|| PROFILE : "has"
+    // One-to-many relationship: User writes multiple posts
+    USER ||--o{ POST : "writes"
+    // Many-to-many relationship: Post can have multiple tags
+    POST }|--|{ TAG : "tagged_with"

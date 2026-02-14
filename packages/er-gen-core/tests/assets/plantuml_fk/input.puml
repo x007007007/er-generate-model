@@ -1,0 +1,7 @@
+@startuml
+entity Post {
+    * id : int
+    user_id : int <<FK>>
+}
+@enduml
+

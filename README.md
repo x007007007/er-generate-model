@@ -25,12 +25,41 @@
 
 ## 安装
 
-```bash
-# 使用uv安装（推荐）
-uv pip install -e .
+### 基础安装（核心功能）
 
-# 或使用pip
-pip install -e .
+```bash
+# 安装核心工具（包含 convert 和 migrate 命令）
+uv pip install -e packages/er-gen-tool
+
+# 或使用 pip
+pip install -e packages/er-gen-tool
+```
+
+### 安装 AI 功能（可选）
+
+```bash
+# 安装 AI 扩展（添加 ai-assist 命令）
+uv pip install -e packages/er-gen-tool-ai
+
+# 或一次性安装所有功能
+uv pip install -e "packages/er-gen-tool[ai]"
+```
+
+### 安装 MCP 服务器（可选）
+
+```bash
+# 安装 MCP 服务器
+uv pip install -e packages/er-gen-mcp
+```
+
+### 开发者安装（所有包）
+
+```bash
+# 安装所有包用于开发
+uv pip install -e packages/er-gen-core
+uv pip install -e packages/er-gen-tool
+uv pip install -e packages/er-gen-tool-ai
+uv pip install -e packages/er-gen-mcp
 ```
 
 ### 生成ANTLR解析器
@@ -58,19 +87,19 @@ chmod +x tools/generate_antlr.sh
 
 ```bash
 # 从Mermaid文件转换为Django模型
-er-convert convert diagram.mermaid --input-type mermaid --format django
+er-gen-tool convert convert diagram.mermaid --input-type mermaid --format django
 
 # 从PlantUML文件转换为SQLAlchemy模型
-er-convert convert diagram.puml --input-type plantuml --format sqlalchemy
+er-gen-tool convert convert diagram.puml --input-type plantuml --format sqlalchemy
 
 # 从TOML文件转换为Django模型
-er-convert convert diagram.toml --input-type toml --format django
+er-gen-tool convert convert diagram.toml --input-type toml --format django
 
 # 从数据库转换为Django模型
-er-convert convert "sqlite:///mydb.db" --input-type db --format django
+er-gen-tool convert convert "sqlite:///mydb.db" --input-type db --format django
 
 # 指定输出文件
-er-convert convert diagram.mermaid -o models.py
+er-gen-tool convert convert diagram.mermaid -o models.py
 ```
 
 ### 命令行选项
@@ -270,10 +299,10 @@ $env:MCP_LOG_LEVEL = "DEBUG"
 
 ```bash
 # 从命令行生成
-er-ai generate "设计一个博客系统，包含用户、文章、标签等实体" -o output.toml
+er-gen-tool ai-assist generate "设计一个博客系统，包含用户、文章、标签等实体" -o output.toml
 
 # 从文件读取需求
-er-ai generate -f requirements.txt -o output.toml
+er-gen-tool ai-assist generate -f requirements.txt -o output.toml
 ```
 
 ### 配置 API 密钥

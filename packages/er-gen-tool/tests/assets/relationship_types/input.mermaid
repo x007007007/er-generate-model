@@ -1,0 +1,17 @@
+erDiagram
+    A {
+        int id PK
+    }
+    B {
+        int id PK
+    }
+    C {
+        int id PK
+    }
+    D {
+        int id PK
+    }
+    A ||--|| B : one-to-one
+    A ||--o{ C : one-to-many
+    A }|--|{ D : many-to-many
+

@@ -1,0 +1,14 @@
+@startuml
+entity USER as "User Table" {
+    * id : int
+    name : string
+    email : string
+}
+entity POST {
+    * id : int
+    title : string
+    user_id : int
+}
+USER -- POST : writes
+@enduml
+

@@ -57,12 +57,12 @@ examples/
 
 ```bash
 # 简单模型示例
-uv run er-convert convert examples/toml-to-output/django/01-simple-model/input.toml \
+uv run er-gen-tool convert convert examples/toml-to-output/django/01-simple-model/input.toml \
   -f django \
   -d examples/toml-to-output/django/01-simple-model/output/
 
 # 关系模型示例
-uv run er-convert convert examples/toml-to-output/django/02-relationships/input.toml \
+uv run er-gen-tool convert convert examples/toml-to-output/django/02-relationships/input.toml \
   -f django \
   -d examples/toml-to-output/django/02-relationships/output/
 ```
@@ -71,7 +71,7 @@ uv run er-convert convert examples/toml-to-output/django/02-relationships/input.
 
 ```bash
 # 简单模型示例
-uv run er-convert convert examples/toml-to-output/sqlalchemy/01-simple-model/input.toml \
+uv run er-gen-tool convert convert examples/toml-to-output/sqlalchemy/01-simple-model/input.toml \
   -f sqlalchemy \
   -d examples/toml-to-output/sqlalchemy/01-simple-model/output/
 ```
@@ -80,7 +80,7 @@ uv run er-convert convert examples/toml-to-output/sqlalchemy/01-simple-model/inp
 
 ```bash
 # 简单模型示例
-uv run er-convert convert examples/toml-to-output/mermaid/01-simple-model/input.toml \
+uv run er-gen-tool convert convert examples/toml-to-output/mermaid/01-simple-model/input.toml \
   -f mermaid \
   -o examples/toml-to-output/mermaid/01-simple-model/output.mmd
 ```
@@ -89,7 +89,7 @@ uv run er-convert convert examples/toml-to-output/mermaid/01-simple-model/input.
 
 ```bash
 # 博客示例
-uv run er-convert convert examples/input-to-toml/mermaid-to-toml/01-simple-blog/input.mmd \
+uv run er-gen-tool convert convert examples/input-to-toml/mermaid-to-toml/01-simple-blog/input.mmd \
   -t mermaid \
   -o examples/input-to-toml/mermaid-to-toml/01-simple-blog/output.toml
 ```

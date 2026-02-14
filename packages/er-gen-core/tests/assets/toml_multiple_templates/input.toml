@@ -1,0 +1,22 @@
+[templates.create_update_time]
+columns = [
+    {name = "created_at", type = "datetime"},
+    {name = "updated_at", type = "datetime"},
+]
+
+[templates.enable]
+columns = [
+    {name = "is_enabled", type = "boolean"},
+]
+
+[templates.name]
+columns = [
+    {name = "name", type = "string"},
+]
+
+[entities.USER]
+extends = ["create_update_time", "enable", "name"]
+columns = [
+    {name = "email", type = "string"},
+]
+

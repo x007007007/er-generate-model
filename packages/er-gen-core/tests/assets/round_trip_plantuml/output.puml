@@ -1,0 +1,13 @@
+@startuml
+entity User {
+    * id : int
+    name : string
+    email : string
+}
+entity Post {
+    * id : int
+    user_id : int <<FK>>
+    title : string
+}
+User ||--o{ Post
+@enduml

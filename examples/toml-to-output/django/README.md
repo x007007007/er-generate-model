@@ -36,13 +36,13 @@ Django ORM 是 Django 框架的对象关系映射系统，特点包括：
 
 ```bash
 # 基本转换
-uv run er-convert convert input.toml -f django -d output/
+uv run er-gen-tool convert convert input.toml -f django -d output/
 
 # 指定 app label
-uv run er-convert convert input.toml -f django -d output/ -a myapp
+uv run er-gen-tool convert convert input.toml -f django -d output/ -a myapp
 
 # 指定表前缀
-uv run er-convert convert input.toml -f django -d output/ -p prefix_
+uv run er-gen-tool convert convert input.toml -f django -d output/ -p prefix_
 ```
 
 ## 输出结构

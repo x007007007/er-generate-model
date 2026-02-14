@@ -36,7 +36,7 @@ Mermaid 是一个基于文本的图表生成工具，ER 图特点包括：
 
 ```bash
 # 基本转换
-uv run er-convert convert input.toml -f mermaid -o output.mmd
+uv run er-gen-tool convert convert input.toml -f mermaid -o output.mmd
 ```
 
 ## 输出格式

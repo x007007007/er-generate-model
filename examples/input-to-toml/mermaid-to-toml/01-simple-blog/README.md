@@ -17,7 +17,7 @@
 ## 转换命令
 
 ```bash
-uv run er-convert convert input.mmd -t mermaid -o output.toml
+uv run er-gen-tool convert convert input.mmd -t mermaid -o output.toml
 ```
 
 ## Mermaid 语法示例
@@ -56,6 +56,6 @@ erDiagram
 ## 下一步
 
 转换为 TOML 后，可以进一步转换为：
-- Django 模型：`uv run er-convert convert output.toml -f django -d models/`
-- SQLAlchemy 模型：`uv run er-convert convert output.toml -f sqlalchemy -d models/`
-- 其他 Mermaid 图：`uv run er-convert convert output.toml -f mermaid -o diagram.mmd`
+- Django 模型：`uv run er-gen-tool convert convert output.toml -f django -d models/`
+- SQLAlchemy 模型：`uv run er-gen-tool convert convert output.toml -f sqlalchemy -d models/`
+- 其他 Mermaid 图：`uv run er-gen-tool convert convert output.toml -f mermaid -o diagram.mmd`

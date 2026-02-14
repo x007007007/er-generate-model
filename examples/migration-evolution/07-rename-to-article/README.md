@@ -10,7 +10,7 @@ This version renames the Post entity to Article for better semantic clarity.
 ## Migration Command
 ```bash
 # Generate migration from v6 to v7
-uv run er-convert convert -t mermaid -f django blog.mmd -o models.py
+uv run er-gen-tool convert convert -t mermaid -f django blog.mmd -o models.py
 ```
 
 ## Schema

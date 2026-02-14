@@ -1,0 +1,7 @@
+@startuml
+entity Post {
+    * id : int
+    status : string <<enum:draft,published>>
+}
+@enduml
+

@@ -1,0 +1,13 @@
+erDiagram
+    USER {
+        int id PK "Primary key for user"
+        string username "Unique username"
+        string email "User email address"
+    }
+    POST {
+        int id PK "Post primary key"
+        int user_id FK "Foreign key to USER"
+        string title "Post title"
+    }
+    USER ||--o{ POST : "writes"
+

@@ -31,30 +31,30 @@ TOML 是一种简洁、易读的配置文件格式，非常适合定义数据模
 
 ```bash
 # 转换为 Django 模型
-uv run er-convert convert <input.toml> -f django -d <output_dir>/
+uv run er-gen-tool convert convert <input.toml> -f django -d <output_dir>/
 
 # 转换为 SQLAlchemy 模型
-uv run er-convert convert <input.toml> -f sqlalchemy -d <output_dir>/
+uv run er-gen-tool convert convert <input.toml> -f sqlalchemy -d <output_dir>/
 
 # 转换为 Mermaid ER 图
-uv run er-convert convert <input.toml> -f mermaid -o <output.mmd>
+uv run er-gen-tool convert convert <input.toml> -f mermaid -o <output.mmd>
 ```
 
 ### 示例
 
 ```bash
 # Django 简单模型
-uv run er-convert convert django/01-simple-model/input.toml \
+uv run er-gen-tool convert convert django/01-simple-model/input.toml \
   -f django \
   -d django/01-simple-model/output/
 
 # SQLAlchemy 关系模型
-uv run er-convert convert sqlalchemy/02-relationships/input.toml \
+uv run er-gen-tool convert convert sqlalchemy/02-relationships/input.toml \
   -f sqlalchemy \
   -d sqlalchemy/02-relationships/output/
 
 # Mermaid 完整数据类型
-uv run er-convert convert mermaid/03-all-data-types/input.toml \
+uv run er-gen-tool convert convert mermaid/03-all-data-types/input.toml \
   -f mermaid \
   -o mermaid/03-all-data-types/output.mmd
 ```

@@ -1,0 +1,29 @@
+[templates.create_update_time]
+export_path = "common.mixins"
+columns = [
+    {name = "created_at", type = "datetime"},
+]
+
+[templates.enable]
+export_path = "common.mixins"
+columns = [
+    {name = "is_enabled", type = "boolean"},
+]
+
+[entities.USER]
+extends = ["create_update_time", "enable"]
+columns = [
+    {name = "username", type = "string"},
+]
+
+[entities.POST]
+extends = ["create_update_time"]
+columns = [
+    {name = "title", type = "string"},
+]
+
+[entities.TAG]
+columns = [
+    {name = "name", type = "string"},
+]
+

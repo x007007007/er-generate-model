@@ -10,7 +10,7 @@ This version allows anonymous comments by making the author field optional.
 ## Migration Command
 ```bash
 # Generate migration from v5 to v6
-uv run er-convert convert -t mermaid -f django blog.mmd -o models.py
+uv run er-gen-tool convert convert -t mermaid -f django blog.mmd -o models.py
 ```
 
 ## Schema

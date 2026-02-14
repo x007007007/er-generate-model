@@ -29,7 +29,7 @@
 未来可能支持的转换命令：
 ```bash
 # 注意：此命令可能需要工具支持
-uv run er-convert convert models/ -t django -o output.toml
+uv run er-gen-tool convert convert models/ -t django -o output.toml
 ```
 
 ## 学习要点
@@ -66,6 +66,6 @@ right_column = "category_id"
 ## 下一步
 
 转换为 TOML 后，可以：
-- 转换为 SQLAlchemy：`uv run er-convert convert output.toml -f sqlalchemy -d models/`
-- 生成 Mermaid 图：`uv run er-convert convert output.toml -f mermaid -o diagram.mmd`
+- 转换为 SQLAlchemy：`uv run er-gen-tool convert convert output.toml -f sqlalchemy -d models/`
+- 生成 Mermaid 图：`uv run er-gen-tool convert convert output.toml -f mermaid -o diagram.mmd`
 - 作为文档保存和版本控制

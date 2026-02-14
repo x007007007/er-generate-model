@@ -1,0 +1,12 @@
+erDiagram
+    User {
+        int id PK
+        string username
+        string email
+    }
+    Post {
+        int id PK
+        int user_id FK
+        string title
+    }
+    User ||--o{ Post : "writes"
