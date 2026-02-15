@@ -2,6 +2,8 @@
 
 AI Extension for ER Diagram Generator Tool - AI 驱动的 ER 建模插件，为 `er-gen-tool` 添加智能建模功能。
 
+> **Note**: This package is part of the ER monorepo workspace. For workspace development setup, see the [root README](../../README.md) and [DEVELOPMENT.md](../../DEVELOPMENT.md).
+
 ## 概述
 
 `er-gen-tool-ai` 是 `er-gen-tool` 的可选插件，提供基于 AI 的 ER 建模功能。安装此插件后，`er-gen-tool` 命令会自动获得 `ai-assist` 子命令，让你可以使用自然语言生成和优化 ER 图。
@@ -15,6 +17,21 @@ AI Extension for ER Diagram Generator Tool - AI 驱动的 ER 建模插件，为 
 - 🔌 **插件架构**: 通过 entry points 自动集成到 `er-gen-tool`
 
 ## 安装
+
+### Workspace Installation (Development)
+
+If you're working in the monorepo workspace:
+
+```bash
+# From workspace root
+uv sync
+```
+
+This installs all packages in editable mode, including `er-gen-tool-ai` and its internal dependency `er-gen-core`.
+
+### Standalone Installation
+
+For standalone use outside the workspace:
 
 ### 使用 uv（推荐）
 
@@ -35,6 +52,16 @@ pip install x007007007-er-gen-tool-ai
 # 或者与 er-gen-tool 一起安装
 pip install x007007007-er-gen-tool[ai]
 ```
+
+### Internal Dependencies
+
+This package depends on:
+- `x007007007-er-gen-core>=0.3.0` - Core ER diagram functionality (required)
+
+This package is used by:
+- `x007007007-er-gen-tool` - Automatically loads as a plugin when installed
+
+In the workspace, internal dependencies are automatically resolved from local packages.
 
 ## 配置
 

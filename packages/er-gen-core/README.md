@@ -2,6 +2,8 @@
 
 ER Diagram Core Library - 核心功能库，提供 ER 图解析、渲染和转换功能。
 
+> **Note**: This package is part of the ER monorepo workspace. For workspace development setup, see the [root README](../../README.md) and [DEVELOPMENT.md](../../DEVELOPMENT.md).
+
 ## 概述
 
 `er-gen-core` 是 ER 图生成工具的核心库，包含所有共享功能，不包含 CLI 或 AI 依赖。这个包被 `er-gen-tool` 和 `er-gen-mcp` 使用，提供：
@@ -13,9 +15,31 @@ ER Diagram Core Library - 核心功能库，提供 ER 图解析、渲染和转�
 
 ## 安装
 
+### Workspace Installation (Development)
+
+If you're working in the monorepo workspace:
+
+```bash
+# From workspace root
+uv sync
+```
+
+This installs all packages in editable mode with their dependencies.
+
+### Standalone Installation
+
+For standalone use outside the workspace:
+
 ```bash
 pip install x007007007-er-gen-core
 ```
+
+### Internal Dependencies
+
+This is a core package with no internal dependencies. It is used by:
+- `x007007007-er-gen-tool` - CLI tool
+- `x007007007-er-gen-mcp` - MCP server
+- `x007007007-er-gen-tool-ai` - AI extension
 
 ## 核心功能
 

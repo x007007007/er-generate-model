@@ -2,6 +2,8 @@
 
 Django 插件，用于将 Django models 转换为 ER 图和 ER 迁移系统。
 
+> **Note**: This package is part of the ER monorepo workspace. For workspace development setup, see the [root README](../../README.md) and [DEVELOPMENT.md](../../DEVELOPMENT.md).
+
 ## 🎯 功能特性
 
 - ✅ **Django Model → ER 图**: 从 Django models 生成 Mermaid/PlantUML ER 图
@@ -12,10 +14,25 @@ Django 插件，用于将 Django models 转换为 ER 图和 ER 迁移系统。
 
 ## 📦 安装
 
+### Workspace Installation (Development)
+
+If you're working in the monorepo workspace:
+
+```bash
+# From workspace root
+uv sync
+```
+
+This installs all packages in editable mode, including `er-django`.
+
+### Standalone Installation
+
+For standalone use outside the workspace:
+
 ### 1. 安装包
 
 ```bash
-pip install -e .
+pip install x007007007-er-django
 ```
 
 ### 2. 添加到 Django INSTALLED_APPS
@@ -28,6 +45,10 @@ INSTALLED_APPS = [
     'x007007007.er_django',
 ]
 ```
+
+### Internal Dependencies
+
+This package has no internal dependencies within the workspace. It's a standalone Django integration package.
 
 ## 🚀 快速开始
 

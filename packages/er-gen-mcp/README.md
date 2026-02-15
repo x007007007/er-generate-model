@@ -2,6 +2,8 @@
 
 ER Diagram Converter MCP Server - 独立的 MCP 服务器，为 AI 助手提供 ER 图转换能力。
 
+> **Note**: This package is part of the ER monorepo workspace. For workspace development setup, see the [root README](../../README.md) and [DEVELOPMENT.md](../../DEVELOPMENT.md).
+
 ## 概述
 
 `er-gen-mcp` 是一个独立的 MCP (Model Context Protocol) 服务器，通过标准化的协议为 AI 助手（如 Claude、Kiro 等）提供 ER 图解析、转换和验证功能。
@@ -16,6 +18,21 @@ ER Diagram Converter MCP Server - 独立的 MCP 服务器，为 AI 助手提供 
 
 ## 安装
 
+### Workspace Installation (Development)
+
+If you're working in the monorepo workspace:
+
+```bash
+# From workspace root
+uv sync
+```
+
+This installs all packages in editable mode, including `er-gen-mcp` and its internal dependency `er-gen-core`.
+
+### Standalone Installation
+
+For standalone use outside the workspace:
+
 ### 使用 uv（推荐）
 
 ```bash
@@ -29,6 +46,13 @@ uv pip install x007007007-er-gen-mcp
 # 安装 MCP 服务器
 pip install x007007007-er-gen-mcp
 ```
+
+### Internal Dependencies
+
+This package depends on:
+- `x007007007-er-gen-core>=0.3.0` - Core ER diagram functionality (required)
+
+In the workspace, this dependency is automatically resolved from the local package.
 
 ## 配置
 

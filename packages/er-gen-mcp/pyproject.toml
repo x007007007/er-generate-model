@@ -33,3 +33,6 @@ er-gen-mcp = "x007007007.er_mcp.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.uv.sources]
+x007007007-er-gen-core = { workspace = true }

@@ -2,7 +2,24 @@
 
 Unified CLI tool for ER diagram operations including conversion, AI-assisted modeling, and database migrations.
 
+> **Note**: This package is part of the ER monorepo workspace. For workspace development setup, see the [root README](../../README.md) and [DEVELOPMENT.md](../../DEVELOPMENT.md).
+
 ## Installation
+
+### Workspace Installation (Development)
+
+If you're working in the monorepo workspace:
+
+```bash
+# From workspace root
+uv sync
+```
+
+This installs all packages in editable mode, including `er-gen-tool` and its internal dependency `er-gen-core`.
+
+### Standalone Installation
+
+For standalone use outside the workspace:
 
 ### Basic Installation (Core Features)
 
@@ -92,6 +109,14 @@ er-gen-tool ai-assist chat existing.toml
 ```
 
 **Note:** AI features require the `x007007007-er-gen-tool-ai` package to be installed.
+
+### Internal Dependencies
+
+This package depends on:
+- `x007007007-er-gen-core>=0.3.0` - Core ER diagram functionality (required)
+- `x007007007-er-gen-tool-ai>=0.3.0` - AI features (optional, via `[ai]` extra)
+
+In the workspace, these dependencies are automatically resolved from local packages.
 
 ## Plugin System
 

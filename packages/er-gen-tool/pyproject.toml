@@ -38,3 +38,7 @@ er-gen-tool = "x007007007.er_tool.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.uv.sources]
+x007007007-er-gen-core = { workspace = true }
+x007007007-er-gen-tool-ai = { workspace = true }
