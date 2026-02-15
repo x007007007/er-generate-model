@@ -248,7 +248,7 @@ class TestIntegration:
     
     def test_full_workflow(self):
         """Test complete workflow: Django models -> ER model -> Migration format"""
-        from x007007007.er_migrate.converter import ERConverter
+        from x007007007.er_tool.migrate.converter import ERConverter
         
         # Parse Django models
         parser = DjangoModelParser()

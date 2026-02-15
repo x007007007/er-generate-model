@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from django.apps import apps
 from pathlib import Path
 
-from x007007007.er_migrate.file_manager import FileManager
+from x007007007.er_tool.migrate.file_manager import FileManager
 from x007007007.er_django.settings import get_er_migrations_dir
 
 

@@ -1,42 +1,16 @@
-[project]
-name = "x007007007-er"
-dynamic = ["version"]
-description = "ER Diagram Converter and Code Generator"
-readme = "README.md"
-authors = [
-    { name = "xxc", email = "x007007007@hotmail.com" }
-]
-requires-python = ">=3.11"
-dependencies = [
-    "jinja2>=3.1.2",
-    "antlr4-python3-runtime>=4.13.1",
-    "sqlalchemy>=2.0.0",
-    "click>=8.1.0",
-    "toml>=0.10.2",
-    "pydantic>=2.0.0",
-    "pyyaml>=6.0.0",
-    "langchain>=0.1.0",
-    "langchain-community>=0.0.20",
-    "langchain-deepseek>=0.1.0",
-    "python-dotenv>=1.0.0",
-]
-
-[project.scripts]
-er-convert = "x007007007.er.cli:main"
-er-ai = "x007007007.er_ai.cli:main"
-er-mcp = "x007007007.er_mcp.cli:main"
-er-migrate = "x007007007.er_migrate.cli:cli"
+# Root workspace configuration
+# This file is for development purposes only
+# Individual packages have their own pyproject.toml files
 
 [tool.uv]
 index-url = "https://mirrors.aliyun.com/pypi/simple/"
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-pythonpath = ["src"]
-addopts = "--cov=src/x007007007/er --cov=src/x007007007/er_mcp --cov-report=term-missing --cov-report=html --cov-fail-under=80"
+testpaths = ["packages/*/tests"]
+addopts = "--cov-report=term-missing --cov-report=html"
 
 [tool.coverage.run]
-source = ["src/x007007007"]
+source = ["packages/*/src"]
 omit = [
     "*/generated/*",
     "*/__pycache__/*",
@@ -54,21 +28,9 @@ exclude_lines = [
     "@abstractmethod",
 ]
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/x007007007"]
-
-[tool.setuptools_scm]
-# 配置setuptools-scm
-# 使用guess-next-dev版本方案，在tag上显示准确版本
-fallback_version = "0.1.0.dev0"
-
 [dependency-groups]
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
     "hypothesis>=6.0.0",
 ]
-
-[build-system]
-requires = ["setuptools>=45", "setuptools-scm[toml]>=6.2"]
-build-backend = "setuptools.build_meta"

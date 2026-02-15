@@ -8,10 +8,10 @@ from django.apps import apps
 from pathlib import Path
 
 from x007007007.er_django.parser import DjangoModelParser
-from x007007007.er_migrate.converter import ERConverter
-from x007007007.er_migrate.file_manager import FileManager
-from x007007007.er_migrate.differ import ERDiffer
-from x007007007.er_migrate.generator import MigrationGenerator
+from x007007007.er_tool.migrate.converter import ERConverter
+from x007007007.er_tool.migrate.file_manager import FileManager
+from x007007007.er_tool.migrate.differ import ERDiffer
+from x007007007.er_tool.migrate.generator import MigrationGenerator
 from x007007007.er_django.settings import get_er_settings, get_er_migrations_dir, ensure_directory_exists
 
 

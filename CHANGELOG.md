@@ -2,6 +2,75 @@
 
 本文档记录 ER Diagram Converter 项目的所有重要变更。
 
+## [0.3.0] - 2024-01-XX
+
+### 重大变更 (Breaking Changes)
+
+#### CLI 统一重构
+- 🔄 **命令结构变更**：所有命令统一到 `er-gen-tool` 下
+  - `er-convert` → `er-gen-tool convert`
+  - `er-ai generate` → `er-gen-tool ai-assist generate`
+  - `er-ai refine` → `er-gen-tool ai-assist refine`
+  - `er-ai chat` → `er-gen-tool ai-assist chat`
+  - `er-migrate makemigrations` → `er-gen-tool makemigration`
+  - `er-migrate showmigrations` → `er-gen-tool migrate showmigrations`
+  - `er-mcp` → `er-gen-mcp` (保持独立)
+
+#### 包结构重组
+- 📦 **多包架构**：项目拆分为4个独立包
+  - `x007007007-er-gen-core`: 核心库（解析器、渲染器、转换器）
+  - `x007007007-er-gen-tool`: 统一CLI工具
+  - `x007007007-er-gen-tool-ai`: AI扩展插件（可选）
+  - `x007007007-er-gen-mcp`: MCP服务器
+
+#### 模块路径变更
+- 🔄 **导入路径更新**：
+  - AI模块：`x007007007.er_ai` → `x007007007.er_tool_ai`
+  - 迁移模块：`x007007007.er_migrate` → `x007007007.er_tool.migrate`
+  - 核心模块：`x007007007.er` (保持不变)
+
+### 新增功能
+
+#### 插件系统
+- ✨ **Entry Points插件机制**：
+  - AI功能作为可选插件，安装后自动注册
+  - 插件安装后命令自动出现在CLI中
+  - 支持第三方插件扩展
+
+#### 安装选项
+- 📦 **灵活的安装方式**：
+  - 基础安装：`pip install x007007007-er-gen-tool`
+  - 带AI功能：`pip install x007007007-er-gen-tool[ai]`
+  - 独立安装AI插件：`pip install x007007007-er-gen-tool-ai`
+  - MCP服务器：`pip install x007007007-er-gen-mcp`
+
+### 改进
+
+#### 代码组织
+- 📁 **测试重组**：测试文件按包分类
+  - `packages/er-gen-core/tests/`: 核心功能测试
+  - `packages/er-gen-tool/tests/`: CLI和迁移测试
+  - `packages/er-gen-tool-ai/tests/`: AI功能测试
+  - `packages/er-gen-mcp/tests/`: MCP服务器测试
+
+#### 文档更新
+- 📚 **迁移指南**：新增 `MIGRATION.md` 详细说明迁移步骤
+- 📚 **README更新**：更新所有文档中的命令示例
+- 📚 **示例更新**：更新 examples/ 目录中的所有示例
+
+### 依赖关系
+- 🔗 **清晰的依赖图**：
+  ```
+  er-gen-core (核心库)
+       ↑
+       ├── er-gen-tool (CLI工具)
+       ├── er-gen-tool-ai (AI插件)
+       └── er-gen-mcp (MCP服务器)
+  ```
+
+### 迁移指南
+详见 [MIGRATION.md](MIGRATION.md)
+
 ## [Unreleased]
 
 ### 新增功能

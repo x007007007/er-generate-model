@@ -1,7 +1,0 @@
-@startuml
-class User {
-    * id : int
-    name : string
-}
-@enduml
-

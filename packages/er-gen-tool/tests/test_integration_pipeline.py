@@ -118,7 +118,7 @@ columns = [
 def test_full_pipeline_cli_default_behavior():
     """Test that CLI uses TOML as default input type."""
     from click.testing import CliRunner
-    from x007007007.er.cli import main
+    from x007007007.er_tool.cli import main
     
     toml_content = '''
 [entities.SimpleModel]
