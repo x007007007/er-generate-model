@@ -13,10 +13,10 @@ Django 集成插件，用于将 Django models 转换为 ER 图和 ER 迁移。
 **安装**:
 ```bash
 # 开发模式
-pip install -e packages/er-django/
+uv pip install -e packages/er-django/
 
 # 从 PyPI（未来）
-pip install x007007007-er-django
+uv pip install x007007007-er-django
 ```
 
 **文档**:
@@ -63,7 +63,7 @@ mkdir -p packages/new-package/src/x007007007
 
 ```bash
 # 安装包（开发模式）
-pip install -e packages/er-django/
+uv pip install -e packages/er-django/
 
 # 运行测试
 cd packages/er-django
@@ -76,7 +76,7 @@ pytest tests/
 cd packages/er-django
 
 # 构建
-python -m build
+^uv run python -m build
 
 # 发布到 Test PyPI
 twine upload --repository testpypi dist/*

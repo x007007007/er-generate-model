@@ -245,9 +245,9 @@ Django Project
 
 ```bash
 # 为每个 app 生成 ER 图
-python manage.py er_export users --output docs/users_er.mmd
-python manage.py er_export blog --output docs/blog_er.mmd
-python manage.py er_export products --output docs/products_er.mmd
+^uv run python manage.py er_export users --output docs/users_er.mmd
+^uv run python manage.py er_export blog --output docs/blog_er.mmd
+^uv run python manage.py er_export products --output docs/products_er.mmd
 ```
 
 ### 场景 2: 迁移管理
@@ -257,10 +257,10 @@ python manage.py er_export products --output docs/products_er.mmd
 ```bash
 # 1. 修改 Django models
 # 2. 生成 ER 迁移
-python manage.py er_makemigrations blog
+^uv run python manage.py er_makemigrations blog
 
 # 3. 查看变更
-python manage.py er_showmigrations blog
+^uv run python manage.py er_showmigrations blog
 
 # 4. 应用迁移（未来功能）
 # python manage.py er_migrate blog
@@ -275,7 +275,7 @@ python manage.py er_showmigrations blog
 
 ```bash
 # 导出 ER 图
-python manage.py er_export blog --output blog_er.mmd
+^uv run python manage.py er_export blog --output blog_er.mmd
 
 # 使用 er-cli 生成 SQLAlchemy 代码
 er-cli -i blog_er.mmd -o sqlalchemy -f blog_models.py
@@ -287,13 +287,13 @@ er-cli -i blog_er.mmd -o sqlalchemy -f blog_models.py
 
 ```bash
 # 为每个 app 生成独立的迁移命名空间
-python manage.py er_makemigrations users
-python manage.py er_makemigrations blog
-python manage.py er_makemigrations products
-python manage.py er_makemigrations orders
+^uv run python manage.py er_makemigrations users
+^uv run python manage.py er_makemigrations blog
+^uv run python manage.py er_makemigrations products
+^uv run python manage.py er_makemigrations orders
 
 # 查看所有 app 的迁移状态
-python manage.py er_showmigrations
+^uv run python manage.py er_showmigrations
 ```
 
 ## 🔍 技术细节
@@ -378,9 +378,9 @@ def _rebuild_state(migrations):
 实现 `er_migrate` 命令，应用 ER 迁移到数据库：
 
 ```bash
-python manage.py er_migrate blog
-python manage.py er_migrate blog --fake
-python manage.py er_migrate blog 0001
+^uv run python manage.py er_migrate blog
+^uv run python manage.py er_migrate blog --fake
+^uv run python manage.py er_migrate blog 0001
 ```
 
 ### 2. 迁移回滚
@@ -388,8 +388,8 @@ python manage.py er_migrate blog 0001
 支持迁移回滚：
 
 ```bash
-python manage.py er_migrate blog zero
-python manage.py er_migrate blog 0001
+^uv run python manage.py er_migrate blog zero
+^uv run python manage.py er_migrate blog 0001
 ```
 
 ### 3. 迁移合并
@@ -397,7 +397,7 @@ python manage.py er_migrate blog 0001
 合并多个迁移文件：
 
 ```bash
-python manage.py er_squashmigrations blog 0001 0005
+^uv run python manage.py er_squashmigrations blog 0001 0005
 ```
 
 ### 4. 自动检测
@@ -405,7 +405,7 @@ python manage.py er_squashmigrations blog 0001 0005
 自动检测 Django models 变更：
 
 ```bash
-python manage.py er_makemigrations --auto-detect
+^uv run python manage.py er_makemigrations --auto-detect
 ```
 
 ### 5. 迁移验证
@@ -413,7 +413,7 @@ python manage.py er_makemigrations --auto-detect
 验证迁移的正确性：
 
 ```bash
-python manage.py er_checkmigrations blog
+^uv run python manage.py er_checkmigrations blog
 ```
 
 ### 6. 数据迁移

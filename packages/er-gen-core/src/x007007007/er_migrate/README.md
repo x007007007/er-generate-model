@@ -11,7 +11,7 @@ Database migration system based on ER diagrams - 基于ER图的数据库迁移�
 uv pip install -e .
 
 # 或使用pip
-pip install -e .
+uv pip install -e .
 ```
 
 ### 基本使用

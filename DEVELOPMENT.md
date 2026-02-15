@@ -187,7 +187,7 @@ uv sync
 cd packages/er-gen-core
 
 # 构建包
-python -m build
+^uv run python -m build
 
 # 生成的文件在 dist/ 目录
 # - dist/x007007007_er_gen_core-0.3.0-py3-none-any.whl
@@ -198,7 +198,7 @@ python -m build
 
 ```bash
 # 安装 twine（如果尚未安装）
-pip install twine
+uv pip install twine
 
 # 上传到 PyPI
 twine upload dist/*
@@ -308,7 +308,7 @@ Package description here.
 
 ### From PyPI
 \`\`\`bash
-pip install x007007007-my-new-package
+uv pip install x007007007-my-new-package
 \`\`\`
 
 ### From Source (Development)
@@ -893,7 +893,7 @@ uv pip show x007007007-er-gen-tool
 uv pip show x007007007-er-gen-core
 
 # 使用 Python 检测导入循环
-python -c "import x007007007.er_tool; import x007007007.er_core"
+^uv run python -c "import x007007007.er_tool; import x007007007.er_core"
 ```
 
 **解决方案**：
@@ -1193,7 +1193,7 @@ uv pip show x007007007-er-gen-helper
 # 应该显示：Location: /path/to/ER/packages/er-gen-helper/src
 
 # 4. 测试导入
-python -c "import x007007007.er_helper; print('Success')"
+^uv run python -c "import x007007007.er_helper; print('Success')"
 
 # 5. 运行测试确保依赖正常工作
 uv run pytest packages/er-gen-tool/tests/

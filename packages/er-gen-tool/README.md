@@ -24,7 +24,7 @@ For standalone use outside the workspace:
 ### Basic Installation (Core Features)
 
 ```bash
-pip install x007007007-er-gen-tool
+uv pip install x007007007-er-gen-tool
 ```
 
 This includes:
@@ -35,9 +35,9 @@ This includes:
 ### With AI Features
 
 ```bash
-pip install x007007007-er-gen-tool[ai]
+uv pip install x007007007-er-gen-tool[ai]
 # or
-pip install x007007007-er-gen-tool x007007007-er-gen-tool-ai
+uv pip install x007007007-er-gen-tool x007007007-er-gen-tool-ai
 ```
 
 This adds:

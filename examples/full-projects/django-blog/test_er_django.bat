@@ -15,7 +15,7 @@ echo 1. 环境检查
 echo ----------------------------------------
 
 REM 检查 Django
-python -c "import django" >nul 2>&1
+uv run python -c "import django" >nul 2>&1
 if %errorlevel% equ 0 (
     echo 测试: Django 已安装 ... [OK]
     set /a TESTS_PASSED+=1
@@ -25,7 +25,7 @@ if %errorlevel% equ 0 (
 )
 
 REM 检查 er_django
-python -c "import x007007007.er_django" >nul 2>&1
+uv run python -c "import x007007007.er_django" >nul 2>&1
 if %errorlevel% equ 0 (
     echo 测试: er_django 已安装 ... [OK]
     set /a TESTS_PASSED+=1
@@ -35,7 +35,7 @@ if %errorlevel% equ 0 (
 )
 
 REM 检查核心包
-python -c "import x007007007.er" >nul 2>&1
+uv run python -c "import x007007007.er" >nul 2>&1
 if %errorlevel% equ 0 (
     echo 测试: er 核心包已安装 ... [OK]
     set /a TESTS_PASSED+=1
@@ -49,7 +49,7 @@ echo 2. Django 项目检查
 echo ----------------------------------------
 
 REM 检查 Django 配置
-python manage.py check >nul 2>&1
+uv run python manage.py check >nul 2>&1
 if %errorlevel% equ 0 (
     echo 测试: Django 配置正确 ... [OK]
     set /a TESTS_PASSED+=1
@@ -59,7 +59,7 @@ if %errorlevel% equ 0 (
 )
 
 REM 检查 models
-python manage.py check blog >nul 2>&1
+uv run python manage.py check blog >nul 2>&1
 if %errorlevel% equ 0 (
     echo 测试: Models 定义正确 ... [OK]
     set /a TESTS_PASSED+=1
@@ -73,7 +73,7 @@ echo 3. ER 导出功能测试
 echo ----------------------------------------
 
 REM 导出 Mermaid 格式
-python manage.py er_export blog --format mermaid --output blog_er.mmd >nul 2>&1
+uv run python manage.py er_export blog --format mermaid --output blog_er.mmd >nul 2>&1
 if exist blog_er.mmd (
     echo 测试: 导出 Mermaid ER 图 ... [OK]
     set /a TESTS_PASSED+=1
@@ -93,7 +93,7 @@ if exist blog_er.mmd (
 )
 
 REM 导出 PlantUML 格式
-python manage.py er_export blog --format plantuml --output blog_er.puml >nul 2>&1
+uv run python manage.py er_export blog --format plantuml --output blog_er.puml >nul 2>&1
 if exist blog_er.puml (
     echo 测试: 导出 PlantUML ER 图 ... [OK]
     set /a TESTS_PASSED+=1
@@ -107,7 +107,7 @@ echo 4. ER 迁移功能测试
 echo ----------------------------------------
 
 REM 生成初始迁移
-python manage.py er_makemigrations blog >nul 2>&1
+uv run python manage.py er_makemigrations blog >nul 2>&1
 if exist .migrations\blog\0001_initial.yaml (
     echo 测试: 生成初始迁移 ... [OK]
     set /a TESTS_PASSED+=1
@@ -136,7 +136,7 @@ if exist .migrations\blog\0001_initial.yaml (
 )
 
 REM 查看迁移状态
-python manage.py er_showmigrations blog 2>&1 | findstr /C:"0001_initial" >nul 2>&1
+uv run python manage.py er_showmigrations blog 2>&1 | findstr /C:"0001_initial" >nul 2>&1
 if %errorlevel% equ 0 (
     echo 测试: 显示迁移状态 ... [OK]
     set /a TESTS_PASSED+=1

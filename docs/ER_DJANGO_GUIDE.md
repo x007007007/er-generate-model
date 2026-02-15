@@ -65,13 +65,13 @@ project/
 
 ```bash
 # 安装核心包
-pip install x007007007-er
+uv pip install x007007007-er
 
 # 安装 Django 支持
-pip install x007007007-er[django]
+uv pip install x007007007-er[django]
 
 # 或安装所有可选依赖
-pip install x007007007-er[all]
+uv pip install x007007007-er[all]
 ```
 
 ## 🚀 迁移到独立包（方案 2）
@@ -106,17 +106,17 @@ dependencies = [
 
 ```bash
 # 构建包
-python -m build
+^uv run python -m build
 
 # 发布到 PyPI
-python -m twine upload dist/*
+^uv run python -m twine upload dist/*
 ```
 
 ### 步骤 4: 用户安装
 
 ```bash
 # 独立安装
-pip install x007007007-er-django
+uv pip install x007007007-er-django
 ```
 
 ## 📦 Monorepo 方案（推荐用于开发）
@@ -172,13 +172,13 @@ uv pip install -e packages/er-django
 cd examples/django_blog
 
 # 安装依赖
-pip install django>=4.2.0
-pip install -e ../../
+uv pip install django>=4.2.0
+uv pip install -e ../../
 
 # 运行测试
-python manage.py er_export blog
-python manage.py er_makemigrations blog
-python manage.py er_showmigrations blog
+^uv run python manage.py er_export blog
+^uv run python manage.py er_makemigrations blog
+^uv run python manage.py er_showmigrations blog
 ```
 
 ### 自动化测试
@@ -201,10 +201,10 @@ test_er_django.bat
 pytest
 
 # 3. 构建包
-python -m build
+^uv run python -m build
 
 # 4. 发布到 PyPI
-python -m twine upload dist/*
+^uv run python -m twine upload dist/*
 ```
 
 ### 发布 Django 插件（独立包）
@@ -217,10 +217,10 @@ cd src/x007007007/er_django
 pytest
 
 # 3. 构建包
-python -m build
+^uv run python -m build
 
 # 4. 发布到 PyPI
-python -m twine upload dist/*
+^uv run python -m twine upload dist/*
 ```
 
 ## 🎯 推荐方案

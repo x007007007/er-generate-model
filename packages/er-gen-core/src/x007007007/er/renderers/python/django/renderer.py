@@ -1,30 +1,14 @@
 """Django model code renderers."""
 import logging
-import re
 from pathlib import Path
 from typing import Dict
 from jinja2 import PackageLoader
 from x007007007.er.models import ERModel
 from x007007007.er.type_mapper import TypeMapper
 from x007007007.er.renderers.python.base import PythonRenderer
+from x007007007.er.renderers.python.utils import to_snake_case
 
 logger = logging.getLogger(__name__)
-
-
-def to_snake_case(name: str) -> str:
-    """
-    Convert CamelCase or PascalCase to snake_case.
-    
-    Examples:
-        User -> user
-        ConversationSessionModel -> conversation_session_model
-        FileTypeModel -> file_type_model
-    """
-    # Insert underscore before uppercase letters (except at start)
-    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    # Insert underscore before uppercase letters preceded by lowercase
-    s2 = re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1)
-    return s2.lower()
 
 
 def django_field_type(col):

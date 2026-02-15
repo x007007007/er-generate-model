@@ -31,7 +31,7 @@ This installs all packages in editable mode with their dependencies.
 For standalone use outside the workspace:
 
 ```bash
-pip install x007007007-er-gen-core
+uv pip install x007007007-er-gen-core
 ```
 
 ### Internal Dependencies
@@ -141,7 +141,7 @@ print(sqlalchemy_code)
 ### 安装开发依赖
 
 ```bash
-pip install -e ".[dev]"
+uv pip install -e ".[dev]"
 ```
 
 ### 运行测试

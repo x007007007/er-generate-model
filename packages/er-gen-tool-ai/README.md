@@ -47,10 +47,10 @@ uv pip install x007007007-er-gen-tool[ai]
 
 ```bash
 # 安装 AI 插件
-pip install x007007007-er-gen-tool-ai
+uv pip install x007007007-er-gen-tool-ai
 
 # 或者与 er-gen-tool 一起安装
-pip install x007007007-er-gen-tool[ai]
+uv pip install x007007007-er-gen-tool[ai]
 ```
 
 ### Internal Dependencies
@@ -335,7 +335,7 @@ er-gen-tool (命令行工具)
 
 ```bash
 cd packages/er-gen-tool-ai
-pip install -e ".[dev]"
+uv pip install -e ".[dev]"
 ```
 
 ### 运行测试
@@ -374,7 +374,7 @@ my-plugin = "my_package.cli_plugin:my_plugin_cmd"
 3. **安装插件**：
 
 ```bash
-pip install my-plugin-package
+uv pip install my-plugin-package
 ```
 
 4. **使用插件**：

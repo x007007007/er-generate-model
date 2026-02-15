@@ -23,48 +23,53 @@
 - ✅ **MCP 服务器支持**：可在 Cursor 等编辑器中直接使用
 - ✅ **AI 建模工具**：使用自然语言生成 ER 图
 
-## 安装
+## 项目结构
 
-### 基础安装（核心功能）
+本项目采用 Python monorepo 结构，使用 uv workspace 管理多个相互依赖的包：
 
-```bash
-# 安装核心工具（包含 convert 和 migrate 命令）
-uv pip install -e packages/er-gen-tool
-
-# 或使用 pip
-pip install -e packages/er-gen-tool
+```
+ER/
+├── pyproject.toml              # Workspace 根配置
+├── uv.lock                     # 统一的依赖锁文件
+├── packages/                   # 所有包的目录
+│   ├── er-gen-core/           # 核心库（ER 模型、解析器、渲染器）
+│   ├── er-gen-tool/           # CLI 工具（convert、migrate 命令）
+│   ├── er-gen-mcp/            # MCP 服务器
+│   ├── er-gen-tool-ai/        # AI 建模工具（ai-assist 命令）
+│   └── er-django/             # Django 集成
+├── examples/                   # 示例文件
+└── tests/                      # 测试文件
 ```
 
-### 安装 AI 功能（可选）
+**包依赖关系：**
+- `er-gen-tool` → 依赖 `er-gen-core`
+- `er-gen-tool-ai` → 依赖 `er-gen-core`
+- `er-gen-mcp` → 独立包
+- `er-django` → 独立包
+
+## 开发环境设置
+
+### 快速开始（推荐）
+
+使用 `uv sync` 一键安装所有包及其依赖：
 
 ```bash
-# 安装 AI 扩展（添加 ai-assist 命令）
-uv pip install -e packages/er-gen-tool-ai
+# 安装 uv（如果尚未安装）
+uv pip install uv
 
-# 或一次性安装所有功能
-uv pip install -e "packages/er-gen-tool[ai]"
+# 从项目根目录安装所有包（开发模式）
+uv sync
 ```
 
-### 安装 MCP 服务器（可选）
+这将：
+- 安装所有 workspace 包（editable 模式）
+- 解析并安装所有依赖（包括内部依赖）
+- 安装开发工具（pytest、coverage、hypothesis）
+- 使所有 CLI 命令可用（er-gen-tool、er-mcp 等）
 
-```bash
-# 安装 MCP 服务器
-uv pip install -e packages/er-gen-mcp
-```
+### 生成 ANTLR 解析器
 
-### 开发者安装（所有包）
-
-```bash
-# 安装所有包用于开发
-uv pip install -e packages/er-gen-core
-uv pip install -e packages/er-gen-tool
-uv pip install -e packages/er-gen-tool-ai
-uv pip install -e packages/er-gen-mcp
-```
-
-### 生成ANTLR解析器
-
-**必须生成ANTLR代码才能使用解析器**，项目已完全依赖ANTLR4：
+**必须生成 ANTLR 代码才能使用解析器**，项目已完全依赖 ANTLR4：
 
 **Windows:**
 ```bash
@@ -78,8 +83,75 @@ chmod +x tools/generate_antlr.sh
 ```
 
 **注意**: 
-- 需要Java 11+（ANTLR 4.13.2要求）
-- 如果只有Java 8，可以使用ANTLR 4.9.3（需要修改脚本中的JAR文件名）
+- 需要 Java 11+（ANTLR 4.13.2 要求）
+- 如果只有 Java 8，可以使用 ANTLR 4.9.3（需要修改脚本中的 JAR 文件名）
+
+## 运行测试
+
+### 运行所有测试
+
+```bash
+# 从项目根目录运行所有包的测试
+uv run pytest
+
+# 运行测试并显示详细输出
+uv run pytest -v
+
+# 运行测试并生成覆盖率报告
+uv run pytest --cov
+
+# 生成 HTML 覆盖率报告
+uv run pytest --cov --cov-report=html
+```
+
+### 运行特定包的测试
+
+```bash
+# 运行特定包的测试
+uv run pytest packages/er-gen-core/tests/
+uv run pytest packages/er-gen-tool/tests/
+
+# 运行特定测试文件
+uv run pytest packages/er-gen-core/tests/test_models.py
+
+# 运行特定测试函数
+uv run pytest packages/er-gen-core/tests/test_models.py::test_entity_creation
+```
+
+### 测试覆盖率
+
+当前总体覆盖率：**88%** ✅（已排除 ANTLR 生成的代码）
+
+覆盖率报告会自动包含所有包的源代码，并排除生成的代码和测试文件。
+
+## 安装
+
+### 用户安装（从 PyPI）
+
+```bash
+# 安装核心工具（包含 convert 和 migrate 命令）
+uv pip install x007007007-er-gen-tool
+
+# 安装 AI 功能
+uv pip install x007007007-er-gen-tool-ai
+
+# 安装 MCP 服务器
+uv pip install x007007007-er-gen-mcp
+```
+
+### 开发者安装（从源码）
+
+推荐使用上面的"开发环境设置"部分的 `uv sync` 方法。
+
+如果需要手动安装单个包：
+
+```bash
+# 安装特定包（editable 模式）
+uv pip install -e packages/er-gen-core
+uv pip install -e packages/er-gen-tool
+uv pip install -e packages/er-gen-tool-ai
+uv pip install -e packages/er-gen-mcp
+```
 
 ## 使用方法
 
@@ -314,54 +386,7 @@ DEEPSEEK_API_KEY=your-api-key-here
 DEEPSEEK_BASE_URL=https://api.deepseek.com/v1  # 可选
 ```
 
-## 项目结构
-
-```
-ER/
-├── src/
-│   └── x007007007/
-│       ├── er/                  # ER 转换核心模块
-│       │   ├── parser/antlr/   # ANTLR 解析器
-│       │   ├── templates/       # Jinja2 模板
-│       │   └── ...
-│       ├── er_ai/               # AI 建模工具
-│       └── er_mcp/               # MCP 服务器
-│           ├── server.py
-│           └── cli.py
-├── tests/                       # 测试文件
-├── tools/                       # 工具脚本
-├── CHANGELOG.md                 # 变更日志
-├── pyproject.toml
-└── README.md
-```
-
 ## 开发
-
-### 运行测试
-
-```bash
-# 运行所有测试
-pytest tests/
-
-# 运行测试并查看覆盖率
-pytest tests/ --cov=src/x007007007/er --cov=src/x007007007/er_mcp --cov-report=term-missing --cov-report=html
-```
-
-### 代码覆盖率
-
-当前总体覆盖率：**88%** ✅（已排除 ANTLR 生成的代码）
-
-核心模块覆盖率：
-- `type_mapper.py`: 100%
-- `converters.py`: 100%
-- `renderers.py`: 100%
-- `base.py`: 100%
-- `er_mcp/cli.py`: 100%
-- `models.py`: 94%
-- `mermaid_antlr_parser.py`: 92%
-- `plantuml_antlr_parser.py`: 88%
-- `er_mcp/server.py`: 85%
-- `cli.py`: 82%
 
 ### 代码规范
 

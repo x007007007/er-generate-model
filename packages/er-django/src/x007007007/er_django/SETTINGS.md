@@ -219,25 +219,25 @@ ER_FILE_PREFIX = 'team'
 
 ```bash
 # 覆盖迁移目录
-python manage.py er_makemigrations --migrations-dir custom_migrations
+^uv run python manage.py er_makemigrations --migrations-dir custom_migrations
 
 # 覆盖导出目录
-python manage.py er_export --output-dir custom_export
+^uv run python manage.py er_export --output-dir custom_export
 
 # 覆盖格式（支持 mermaid, plantuml, toml）
-python manage.py er_export --format toml
+^uv run python manage.py er_export --format toml
 
 # 覆盖排除应用
-python manage.py er_export --exclude-apps "admin,auth"
+^uv run python manage.py er_export --exclude-apps "admin,auth"
 
 # 导出所有 app（每个 app 生成独立文件）
-python manage.py er_export --format mermaid
+^uv run python manage.py er_export --format mermaid
 
 # 导出特定 app
-python manage.py er_export blog users --format toml
+^uv run python manage.py er_export blog users --format toml
 
 # 使用自定义文件名
-python manage.py er_export blog --name my_custom_name
+^uv run python manage.py er_export blog --name my_custom_name
 ```
 
 ## 📁 目录结构示例
@@ -306,9 +306,9 @@ ER_FILE_SUFFIX = 'v2'
 
 ```bash
 # 同时导出多种格式
-python manage.py er_export --format mermaid
-python manage.py er_export --format plantuml
-python manage.py er_export --format toml
+^uv run python manage.py er_export --format mermaid
+^uv run python manage.py er_export --format plantuml
+^uv run python manage.py er_export --format toml
 
 # 结果: blog.mmd, blog.puml, blog.toml
 ```
@@ -319,7 +319,7 @@ python manage.py er_export --format toml
 
 ```python
 # Django shell
-python manage.py shell
+^uv run python manage.py shell
 
 >>> from x007007007.er_django.settings import get_er_settings
 >>> import pprint

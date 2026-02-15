@@ -64,7 +64,7 @@ ER/
 
 **安装**:
 ```bash
-pip install -e .
+uv pip install -e .
 ```
 
 **模块**:
@@ -84,7 +84,7 @@ pip install -e .
 
 **安装**:
 ```bash
-pip install -e packages/er-django/
+uv pip install -e packages/er-django/
 ```
 
 **模块**:
@@ -120,7 +120,7 @@ vim src/x007007007/er/...
 pytest tests/
 
 # 安装（开发模式）
-pip install -e .
+uv pip install -e .
 ```
 
 ### 2. 开发 Django 插件
@@ -136,7 +136,7 @@ vim src/x007007007/er_django/...
 pytest tests/
 
 # 安装（开发模式）
-pip install -e .
+uv pip install -e .
 ```
 
 ### 3. 测试集成
@@ -146,13 +146,13 @@ pip install -e .
 cd examples/django_blog
 
 # 安装依赖
-pip install -e ../../                    # 核心包
-pip install -e ../../packages/er-django/ # Django 插件
-pip install django>=4.2.0
+uv pip install -e ../../                    # 核心包
+uv pip install -e ../../packages/er-django/ # Django 插件
+uv pip install django>=4.2.0
 
 # 测试功能
-python manage.py er_export blog
-python manage.py er_makemigrations blog
+^uv run python manage.py er_export blog
+^uv run python manage.py er_makemigrations blog
 ```
 
 ## 📝 添加新功能
@@ -226,7 +226,7 @@ git tag v0.2.0
 git push origin v0.2.0
 
 # 2. 构建
-python -m build
+^uv run python -m build
 
 # 3. 发布
 twine upload dist/*
@@ -241,7 +241,7 @@ cd packages/er-django
 # 编辑 pyproject.toml
 
 # 2. 构建
-python -m build
+^uv run python -m build
 
 # 3. 发布
 twine upload dist/*

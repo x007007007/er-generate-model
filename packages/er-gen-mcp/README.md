@@ -44,7 +44,7 @@ uv pip install x007007007-er-gen-mcp
 
 ```bash
 # 安装 MCP 服务器
-pip install x007007007-er-gen-mcp
+uv pip install x007007007-er-gen-mcp
 ```
 
 ### Internal Dependencies
@@ -342,8 +342,8 @@ er-gen-mcp (MCP 服务器)
 检查 Python 版本和依赖：
 
 ```bash
-python --version  # 需要 >= 3.8
-pip list | grep x007007007-er-gen
+^uv run python --version  # 需要 >= 3.8
+uv pip list | grep x007007007-er-gen
 ```
 
 ### 工具调用失败
@@ -369,7 +369,7 @@ er-gen-mcp
 
 ```bash
 cd packages/er-gen-mcp
-pip install -e ".[dev]"
+uv pip install -e ".[dev]"
 ```
 
 ### 运行测试

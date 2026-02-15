@@ -15,7 +15,7 @@ Django 插件，用于将 Django models 转换为 ER 图和 ER 迁移系统。
 ### 1. 安装包
 
 ```bash
-pip install -e .
+uv pip install -e .
 ```
 
 ### 2. 添加到 Django INSTALLED_APPS
@@ -66,29 +66,29 @@ class Comment(models.Model):
 
 ```bash
 # 导出为 Mermaid 格式
-python manage.py er_export blog --format mermaid --output blog_er.mmd
+^uv run python manage.py er_export blog --format mermaid --output blog_er.mmd
 
 # 导出为 PlantUML 格式
-python manage.py er_export blog --format plantuml --output blog_er.puml
+^uv run python manage.py er_export blog --format plantuml --output blog_er.puml
 
 # 输出到控制台
-python manage.py er_export blog
+^uv run python manage.py er_export blog
 ```
 
 ### 2. 生成 ER 迁移
 
 ```bash
 # 生成初始迁移
-python manage.py er_makemigrations blog
+^uv run python manage.py er_makemigrations blog
 
 # 指定迁移目录
-python manage.py er_makemigrations blog --migrations-dir ./migrations
+^uv run python manage.py er_makemigrations blog --migrations-dir ./migrations
 
 # 自定义迁移名称
-python manage.py er_makemigrations blog --name add_post_views
+^uv run python manage.py er_makemigrations blog --name add_post_views
 
 # 预览（不创建文件）
-python manage.py er_makemigrations blog --dry-run
+^uv run python manage.py er_makemigrations blog --dry-run
 ```
 
 输出：
@@ -112,10 +112,10 @@ Migration saved to: .migrations/blog/0001_initial.yaml
 
 ```bash
 # 查看特定 app 的迁移
-python manage.py er_showmigrations blog
+^uv run python manage.py er_showmigrations blog
 
 # 查看所有 app 的迁移
-python manage.py er_showmigrations
+^uv run python manage.py er_showmigrations
 ```
 
 输出：
@@ -132,7 +132,7 @@ blog:
 导出 Django models 为 ER 图。
 
 ```bash
-python manage.py er_export <app_label> [OPTIONS]
+^uv run python manage.py er_export <app_label> [OPTIONS]
 
 参数:
   app_label              Django app 名称 [必需]
@@ -146,10 +146,10 @@ python manage.py er_export <app_label> [OPTIONS]
 
 ```bash
 # 导出为 Mermaid
-python manage.py er_export blog --format mermaid --output docs/blog_er.mmd
+^uv run python manage.py er_export blog --format mermaid --output docs/blog_er.mmd
 
 # 导出为 PlantUML
-python manage.py er_export blog --format plantuml --output docs/blog_er.puml
+^uv run python manage.py er_export blog --format plantuml --output docs/blog_er.puml
 ```
 
 ### er_makemigrations
@@ -157,7 +157,7 @@ python manage.py er_export blog --format plantuml --output docs/blog_er.puml
 从 Django models 生成 ER 迁移。
 
 ```bash
-python manage.py er_makemigrations <app_label> [OPTIONS]
+^uv run python manage.py er_makemigrations <app_label> [OPTIONS]
 
 参数:
   app_label              Django app 名称 [必需]
@@ -172,13 +172,13 @@ python manage.py er_makemigrations <app_label> [OPTIONS]
 
 ```bash
 # 基本用法
-python manage.py er_makemigrations blog
+^uv run python manage.py er_makemigrations blog
 
 # 自定义迁移名称
-python manage.py er_makemigrations blog --name add_comment_likes
+^uv run python manage.py er_makemigrations blog --name add_comment_likes
 
 # 预览变更
-python manage.py er_makemigrations blog --dry-run
+^uv run python manage.py er_makemigrations blog --dry-run
 ```
 
 ### er_showmigrations
@@ -186,7 +186,7 @@ python manage.py er_makemigrations blog --dry-run
 显示 ER 迁移状态。
 
 ```bash
-python manage.py er_showmigrations [app_label] [OPTIONS]
+^uv run python manage.py er_showmigrations [app_label] [OPTIONS]
 
 参数:
   app_label              Django app 名称 [可选]
@@ -199,10 +199,10 @@ python manage.py er_showmigrations [app_label] [OPTIONS]
 
 ```bash
 # 显示特定 app
-python manage.py er_showmigrations blog
+^uv run python manage.py er_showmigrations blog
 
 # 显示所有 app
-python manage.py er_showmigrations
+^uv run python manage.py er_showmigrations
 ```
 
 ## 🔧 工作原理
@@ -299,9 +299,9 @@ src/x007007007/er_django/
 
 ```bash
 # 为每个 app 生成 ER 图
-python manage.py er_export users --output docs/users_er.mmd
-python manage.py er_export blog --output docs/blog_er.mmd
-python manage.py er_export comments --output docs/comments_er.mmd
+^uv run python manage.py er_export users --output docs/users_er.mmd
+^uv run python manage.py er_export blog --output docs/blog_er.mmd
+^uv run python manage.py er_export comments --output docs/comments_er.mmd
 ```
 
 ### 场景 2: 使用 ER 迁移管理数据库变更
@@ -309,10 +309,10 @@ python manage.py er_export comments --output docs/comments_er.mmd
 ```bash
 # 1. 修改 Django models
 # 2. 生成 ER 迁移
-python manage.py er_makemigrations blog
+^uv run python manage.py er_makemigrations blog
 
 # 3. 查看迁移状态
-python manage.py er_showmigrations blog
+^uv run python manage.py er_showmigrations blog
 
 # 4. 应用迁移（未来功能）
 # python manage.py er_migrate blog
@@ -322,12 +322,12 @@ python manage.py er_showmigrations blog
 
 ```bash
 # 为每个 app 生成独立的迁移命名空间
-python manage.py er_makemigrations users
-python manage.py er_makemigrations blog
-python manage.py er_makemigrations comments
+^uv run python manage.py er_makemigrations users
+^uv run python manage.py er_makemigrations blog
+^uv run python manage.py er_makemigrations comments
 
 # 查看所有 app 的迁移状态
-python manage.py er_showmigrations
+^uv run python manage.py er_showmigrations
 ```
 
 ## 🔍 高级用法
@@ -340,7 +340,7 @@ ER_MIGRATIONS_DIR = 'db/er_migrations'
 ```
 
 ```bash
-python manage.py er_makemigrations blog --migrations-dir db/er_migrations
+^uv run python manage.py er_makemigrations blog --migrations-dir db/er_migrations
 ```
 
 ### 编程式使用
@@ -392,10 +392,10 @@ INSTALLED_APPS = [
 **解决：**
 ```bash
 # 检查 app 是否存在
-python manage.py showmigrations
+^uv run python manage.py showmigrations
 
 # 检查 models 语法
-python manage.py check
+^uv run python manage.py check
 ```
 
 ### 问题：关系未正确识别
