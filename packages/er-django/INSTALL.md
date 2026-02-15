@@ -9,20 +9,20 @@
 cd packages/er-django
 
 # 安装依赖（核心包）
-pip install x007007007-er
+uv pip install x007007007-er
 
 # 安装 Django
-pip install django>=4.2.0
+uv pip install django>=4.2.0
 
 # 安装 er-django（开发模式）
-pip install -e .
+uv pip install -e .
 ```
 
 ### 方法 2: 从项目根目录安装
 
 ```bash
 # 在项目根目录
-pip install -e packages/er-django
+uv pip install -e packages/er-django
 ```
 
 ### 方法 3: 同时安装核心包和 Django 插件
@@ -31,23 +31,23 @@ pip install -e packages/er-django
 # 在项目根目录
 
 # 1. 安装核心包
-pip install -e .
+uv pip install -e .
 
 # 2. 安装 Django 插件
-pip install -e packages/er-django
+uv pip install -e packages/er-django
 ```
 
 ## 验证安装
 
 ```bash
 # 检查是否安装成功
-python -c "import x007007007.er_django; print('✓ er-django installed')"
+uv run python -c "import x007007007.er_django; print('✓ er-django installed')"
 
 # 检查核心包
-python -c "import x007007007.er; print('✓ er core installed')"
+uv run python -c "import x007007007.er; print('✓ er core installed')"
 
 # 检查 Django
-python -c "import django; print('✓ Django installed')"
+uv run python -c "import django; print('✓ Django installed')"
 ```
 
 ## 在 Django 项目中使用
@@ -65,7 +65,7 @@ INSTALLED_APPS = [
 ### 2. 验证 management commands
 
 ```bash
-python manage.py help | grep er_
+uv run python manage.py help | grep er_
 
 # 应该看到:
 #   er_export
@@ -77,13 +77,13 @@ python manage.py help | grep er_
 
 ```bash
 # 导出 ER 图
-python manage.py er_export your_app
+uv run python manage.py er_export your_app
 
 # 生成迁移
-python manage.py er_makemigrations your_app
+uv run python manage.py er_makemigrations your_app
 
 # 查看迁移状态
-python manage.py er_showmigrations your_app
+uv run python manage.py er_showmigrations your_app
 ```
 
 ## 运行测试
@@ -92,16 +92,16 @@ python manage.py er_showmigrations your_app
 cd packages/er-django
 
 # 安装测试依赖
-pip install pytest pytest-django
+uv pip install pytest pytest-django
 
 # 运行测试
-pytest tests/
+uv run pytest tests/
 ```
 
 ## 卸载
 
 ```bash
-pip uninstall x007007007-er-django
+uv pip uninstall x007007007-er-django
 ```
 
 ## 故障排除
@@ -111,10 +111,10 @@ pip uninstall x007007007-er-django
 **解决**:
 ```bash
 # 确保安装了核心包
-pip install x007007007-er
+uv pip install x007007007-er
 
 # 重新安装 er-django
-pip install -e packages/er-django
+uv pip install -e packages/er-django
 ```
 
 ### 问题：找不到 management commands
@@ -123,7 +123,7 @@ pip install -e packages/er-django
 ```bash
 # 确保在 settings.py 中添加了 'x007007007.er_django'
 # 检查 Django 配置
-python manage.py check
+uv run python manage.py check
 ```
 
 ### 问题：导入错误
@@ -131,7 +131,7 @@ python manage.py check
 **解决**:
 ```bash
 # 检查 Python 路径
-python -c "import sys; print('\n'.join(sys.path))"
+uv run python -c "import sys; print('\n'.join(sys.path))"
 
 # 确保包目录在路径中
 export PYTHONPATH="${PYTHONPATH}:$(pwd)/packages/er-django/src"
@@ -147,21 +147,21 @@ git clone https://github.com/x007007007/er.git
 cd er
 
 # 2. 安装核心包（开发模式）
-pip install -e .
+uv pip install -e .
 
 # 3. 安装 er-django（开发模式）
-pip install -e packages/er-django
+uv pip install -e packages/er-django
 
 # 4. 安装开发依赖
-pip install pytest pytest-django pytest-cov
+uv pip install pytest pytest-django pytest-cov
 
 # 5. 运行测试
 cd packages/er-django
-pytest tests/
+uv run pytest tests/
 
 # 6. 测试示例项目
 cd ../../examples/django_blog
-python manage.py er_export blog
+uv run python manage.py er_export blog
 ```
 
 ## 构建和发布
@@ -170,19 +170,19 @@ python manage.py er_export blog
 cd packages/er-django
 
 # 1. 安装构建工具
-pip install build twine
+uv pip install build twine
 
 # 2. 构建包
-python -m build
+uv run python -m build
 
 # 3. 检查包
-twine check dist/*
+uv run twine check dist/*
 
 # 4. 发布到 PyPI（需要账号）
-twine upload dist/*
+uv run twine upload dist/*
 
 # 或发布到 Test PyPI
-twine upload --repository testpypi dist/*
+uv run twine upload --repository testpypi dist/*
 ```
 
 ## 依赖关系
