@@ -3,14 +3,16 @@ Django management command: er_export
 
 Export Django models to ER diagram (Mermaid/PlantUML).
 """
+import os
 from django.core.management.base import BaseCommand, CommandError
 from django.apps import apps
 from django.template import Template, Context
 from pathlib import Path
 
 from x007007007.er_django.parser import DjangoModelParser
+from x007007007.er_django.path_resolver import PathResolver
 from x007007007.er_django.settings import (
-    get_er_settings, get_er_export_dir, ensure_directory_exists, get_output_filename
+    get_er_settings, ensure_directory_exists, get_output_filename
 )
 
 
@@ -27,7 +29,8 @@ class Command(BaseCommand):
             '--format',
             type=str,
             choices=['mermaid', 'plantuml', 'toml'],
-            help='Output format (default: from settings or mermaid)'
+            default='toml',
+            help='Output format (default: toml)'
         )
         parser.add_argument(
             '--output',
@@ -37,7 +40,8 @@ class Command(BaseCommand):
         parser.add_argument(
             '--output-dir',
             type=str,
-            help='Output directory (default: from settings)'
+            default=None,
+            help='Output directory (default: ./src)'
         )
         parser.add_argument(
             '--models',
@@ -65,9 +69,20 @@ class Command(BaseCommand):
         er_settings = get_er_settings()
         
         apps_to_export = options.get('apps', [])
-        output_format = options.get('format') or er_settings['default_format']
+        output_format = options.get('format')  # Already has default value 'toml'
         output_path = options.get('output')
-        output_dir = options.get('output_dir') or get_er_export_dir()
+        
+        # Determine output directory: use --output-dir if specified, otherwise use ./src
+        output_dir = options.get('output_dir')
+        if output_dir is None:
+            # Use ./src as default output directory
+            output_dir = './src'
+        
+        # Handle relative and absolute paths
+        if not os.path.isabs(output_dir):
+            # Relative path: resolve relative to current working directory
+            output_dir = os.path.join(os.getcwd(), output_dir)
+        
         specific_models = options.get('models')
         exclude_apps = options.get('exclude_apps', '')
         include_django_apps = options.get('include_django_apps') or er_settings['include_django_apps']
@@ -135,6 +150,9 @@ class Command(BaseCommand):
         total_entities = 0
         
         for app_label in target_apps:
+            # Get app config for path resolution
+            app_config = apps.get_app_config(app_label)
+            
             # Parse models for this app
             parser = DjangoModelParser(app_label=app_label)
             
@@ -146,7 +164,6 @@ class Command(BaseCommand):
                 ]
                 if app_models:
                     # Get specific model classes
-                    app_config = apps.get_app_config(app_label)
                     model_classes = []
                     for model_name in app_models:
                         try:
@@ -168,6 +185,21 @@ class Command(BaseCommand):
             
             self.stdout.write(f"Found {len(er_model.entities)} models in app '{app_label}'")
             total_entities += len(er_model.entities)
+            
+            # Use PathResolver to determine output path and set export_path for each entity
+            try:
+                resolved_output_path = PathResolver.resolve_output_path(
+                    app_config=app_config,
+                    base_dir=output_dir,
+                    format=output_format
+                )
+                
+                # Set export_path for all entities in this app
+                for entity in er_model.entities.values():
+                    entity.export_path = str(resolved_output_path)
+                    
+            except ValueError as e:
+                raise CommandError(f"Failed to resolve output path for app '{app_label}': {e}")
             
             # Render ER diagram
             if output_format == 'mermaid':
@@ -191,14 +223,23 @@ class Command(BaseCommand):
                 if not output_file.is_absolute():
                     output_file = Path(output_dir) / output_file
             else:
-                # Auto-generate filename using app label
-                filename = get_output_filename(app_label, output_format, custom_name)
-                output_file = Path(output_dir) / filename
+                # Use the resolved output path from PathResolver
+                output_file = resolved_output_path
             
-            # Write file
-            output_file.write_text(diagram, encoding='utf-8')
+            # Ensure parent directory exists (fail-fast if cannot create)
+            try:
+                output_file.parent.mkdir(parents=True, exist_ok=True)
+            except Exception as e:
+                raise CommandError(f"Failed to create directory {output_file.parent}: {e}")
+            
+            # Write file (fail-fast if cannot write)
+            try:
+                output_file.write_text(diagram, encoding='utf-8')
+            except Exception as e:
+                raise CommandError(f"Failed to write {output_file}: {e}")
+                
             exported_files.append((app_label, output_file))
-            self.stdout.write(self.style.SUCCESS(f"  → {output_file.name}"))
+            self.stdout.write(self.style.SUCCESS(f"  → {output_file}"))
         
         # Summary
         if exported_files:

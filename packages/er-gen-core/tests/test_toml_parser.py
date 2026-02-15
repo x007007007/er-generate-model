@@ -213,3 +213,86 @@ def test_toml_parser_relationship_types():
     rel2 = model.relationships[1]
     assert rel2.relation_type == "many-to-many"
 
+
+
+def test_toml_parser_package_field():
+    """测试package字段解析功能（Task 3.1）。"""
+    parser = TomlERParser()
+    
+    toml_content = """
+[entities.User]
+package = "kinkotech.common.domains.account.models"
+extends = []
+
+[[entities.User.columns]]
+name = "id"
+type = "int"
+is_pk = true
+
+[[entities.User.columns]]
+name = "username"
+type = "str"
+"""
+    
+    model = parser.parse(toml_content)
+    assert "User" in model.entities
+    
+    user = model.entities["User"]
+    assert user.package == "kinkotech.common.domains.account.models"
+    assert user.name == "User"
+    assert len(user.columns) == 2
+
+
+def test_toml_parser_package_field_optional():
+    """测试package字段为可选（向后兼容）。"""
+    parser = TomlERParser()
+    
+    toml_content = """
+[entities.Product]
+extends = []
+
+[[entities.Product.columns]]
+name = "id"
+type = "int"
+is_pk = true
+"""
+    
+    model = parser.parse(toml_content)
+    assert "Product" in model.entities
+    
+    product = model.entities["Product"]
+    assert product.package is None  # 未指定时应为None
+    assert product.name == "Product"
+
+
+def test_toml_parser_package_with_extends_and_export_path():
+    """测试package字段与extends和export_path一起使用。"""
+    parser = TomlERParser()
+    
+    toml_content = """
+[templates.BaseModel]
+export_path = "common.base"
+
+[[templates.BaseModel.columns]]
+name = "created_at"
+type = "datetime"
+
+[entities.Order]
+extends = ["BaseModel"]
+package = "myapp.orders.models"
+export_path = "src/myapp/orders/models.toml"
+
+[[entities.Order.columns]]
+name = "id"
+type = "int"
+is_pk = true
+"""
+    
+    model = parser.parse(toml_content)
+    assert "Order" in model.entities
+    
+    order = model.entities["Order"]
+    assert order.package == "myapp.orders.models"
+    assert order.export_path == "src/myapp/orders/models.toml"
+    assert order.extends == ["BaseModel"]
+    assert len(order.columns) == 2  # created_at + id

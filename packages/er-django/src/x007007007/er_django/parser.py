@@ -88,23 +88,34 @@ class DjangoModelParser(Parser):
     
     def _convert_model_to_entity(self, model: Type[models.Model]) -> Entity:
         """
-        Convert Django model to Entity.
+        Convert Django model to Entity with inheritance support.
         
         Args:
             model: Django model class
             
         Returns:
-            Entity instance
+            Entity instance with inheritance and package information
+            
+        Requirements: 6.1, 7.1, 9.1
         """
+        # Extract inheritance information
+        extends = self._extract_inheritance(model)
+        
+        # Get package path
+        package_path = model.__module__
+        
+        # Create entity with inheritance and package information
         entity = Entity(
             name=model.__name__,
-            comment=self.introspector.get_model_comment(model)
+            comment=self.introspector.get_model_comment(model),
+            extends=extends,
+            package=package_path
         )
         
-        # Get concrete fields (fields with database columns)
-        concrete_fields = self.introspector.get_concrete_fields(model)
+        # Get only the model's own fields (not inherited)
+        own_fields = self._get_own_fields(model)
         
-        for field in concrete_fields:
+        for field in own_fields:
             # Skip reverse relations and auto-created fields
             if field.auto_created and not field.concrete:
                 continue
@@ -117,6 +128,99 @@ class DjangoModelParser(Parser):
             entity.columns.append(column)
         
         return entity
+    def _extract_inheritance(self, model: Type[models.Model]) -> List[str]:
+        """
+        Extract inheritance information from Django model.
+
+        Traverses the model's __bases__ to get all parent classes,
+        skipping models.Model (default behavior). Records the full
+        module path (module.ClassName) for each parent class in MRO order.
+
+        Args:
+            model: Django model class
+
+        Returns:
+            List of parent class paths (excluding models.Model)
+
+        Raises:
+            ImportError: If unable to resolve parent class module path (fail-fast)
+        """
+        extends = []
+
+        # Get all base classes (MRO order)
+        for base in model.__bases__:
+            # Skip models.Model (default behavior)
+            if base is models.Model:
+                continue
+
+            # Get full module path
+            try:
+                module = base.__module__
+                class_name = base.__name__
+
+                # Validate that we can construct a valid path
+                if not module or not class_name:
+                    raise ImportError(
+                        f"Cannot resolve parent class for model '{model.__name__}': "
+                        f"Invalid module ({module}) or class name ({class_name})"
+                    )
+
+                full_path = f"{module}.{class_name}"
+                extends.append(full_path)
+
+            except AttributeError as e:
+                raise ImportError(
+                    f"Cannot import parent class '{base}' for model '{model.__name__}': "
+                    f"Missing __module__ or __name__ attribute. Error: {e}"
+                ) from e
+
+        return extends
+    def _get_own_fields(self, model: Type[models.Model]) -> List:
+        """
+        Get fields defined in the model itself (not inherited).
+
+        This method filters out fields that are inherited from parent classes,
+        returning only the fields that are directly defined in the model.
+        Only concrete fields (fields with database columns) are included.
+
+        Args:
+            model: Django model class
+
+        Returns:
+            List of field instances that are defined in the model itself
+
+        Requirements: 6.4, 9.7
+        """
+        own_fields = []
+
+        # Get all fields from the model
+        all_fields = model._meta.get_fields()
+
+        # Collect field names from all parent classes
+        parent_field_names = set()
+        for base in model.__bases__:
+            # Skip models.Model
+            if base is models.Model:
+                continue
+
+            # Check if base has _meta (is a Django model)
+            if hasattr(base, '_meta'):
+                for field in base._meta.get_fields():
+                    parent_field_names.add(field.name)
+
+        # Filter to only include own fields that are concrete
+        for field in all_fields:
+            # Skip if field is inherited from parent
+            if field.name in parent_field_names:
+                continue
+
+            # Only include concrete fields (fields with database columns)
+            if field.concrete:
+                own_fields.append(field)
+
+        return own_fields
+
+
     
     def _convert_field_to_column(self, field) -> Column:
         """

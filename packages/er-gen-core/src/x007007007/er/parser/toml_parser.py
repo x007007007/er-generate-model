@@ -150,7 +150,8 @@ class TomlERParser(Parser):
                 columns=list(all_columns.values()),
                 comment=entity_data.get('comment'),
                 extends=extends_list,  # 保存继承的模板列表
-                export_path=entity_data.get('export_path')  # 保存导出路径
+                export_path=entity_data.get('export_path'),  # 保存导出路径
+                package=entity_data.get('package')  # 保存Python模块路径
             )
             
             entities[entity_name] = entity

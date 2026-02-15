@@ -72,6 +72,18 @@ class TOMLRenderer:
                 'columns': []
             }
             
+            # Add inheritance information
+            if entity.extends:
+                entity_dict['extends'] = entity.extends
+            
+            # Add package information
+            if hasattr(entity, 'package') and entity.package:
+                entity_dict['package'] = entity.package
+            
+            # Add export path
+            if hasattr(entity, 'export_path') and entity.export_path:
+                entity_dict['export_path'] = str(entity.export_path)
+            
             # Add columns
             for col in entity.columns:
                 col_dict = {

@@ -35,6 +35,7 @@ class Entity:
     comment: Optional[str] = None
     extends: List[str] = field(default_factory=list)  # 继承的模板列表
     export_path: Optional[str] = None  # 导出路径，None表示不导出（只引用）
+    package: Optional[str] = None  # Python模块路径，例如 "kinkotech.common.domains.account.models"
 
 @dataclass
 class ERModel:
