@@ -60,6 +60,7 @@ class TestTask12_1ConvertApp(TestCase):
         # Create a test TOML file
         toml_content = """
 [entities.User]
+table_name = "user"
 [[entities.User.columns]]
 name = "username"
 type = "CharField"
@@ -118,6 +119,7 @@ type = "EmailField"
         
         toml_content = """
 [entities.User]
+table_name = "user"
 [[entities.User.columns]]
 name = "id"
 type = "AutoField"
@@ -165,6 +167,7 @@ primary_key = true
         
         toml_content = """
 [entities.User]
+table_name = "user"
 [[entities.User.columns]]
 name = "id"
 type = "Integer"
@@ -212,6 +215,7 @@ primary_key = true
         
         toml_content = """
 [entities.User]
+table_name = "user"
 [[entities.User.columns]]
 name = "id"
 type = "AutoField"
@@ -305,6 +309,7 @@ this is not valid TOML
         
         toml_content = """
 [entities.User]
+table_name = "user"
 [[entities.User.columns]]
 name = "username"
 type = "CharField"
