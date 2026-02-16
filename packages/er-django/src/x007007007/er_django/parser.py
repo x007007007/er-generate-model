@@ -104,17 +104,19 @@ class DjangoModelParser(Parser):
             # Get package path
             package_path = model.__module__
 
-            # Get database table name
+            # Get database table name (required)
             try:
                 table_name = model._meta.db_table
-            except AttributeError:
-                # Fallback to default naming rule if db_table is not available
-                table_name = f"{model._meta.app_label}_{model.__name__.lower()}"
-                import logging
-                logger = logging.getLogger(__name__)
-                logger.warning(
-                    f"Could not get db_table for model {model.__name__}, "
-                    f"using default: {table_name}"
+            except AttributeError as e:
+                raise ValueError(
+                    f"Cannot get db_table for model {model.__name__}. "
+                    f"Model must have _meta.db_table attribute."
+                ) from e
+            
+            if not table_name:
+                raise ValueError(
+                    f"db_table is empty for model {model.__name__}. "
+                    f"Model must have a valid table name."
                 )
 
             # Create entity with inheritance, package information, and table_name
@@ -254,9 +256,19 @@ class DjangoModelParser(Parser):
         # Check if it's a foreign key
         is_fk = isinstance(field, (ForeignKey, OneToOneField))
         
+        # Get database column name (required field)
+        # Priority: db_column attribute > column attribute > field name
+        if hasattr(field, 'db_column') and field.db_column:
+            db_column = field.db_column
+        elif hasattr(field, 'column'):
+            db_column = field.column
+        else:
+            db_column = field.name
+        
         column = Column(
-            name=field.column if hasattr(field, 'column') else field.name,
+            name=field.name,
             type=field_type,
+            db_column=db_column,
             is_pk=self.introspector.is_primary_key(field),
             is_fk=is_fk,
             nullable=self.introspector.is_nullable(field),

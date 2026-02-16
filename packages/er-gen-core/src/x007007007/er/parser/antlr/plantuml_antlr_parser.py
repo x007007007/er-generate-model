@@ -79,7 +79,10 @@ class PlantUMLERModelVisitor(PlantUMLERVisitor):
             if alias_ctx.STRING():
                 comment = alias_ctx.STRING().getText().strip('"')
         
-        entity = Entity(name=entity_name, comment=comment)
+        # For PlantUML, table_name is same as entity name (lowercase)
+        table_name = entity_name.lower()
+        
+        entity = Entity(name=entity_name, table_name=table_name, comment=comment)
         
         # Process columns
         for col_ctx in ctx.columnDef():
@@ -122,6 +125,7 @@ class PlantUMLERModelVisitor(PlantUMLERVisitor):
         return Column(
             name=col_name,
             type=col_type,
+            db_column=col_name,  # For PlantUML, db_column is same as name
             is_pk=is_pk,
             is_fk=is_fk,
             comment=comment

@@ -38,7 +38,7 @@ class DBParser(Parser):
             
             # First pass: create entities and columns
             for table_name in table_names:
-                entity = Entity(name=table_name)
+                entity = Entity(name=table_name, table_name=table_name)
                 pk_constraint = inspector.get_pk_constraint(table_name)
                 pk_cols = pk_constraint.get('constrained_columns', []) if pk_constraint else []
                 
@@ -54,6 +54,7 @@ class DBParser(Parser):
                 # Process columns
                 for col in inspector.get_columns(table_name):
                     col_type = str(col['type'])
+                    col_name = col['name']
                     
                     # Extract max_length from type string if available
                     max_length = None
@@ -74,14 +75,15 @@ class DBParser(Parser):
                     # Check if column is a foreign key
                     is_fk = False
                     for fk in inspector.get_foreign_keys(table_name):
-                        if col['name'] in fk.get('constrained_columns', []):
+                        if col_name in fk.get('constrained_columns', []):
                             is_fk = True
                             break
                     
                     entity.columns.append(ERColumn(
-                        name=col['name'],
+                        name=col_name,
                         type=col_type,
-                        is_pk=col['name'] in pk_cols,
+                        db_column=col_name,  # For database parser, db_column is same as name
+                        is_pk=col_name in pk_cols,
                         is_fk=is_fk,
                         nullable=col['nullable'],
                         default=str(col['default']) if col['default'] is not None else None,

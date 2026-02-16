@@ -53,9 +53,24 @@ class AppDiscoveryService:
                     apps_with_toml.append(app_config.label)
                     continue
                 
-                # Strategy 2: Use just the last part of package name (e.g., constance)
+                # Strategy 2: Check in third/ subdirectory for third-party packages
+                # (e.g., src/third/django/contrib/auth/models.toml)
+                toml_path = toml_search_dir / 'third' / app_package_path / 'models.toml'
+                
+                if toml_path.exists():
+                    apps_with_toml.append(app_config.label)
+                    continue
+                
+                # Strategy 3: Use just the last part of package name (e.g., constance)
                 app_name = app_config.name.split('.')[-1]
                 toml_path = toml_search_dir / app_name / 'models.toml'
+                
+                if toml_path.exists():
+                    apps_with_toml.append(app_config.label)
+                    continue
+                
+                # Strategy 4: Check in third/ subdirectory with just app name
+                toml_path = toml_search_dir / 'third' / app_name / 'models.toml'
                 
                 if toml_path.exists():
                     apps_with_toml.append(app_config.label)
@@ -115,9 +130,22 @@ class AppDiscoveryService:
             if toml_path.exists():
                 return toml_path
             
-            # Strategy 2: Use just the last part of package name (e.g., constance)
+            # Strategy 2: Check in third/ subdirectory for third-party packages
+            # (e.g., src/third/django/contrib/auth/models.toml)
+            toml_path = toml_search_dir / 'third' / app_package_path / 'models.toml'
+            
+            if toml_path.exists():
+                return toml_path
+            
+            # Strategy 3: Use just the last part of package name (e.g., constance)
             app_name = app_config.name.split('.')[-1]
             toml_path = toml_search_dir / app_name / 'models.toml'
+            
+            if toml_path.exists():
+                return toml_path
+            
+            # Strategy 4: Check in third/ subdirectory with just app name
+            toml_path = toml_search_dir / 'third' / app_name / 'models.toml'
             
             if toml_path.exists():
                 return toml_path
@@ -127,7 +155,9 @@ class AppDiscoveryService:
                 f"models.toml not found for app '{app_label}' in custom search directory\n"
                 f"Tried locations:\n"
                 f"  - {toml_search_dir / app_package_path / 'models.toml'}\n"
+                f"  - {toml_search_dir / 'third' / app_package_path / 'models.toml'}\n"
                 f"  - {toml_search_dir / app_name / 'models.toml'}\n"
+                f"  - {toml_search_dir / 'third' / app_name / 'models.toml'}\n"
                 f"Suggestion: Check that the TOML file exists in the specified search directory"
             )
         else:

@@ -40,6 +40,7 @@ def column_with_values(draw):
     return Column(
         name=name,
         type=col_type,
+        db_column=name,  # Use name as db_column by default
         max_length=100 if col_type == 'varchar' else None,
         is_pk=(name == 'id'),
         nullable=True,
@@ -55,7 +56,7 @@ def simple_entity(draw):
     num_columns = draw(st.integers(min_value=1, max_value=5))
     
     # Always include an id column
-    columns = [Column(name='id', type='int', is_pk=True, nullable=False)]
+    columns = [Column(name='id', type='int', db_column='id', is_pk=True, nullable=False)]
     
     # Add additional columns
     for _ in range(num_columns - 1):

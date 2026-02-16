@@ -11,6 +11,7 @@ from pathlib import Path
 
 from x007007007.er_django.parser import DjangoModelParser
 from x007007007.er_django.path_resolver import PathResolver
+from x007007007.er_django.path_configuration import PathConfiguration
 from x007007007.er_django.entity_name_extractor import EntityNameExtractor
 from x007007007.er_django.settings import (
     get_er_settings, ensure_directory_exists, get_output_filename
@@ -90,10 +91,27 @@ class Command(BaseCommand):
         # Determine output directory: use --output-dir (default is 'src')
         output_dir = options.get('output_dir') or 'src'
         
-        # Handle relative and absolute paths
-        if not os.path.isabs(output_dir):
-            # Relative path: resolve relative to current working directory
-            output_dir = os.path.join(os.getcwd(), output_dir)
+        # Create PathConfiguration
+        path_config = PathConfiguration.from_options(
+            scan_path=output_dir,
+            output_path=output_dir,
+            working_dir=Path.cwd()
+        )
+        
+        # Validate configuration
+        config_errors = path_config.validate()
+        if config_errors:
+            # If scan_path doesn't exist, try to create it
+            if not path_config.scan_path.exists():
+                try:
+                    path_config.scan_path.mkdir(parents=True, exist_ok=True)
+                except Exception as e:
+                    raise CommandError(f"Failed to create output directory: {e}")
+            else:
+                raise CommandError(f"Configuration errors: {', '.join(config_errors)}")
+        
+        # Create PathResolver with configuration
+        path_resolver = PathResolver(path_config)
         
         specific_models = options.get('models')
         exclude_apps = options.get('exclude_apps', '')
@@ -155,7 +173,7 @@ class Command(BaseCommand):
         
         # Ensure output directory exists
         if er_settings['auto_create_dirs']:
-            ensure_directory_exists(output_dir)
+            ensure_directory_exists(str(path_config.output_path))
         
         # Export each app to a separate file
         exported_files = []
@@ -164,6 +182,13 @@ class Command(BaseCommand):
         for app_label in target_apps:
             # Get app config for path resolution
             app_config = apps.get_app_config(app_label)
+            
+            # Determine if this is a third-party package
+            # A package is considered third-party if it's installed outside the scan_path
+            is_third_party = self._is_third_party_app(app_config, path_config.scan_path)
+            
+            if is_third_party:
+                self.stdout.write(f"  {app_label}: third-party package")
             
             # Parse models for this app
             parser = DjangoModelParser(app_label=app_label)
@@ -203,10 +228,10 @@ class Command(BaseCommand):
             
             # Use PathResolver to determine output path and set export_path for each entity
             try:
-                resolved_output_path = PathResolver.resolve_output_path(
+                resolved_output_path = path_resolver.resolve_output_path(
                     app_config=app_config,
-                    base_dir=output_dir,
-                    format=output_format
+                    format=output_format,
+                    is_third_party=is_third_party
                 )
                 
                 # Set export_path for all entities in this app
@@ -236,7 +261,7 @@ class Command(BaseCommand):
                 # Use specified output path only for single app
                 output_file = Path(output_path)
                 if not output_file.is_absolute():
-                    output_file = Path(output_dir) / output_file
+                    output_file = path_config.output_path / output_file
             else:
                 # Use the resolved output path from PathResolver
                 output_file = resolved_output_path
@@ -261,7 +286,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f"\nExported {total_entities} models from {len(exported_files)} apps:"))
             for app_label, file_path in exported_files:
                 self.stdout.write(f"  {app_label}: {file_path}")
-            self.stdout.write(f"\nExport directory: {output_dir}")
+            self.stdout.write(f"\nExport directory: {path_config.output_path}")
             self.stdout.write(f"Format: {output_format}")
             if excluded_apps:
                 self.stdout.write(f"Excluded apps: {', '.join(excluded_apps)}")
@@ -318,4 +343,35 @@ class Command(BaseCommand):
         new_model.templates = er_model.templates.copy()
 
         return new_model
+    
+    def _is_third_party_app(self, app_config, scan_path: Path) -> bool:
+        """
+        Determine if an app is a third-party package.
+        
+        An app is considered third-party if its path is outside the scan_path directory.
+        This typically means it's installed in site-packages or another external location.
+        
+        Args:
+            app_config: Django AppConfig instance
+            scan_path: Path to the project's source code directory
+            
+        Returns:
+            True if the app is third-party, False otherwise
+        """
+        try:
+            app_path = Path(app_config.path).resolve()
+            scan_path_resolved = scan_path.resolve()
+            
+            # Check if app_path is under scan_path
+            # If app is inside scan_path, it's a local app
+            # If app is outside scan_path, it's a third-party app
+            try:
+                app_path.relative_to(scan_path_resolved)
+                return False  # Local app
+            except ValueError:
+                # app_path is not relative to scan_path, so it's third-party
+                return True
+        except Exception:
+            # If we can't determine, assume it's third-party to be safe
+            return True
 

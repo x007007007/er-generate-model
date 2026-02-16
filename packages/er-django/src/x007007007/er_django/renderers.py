@@ -76,9 +76,8 @@ class TOMLRenderer:
             if entity.extends:
                 entity_dict['extends'] = entity.extends
             
-            # Add table_name (database table name)
-            if hasattr(entity, 'table_name') and entity.table_name:
-                entity_dict['table_name'] = entity.table_name
+            # Add table_name (always output since it's required)
+            entity_dict['table_name'] = entity.table_name
             
             # Add package information
             if hasattr(entity, 'package') and entity.package:
@@ -92,6 +91,10 @@ class TOMLRenderer:
                     'name': col.name,
                     'type': col.type,
                 }
+                
+                # Add db_column only if different from name
+                if col.db_column != col.name:
+                    col_dict['db_column'] = col.db_column
                 
                 # Add optional fields
                 if col.is_pk:

@@ -71,7 +71,7 @@ class TestPathResolverIntegration(TestCase):
         mock_app_config.path = str(Path(self.temp_dir) / 'testproject' / 'testapp')
         
         # Create mock ER model with entities
-        mock_entity = Entity(name='TestModel', package='testproject.testapp.models')
+        mock_entity = Entity(name='TestModel', package='testproject.testapp.models', table_name='testapp_testmodel')
         mock_er_model = ERModel()
         mock_er_model.entities = {'TestModel': mock_entity}
         
@@ -135,8 +135,8 @@ class TestPathResolverIntegration(TestCase):
         mock_app_config.path = str(Path(self.temp_dir) / 'testproject' / 'testapp')
         
         # Create mock ER model with entities
-        mock_entity1 = Entity(name='Model1', package='testproject.testapp.models')
-        mock_entity2 = Entity(name='Model2', package='testproject.testapp.models')
+        mock_entity1 = Entity(name='Model1', package='testproject.testapp.models', table_name='testapp_model1')
+        mock_entity2 = Entity(name='Model2', package='testproject.testapp.models', table_name='testapp_model2')
         mock_er_model = ERModel()
         mock_er_model.entities = {'Model1': mock_entity1, 'Model2': mock_entity2}
         
@@ -198,7 +198,7 @@ class TestPathResolverIntegration(TestCase):
         
         # Create mock ER model with entities that have package set
         expected_package = 'testproject.testapp.models'
-        mock_entity = Entity(name='TestModel', package=expected_package)
+        mock_entity = Entity(name='TestModel', package=expected_package, table_name='testapp_testmodel')
         mock_er_model = ERModel()
         mock_er_model.entities = {'TestModel': mock_entity}
         
@@ -258,7 +258,7 @@ class TestPathResolverIntegration(TestCase):
         mock_app_config.path = str(Path(self.temp_dir) / 'testproject' / 'testapp')
         
         # Create mock ER model with entities
-        mock_entity = Entity(name='TestModel', package='testproject.testapp.models')
+        mock_entity = Entity(name='TestModel', package='testproject.testapp.models', table_name='testapp_testmodel')
         mock_er_model = ERModel()
         mock_er_model.entities = {'TestModel': mock_entity}
         
@@ -312,7 +312,7 @@ class TestPathResolverIntegration(TestCase):
         mock_app_config.path = str(Path(self.temp_dir) / 'testproject' / 'testapp')
         
         # Create mock ER model with entities
-        mock_entity = Entity(name='TestModel', package='testproject.testapp.models')
+        mock_entity = Entity(name='TestModel', package='testproject.testapp.models', table_name='testapp_testmodel')
         mock_er_model = ERModel()
         mock_er_model.entities = {'TestModel': mock_entity}
         

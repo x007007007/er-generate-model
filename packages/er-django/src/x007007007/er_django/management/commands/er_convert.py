@@ -10,6 +10,8 @@ from typing import List, Optional
 from django.core.management.base import BaseCommand, CommandError
 from django.apps import apps
 from x007007007.er_django.app_discovery import AppDiscoveryService
+from x007007007.er_django.path_configuration import PathConfiguration
+from x007007007.er_django.path_resolver import PathResolver
 
 
 class Command(BaseCommand):
@@ -61,6 +63,25 @@ class Command(BaseCommand):
         # Convert output_dir to Path
         output_path = Path(output_dir) if output_dir else Path('src')
         
+        # Create PathConfiguration for third-party detection
+        path_config = PathConfiguration.from_options(
+            scan_path=output_path,
+            output_path=output_path,
+            working_dir=Path.cwd()
+        )
+        
+        # Validate configuration
+        config_errors = path_config.validate()
+        if config_errors:
+            # If scan_path doesn't exist, try to create it
+            if not path_config.scan_path.exists():
+                try:
+                    path_config.scan_path.mkdir(parents=True, exist_ok=True)
+                except Exception as e:
+                    raise CommandError(f"Failed to create output directory: {e}")
+            else:
+                raise CommandError(f"Configuration errors: {', '.join(config_errors)}")
+        
         # Auto-discover or validate apps
         if not apps_to_convert:
             # Auto-discover all apps with models.toml
@@ -91,7 +112,8 @@ class Command(BaseCommand):
                     framework=framework,
                     output_subdir=output_subdir,
                     base_model_import=base_model_import,
-                    output_dir=output_path
+                    output_dir=output_path,
+                    path_config=path_config
                 )
                 converted_count += 1
                 total_files += files_generated
@@ -146,7 +168,8 @@ class Command(BaseCommand):
         framework: str,
         output_subdir: Optional[str],
         base_model_import: Optional[str],
-        output_dir: Optional[Path] = None
+        output_dir: Optional[Path] = None,
+        path_config: Optional[PathConfiguration] = None
     ) -> int:
         """
         Convert a single app's TOML file to target framework code.
@@ -164,6 +187,7 @@ class Command(BaseCommand):
             output_subdir: Custom output subdirectory name
             base_model_import: Custom BaseModel import path for SQLAlchemy
             output_dir: Optional directory to search for TOML files
+            path_config: Optional PathConfiguration for third-party detection
         
         Returns:
             Number of files generated
@@ -173,7 +197,21 @@ class Command(BaseCommand):
         
         Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.8
         """
-        self.stdout.write(f"\nConverting app '{app_label}' to {framework}...")
+        # Get app config for third-party detection
+        try:
+            app_config = apps.get_app_config(app_label)
+        except LookupError:
+            raise CommandError(f"App '{app_label}' not found")
+        
+        # Determine if this is a third-party package
+        is_third_party = False
+        if path_config:
+            is_third_party = self._is_third_party_app(app_config, path_config.scan_path)
+        
+        if is_third_party:
+            self.stdout.write(f"\nConverting app '{app_label}' to {framework} (third-party package)...")
+        else:
+            self.stdout.write(f"\nConverting app '{app_label}' to {framework}...")
         
         # Get TOML file path (fail-fast if not found)
         try:
@@ -200,43 +238,50 @@ class Command(BaseCommand):
             raise CommandError(f"Failed to parse TOML file {toml_path}: {e}")
         
         # Determine output directory
-        # For third-party packages with models.toml in src/, output to the same directory
+        # For third-party packages, use third/ subdirectory
         toml_dir = toml_path.parent
+        
+        if is_third_party and path_config:
+            # Third-party packages go to third/ subdirectory
+            base_output_dir = path_config.output_path / 'third' / app_label
+        else:
+            # Local apps stay in their original location
+            base_output_dir = toml_dir
         
         # Use custom subdir if specified
         if output_subdir:
-            output_dir = toml_dir / output_subdir
+            final_output_dir = base_output_dir / output_subdir
         else:
             # Default behavior depends on framework:
             # - Django: output to models/ subdirectory
             # - SQLAlchemy: output to sqlalchemy/ subdirectory
             if framework == 'django':
-                output_dir = toml_dir / 'models'
+                final_output_dir = base_output_dir / 'models'
             elif framework == 'sqlalchemy':
-                output_dir = toml_dir / 'sqlalchemy'
+                final_output_dir = base_output_dir / 'sqlalchemy'
             else:
-                output_dir = toml_dir
+                final_output_dir = base_output_dir
         
-        self.stdout.write(f"  Output directory: {output_dir}")
+        self.stdout.write(f"  Output directory: {final_output_dir}")
         
         # Create output directory (fail-fast on error)
         try:
-            output_dir.mkdir(parents=True, exist_ok=True)
+            final_output_dir.mkdir(parents=True, exist_ok=True)
         except Exception as e:
-            raise CommandError(f"Failed to create output directory {output_dir}: {e}")
+            raise CommandError(f"Failed to create output directory {final_output_dir}: {e}")
         
         # Generate code based on target framework
         try:
             if framework == 'django':
                 files_generated = self._generate_django_code(
                     er_model=er_model,
-                    output_dir=output_dir,
+                    output_dir=final_output_dir,
                     app_label=app_label
                 )
             elif framework == 'sqlalchemy':
                 files_generated = self._generate_sqlalchemy_code(
                     er_model=er_model,
-                    output_dir=output_dir,
+                    output_dir=final_output_dir,
                     base_model_import=base_model_import
                 )
             else:
@@ -244,7 +289,7 @@ class Command(BaseCommand):
         except Exception as e:
             raise CommandError(f"Failed to generate {framework} code: {e}")
         
-        self.stdout.write(self.style.SUCCESS(f"  Generated {files_generated} files in {output_dir}/"))
+        self.stdout.write(self.style.SUCCESS(f"  Generated {files_generated} files in {final_output_dir}/"))
         
         return files_generated
     
@@ -340,3 +385,34 @@ class Command(BaseCommand):
                 )
         
         return file_count
+    
+    def _is_third_party_app(self, app_config, scan_path: Path) -> bool:
+        """
+        Determine if an app is a third-party package.
+        
+        An app is considered third-party if its path is outside the scan_path directory.
+        This typically means it's installed in site-packages or another external location.
+        
+        Args:
+            app_config: Django AppConfig instance
+            scan_path: Path to the project's source code directory
+            
+        Returns:
+            True if the app is third-party, False otherwise
+        """
+        try:
+            app_path = Path(app_config.path).resolve()
+            scan_path_resolved = scan_path.resolve()
+            
+            # Check if app_path is under scan_path
+            # If app is inside scan_path, it's a local app
+            # If app is outside scan_path, it's a third-party app
+            try:
+                app_path.relative_to(scan_path_resolved)
+                return False  # Local app
+            except ValueError:
+                # app_path is not relative to scan_path, so it's third-party
+                return True
+        except Exception:
+            # If we can't determine, assume it's third-party to be safe
+            return True

@@ -20,16 +20,16 @@ class TestTOMLCompliance:
         """Test that TOML output can be parsed back without errors - Requirement 10.6"""
         # Create a complex entity with various field types
         entity = Entity(
-            name="User",
+            name="User", table_name="user",
             extends=["django.contrib.auth.models.AbstractUser"],
             package="kinkotech.common.domains.account.models",
             export_path="src/kinkotech/common/domains/account/models.toml",
             columns=[
-                Column(name="id", type="IntegerField", is_pk=True, nullable=False),
-                Column(name="username", type="CharField", max_length=150, unique=True, nullable=False),
-                Column(name="email", type="EmailField", max_length=254, nullable=True),
-                Column(name="is_active", type="BooleanField", default=True, nullable=False),
-                Column(name="created_at", type="DateTimeField", nullable=False),
+                Column(name="id", db_column="id", type="IntegerField", is_pk=True, nullable=False),
+                Column(name="username", db_column="username", type="CharField", max_length=150, unique=True, nullable=False),
+                Column(name="email", db_column="email", type="EmailField", max_length=254, nullable=True),
+                Column(name="is_active", db_column="is_active", type="BooleanField", default=True, nullable=False),
+                Column(name="created_at", db_column="created_at", type="DateTimeField", nullable=False),
             ]
         )
         
@@ -53,17 +53,17 @@ class TestTOMLCompliance:
         """Test that special characters in strings are properly escaped - Requirement 10.7"""
         # Create entity with special characters in various fields
         entity = Entity(
-            name="TestModel",
+            name="TestModel", table_name="test_model",
             package='test.models',
             columns=[
                 # Test backslash
-                Column(name="path", type="CharField", max_length=255, comment="Path with \\ backslash"),
+                Column(name="path", db_column="path", type="CharField", max_length=255, comment="Path with \\ backslash"),
                 # Test quotes
-                Column(name="quote", type="CharField", max_length=100, comment='Field with "quotes"'),
+                Column(name="quote", db_column="quote", type="CharField", max_length=100, comment='Field with "quotes"'),
                 # Test newline
-                Column(name="multiline", type="TextField", comment="Line 1\nLine 2"),
+                Column(name="multiline", db_column="multiline", type="TextField", comment="Line 1\nLine 2"),
                 # Test tab
-                Column(name="tabbed", type="CharField", max_length=50, comment="Tab\there"),
+                Column(name="tabbed", db_column="tabbed", type="CharField", max_length=50, comment="Tab\there"),
             ]
         )
         
@@ -101,13 +101,13 @@ class TestTOMLCompliance:
         """Test that Unicode characters are handled correctly - Requirement 10.7"""
         # Create entity with Unicode characters
         entity = Entity(
-            name="InternationalModel",
+            name="InternationalModel", table_name="international_model",
             package="test.models",
             columns=[
-                Column(name="chinese", type="CharField", max_length=100, comment="中文字符"),
-                Column(name="japanese", type="CharField", max_length=100, comment="日本語"),
-                Column(name="emoji", type="CharField", max_length=50, comment="Emoji: 😀🎉"),
-                Column(name="arabic", type="CharField", max_length=100, comment="العربية"),
+                Column(name="chinese", db_column="chinese", type="CharField", max_length=100, comment="中文字符"),
+                Column(name="japanese", db_column="japanese", type="CharField", max_length=100, comment="日本語"),
+                Column(name="emoji", db_column="emoji", type="CharField", max_length=50, comment="Emoji: 😀🎉"),
+                Column(name="arabic", db_column="arabic", type="CharField", max_length=100, comment="العربية"),
             ]
         )
         
@@ -143,10 +143,10 @@ class TestTOMLCompliance:
         """Test that TOML output uses standard format via toml.dumps() - Requirement 10.6"""
         # Create a simple entity
         entity = Entity(
-            name="SimpleModel",
+            name="SimpleModel", table_name="simple_model",
             columns=[
-                Column(name="id", type="IntegerField", is_pk=True),
-                Column(name="name", type="CharField", max_length=100),
+                Column(name="id", db_column="id", type="IntegerField", is_pk=True),
+                Column(name="name", db_column="name", type="CharField", max_length=100),
             ]
         )
         
@@ -171,10 +171,10 @@ class TestTOMLCompliance:
         """Test that empty strings are handled correctly - Requirement 10.7"""
         # Create entity with empty string default
         entity = Entity(
-            name="TestModel",
+            name="TestModel", table_name="test_model",
             columns=[
-                Column(name="empty_field", type="CharField", max_length=50, default=""),
-                Column(name="normal_field", type="CharField", max_length=50, default="value"),
+                Column(name="empty_field", db_column="empty_field", type="CharField", max_length=50, default=""),
+                Column(name="normal_field", db_column="normal_field", type="CharField", max_length=50, default="value"),
             ]
         )
         
@@ -204,9 +204,9 @@ class TestTOMLCompliance:
         # Note: In practice, Python class names shouldn't have special chars,
         # but we test the renderer's robustness
         entity = Entity(
-            name="User_Profile",  # Underscore is common
+            name="User_Profile", table_name="user__profile",  # Underscore is common
             columns=[
-                Column(name="id", type="IntegerField", is_pk=True),
+                Column(name="id", db_column="id", type="IntegerField", is_pk=True),
             ]
         )
         
@@ -228,15 +228,15 @@ class TestTOMLCompliance:
         """Test that relationships section produces valid TOML - Requirement 10.6"""
         # Create entities with relationships
         user = Entity(
-            name="User",
-            columns=[Column(name="id", type="IntegerField", is_pk=True)]
+            name="User", table_name="user",
+            columns=[Column(name="id", db_column="id", type="IntegerField", is_pk=True)]
         )
         
         profile = Entity(
-            name="Profile",
+            name="Profile", table_name="profile",
             columns=[
-                Column(name="id", type="IntegerField", is_pk=True),
-                Column(name="user_id", type="IntegerField", nullable=False),
+                Column(name="id", db_column="id", type="IntegerField", is_pk=True),
+                Column(name="user_id", db_column="user_id", type="IntegerField", nullable=False),
             ]
         )
         
@@ -273,19 +273,19 @@ class TestTOMLCompliance:
         """Test a complex model with all features produces valid TOML - Requirements 10.6, 10.7"""
         # Create a complex entity with all possible features
         entity = Entity(
-            name="ComplexModel",
+            name="ComplexModel", table_name="complex_model",
             extends=["django.contrib.auth.models.AbstractUser", "kinkotech.common.base.TimeStampedModel"],
             package="kinkotech.complex.models",
             export_path="src/kinkotech/complex/models.toml",
             columns=[
-                Column(name="id", type="IntegerField", is_pk=True, nullable=False),
-                Column(name="name", type="CharField", max_length=200, unique=True, nullable=False, comment="User's full name"),
-                Column(name="email", type="EmailField", max_length=254, unique=True, nullable=False),
-                Column(name="bio", type="TextField", nullable=True, comment="Biography with\nnewlines and \"quotes\""),
-                Column(name="age", type="IntegerField", nullable=True, default=0),
-                Column(name="score", type="DecimalField", precision=10, scale=2, nullable=True),
-                Column(name="is_active", type="BooleanField", default=True, nullable=False),
-                Column(name="path", type="CharField", max_length=500, comment="Path: C:\\Users\\test"),
+                Column(name="id", db_column="id", type="IntegerField", is_pk=True, nullable=False),
+                Column(name="name", db_column="name", type="CharField", max_length=200, unique=True, nullable=False, comment="User's full name"),
+                Column(name="email", db_column="email", type="EmailField", max_length=254, unique=True, nullable=False),
+                Column(name="bio", db_column="bio", type="TextField", nullable=True, comment="Biography with\nnewlines and \"quotes\""),
+                Column(name="age", db_column="age", type="IntegerField", nullable=True, default=0),
+                Column(name="score", db_column="score", type="DecimalField", precision=10, scale=2, nullable=True),
+                Column(name="is_active", db_column="is_active", type="BooleanField", default=True, nullable=False),
+                Column(name="path", db_column="path", type="CharField", max_length=500, comment="Path: C:\\Users\\test"),
             ]
         )
         
@@ -333,17 +333,17 @@ class TestTOMLCompliance:
         """Test that TOML can be dumped and loaded without data loss - Requirement 10.6"""
         # Create entity with various data types
         entity = Entity(
-            name="RoundtripModel",
+            name="RoundtripModel", table_name="roundtrip_model",
             extends=["BaseModel"],
             package="test.models",
             export_path="test/models.toml",
             columns=[
-                Column(name="id", type="IntegerField", is_pk=True, nullable=False),
-                Column(name="name", type="CharField", max_length=100, unique=True, nullable=False),
-                Column(name="count", type="IntegerField", default=0, nullable=True),
-                Column(name="active", type="BooleanField", default=True, nullable=False),
-                Column(name="price", type="DecimalField", precision=10, scale=2, nullable=True),
-                Column(name="description", type="TextField", nullable=True, comment="Test comment"),
+                Column(name="id", db_column="id", type="IntegerField", is_pk=True, nullable=False),
+                Column(name="name", db_column="name", type="CharField", max_length=100, unique=True, nullable=False),
+                Column(name="count", db_column="count", type="IntegerField", default=0, nullable=True),
+                Column(name="active", db_column="active", type="BooleanField", default=True, nullable=False),
+                Column(name="price", db_column="price", type="DecimalField", precision=10, scale=2, nullable=True),
+                Column(name="description", db_column="description", type="TextField", nullable=True, comment="Test comment"),
             ]
         )
         
@@ -370,13 +370,13 @@ class TestTOMLCompliance:
         """Test that None/null values are not included in TOML output - Requirement 10.6"""
         # Create entity with some None values
         entity = Entity(
-            name="NullTestModel",
+            name="NullTestModel", table_name="null_test_model",
             extends=[],  # Empty, should not be included
             package=None,  # None, should not be included
             export_path=None,  # None, should not be included
             columns=[
-                Column(name="id", type="IntegerField", is_pk=True),
-                Column(name="optional", type="CharField", max_length=50, nullable=True, default=None),
+                Column(name="id", db_column="id", type="IntegerField", is_pk=True),
+                Column(name="optional", db_column="optional", type="CharField", max_length=50, nullable=True, default=None),
             ]
         )
         
@@ -403,12 +403,12 @@ class TestTOMLCompliance:
         """Test that boolean values are rendered as TOML booleans - Requirement 10.6"""
         # Create entity with boolean fields
         entity = Entity(
-            name="BooleanTestModel",
+            name="BooleanTestModel", table_name="boolean_test_model",
             columns=[
-                Column(name="id", type="IntegerField", is_pk=True, nullable=False),
-                Column(name="active", type="BooleanField", default=True, nullable=False),
-                Column(name="deleted", type="BooleanField", default=False, nullable=False),
-                Column(name="optional", type="CharField", max_length=50, unique=True, nullable=True),
+                Column(name="id", db_column="id", type="IntegerField", is_pk=True, nullable=False),
+                Column(name="active", db_column="active", type="BooleanField", default=True, nullable=False),
+                Column(name="deleted", db_column="deleted", type="BooleanField", default=False, nullable=False),
+                Column(name="optional", db_column="optional", type="CharField", max_length=50, unique=True, nullable=True),
             ]
         )
         
@@ -446,12 +446,12 @@ class TestTOMLCompliance:
         """Test that integer values are rendered as TOML integers - Requirement 10.6"""
         # Create entity with integer fields
         entity = Entity(
-            name="IntegerTestModel",
+            name="IntegerTestModel", table_name="integer_test_model",
             columns=[
-                Column(name="id", type="IntegerField", is_pk=True),
-                Column(name="max_length_field", type="CharField", max_length=255),
-                Column(name="precision_field", type="DecimalField", precision=10, scale=2),
-                Column(name="default_int", type="IntegerField", default=42),
+                Column(name="id", db_column="id", type="IntegerField", is_pk=True),
+                Column(name="max_length_field", db_column="max_length_field", type="CharField", max_length=255),
+                Column(name="precision_field", db_column="precision_field", type="DecimalField", precision=10, scale=2),
+                Column(name="default_int", db_column="default_int", type="IntegerField", default=42),
             ]
         )
         

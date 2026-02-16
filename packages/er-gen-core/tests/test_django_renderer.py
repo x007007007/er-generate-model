@@ -96,9 +96,10 @@ class TestDjangoRenderer:
         """Test rendering a simple entity."""
         entity = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="int", is_pk=True, nullable=False),
-                Column(name="name", type="varchar", max_length=100, nullable=False)
+                Column(name="id", type="int", db_column="id", is_pk=True, nullable=False),
+                Column(name="name", type="varchar", db_column="name", max_length=100, nullable=False)
             ],
             comment="User model"
         )
@@ -115,10 +116,11 @@ class TestDjangoRenderer:
         """Test rendering entity with default values."""
         entity = Entity(
             name="Post",
+            table_name="post",
             columns=[
-                Column(name="id", type="int", is_pk=True, nullable=False),
-                Column(name="title", type="varchar", max_length=200, nullable=False, default="Untitled"),
-                Column(name="published", type="boolean", nullable=False, default=False)
+                Column(name="id", type="int", db_column="id", is_pk=True, nullable=False),
+                Column(name="title", type="varchar", db_column="title", max_length=200, nullable=False, default="Untitled"),
+                Column(name="published", type="boolean", db_column="published", nullable=False, default=False)
             ]
         )
         model = ERModel(entities={"Post": entity}, relationships=[], templates={})
@@ -133,9 +135,10 @@ class TestDjangoRenderer:
         """Test rendering entity with help_text."""
         entity = Entity(
             name="Article",
+            table_name="article",
             columns=[
-                Column(name="id", type="int", is_pk=True, nullable=False),
-                Column(name="content", type="text", nullable=False, comment="Article content")
+                Column(name="id", type="int", db_column="id", is_pk=True, nullable=False),
+                Column(name="content", type="text", db_column="content", nullable=False, comment="Article content")
             ]
         )
         model = ERModel(entities={"Article": entity}, relationships=[], templates={})
@@ -149,9 +152,10 @@ class TestDjangoRenderer:
         """Test rendering entity with quotes in help_text."""
         entity = Entity(
             name="Product",
+            table_name="product",
             columns=[
-                Column(name="id", type="int", is_pk=True, nullable=False),
-                Column(name="name", type="varchar", max_length=100, nullable=False, comment='Product "name"')
+                Column(name="id", type="int", db_column="id", is_pk=True, nullable=False),
+                Column(name="name", type="varchar", db_column="name", max_length=100, nullable=False, comment='Product "name"')
             ]
         )
         model = ERModel(entities={"Product": entity}, relationships=[], templates={})
@@ -167,11 +171,13 @@ class TestDjangoRenderer:
         """Test rendering multiple entities."""
         user = Entity(
             name="User",
-            columns=[Column(name="id", type="int", is_pk=True, nullable=False)]
+            table_name="user",
+            columns=[Column(name="id", type="int", db_column="id", is_pk=True, nullable=False)]
         )
         post = Entity(
             name="Post",
-            columns=[Column(name="id", type="int", is_pk=True, nullable=False)]
+            table_name="post",
+            columns=[Column(name="id", type="int", db_column="id", is_pk=True, nullable=False)]
         )
         model = ERModel(
             entities={"User": user, "Post": post},
@@ -188,7 +194,8 @@ class TestDjangoRenderer:
         renderer = DjangoRenderer(table_prefix='myapp')
         entity = Entity(
             name="User",
-            columns=[Column(name="id", type="int", is_pk=True, nullable=False)]
+            table_name="myapp_user",  # table_prefix is applied to the table_name
+            columns=[Column(name="id", type="int", db_column="id", is_pk=True, nullable=False)]
         )
         model = ERModel(entities={"User": entity}, relationships=[], templates={})
         result = renderer.render(model)
@@ -201,7 +208,8 @@ class TestDjangoRenderer:
         renderer = DjangoRenderer(app_label='customapp')
         entity = Entity(
             name="User",
-            columns=[Column(name="id", type="int", is_pk=True, nullable=False)]
+            table_name="user",
+            columns=[Column(name="id", type="int", db_column="id", is_pk=True, nullable=False)]
         )
         model = ERModel(entities={"User": entity}, relationships=[], templates={})
         result = renderer.render(model)
@@ -218,10 +226,11 @@ class TestDjangoRenderer:
         """Test that generated code is syntactically valid."""
         entity = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="int", is_pk=True, nullable=False),
-                Column(name="name", type="varchar", max_length=100, nullable=False),
-                Column(name="email", type="varchar", max_length=255, nullable=False)
+                Column(name="id", type="int", db_column="id", is_pk=True, nullable=False),
+                Column(name="name", type="varchar", db_column="name", max_length=100, nullable=False),
+                Column(name="email", type="varchar", db_column="email", max_length=255, nullable=False)
             ]
         )
         model = ERModel(entities={"User": entity}, relationships=[], templates={})
@@ -286,7 +295,8 @@ class TestDjangoPackageRenderer:
         """Test rendering single entity generates 4 files (3 + __init__)."""
         entity = Entity(
             name="User",
-            columns=[Column(name="id", type="int", is_pk=True, nullable=False)]
+            table_name="user",
+            columns=[Column(name="id", type="int", db_column="id", is_pk=True, nullable=False)]
         )
         model = ERModel(entities={"User": entity}, relationships=[], templates={})
         result = self.renderer.render(model)
@@ -302,11 +312,13 @@ class TestDjangoPackageRenderer:
         """Test rendering N entities generates 3N + 1 files."""
         user = Entity(
             name="User",
-            columns=[Column(name="id", type="int", is_pk=True, nullable=False)]
+            table_name="user",
+            columns=[Column(name="id", type="int", db_column="id", is_pk=True, nullable=False)]
         )
         post = Entity(
             name="Post",
-            columns=[Column(name="id", type="int", is_pk=True, nullable=False)]
+            table_name="post",
+            columns=[Column(name="id", type="int", db_column="id", is_pk=True, nullable=False)]
         )
         model = ERModel(
             entities={"User": user, "Post": post},
@@ -331,7 +343,8 @@ class TestDjangoPackageRenderer:
         """Test that file names follow snake_case convention."""
         entity = Entity(
             name="UserProfile",
-            columns=[Column(name="id", type="int", is_pk=True, nullable=False)]
+            table_name="user_profile",
+            columns=[Column(name="id", type="int", db_column="id", is_pk=True, nullable=False)]
         )
         model = ERModel(entities={"UserProfile": entity}, relationships=[], templates={})
         result = self.renderer.render(model)
@@ -344,7 +357,8 @@ class TestDjangoPackageRenderer:
         """Test QuerySet file contains QuerySet class."""
         entity = Entity(
             name="User",
-            columns=[Column(name="id", type="int", is_pk=True, nullable=False)]
+            table_name="user",
+            columns=[Column(name="id", type="int", db_column="id", is_pk=True, nullable=False)]
         )
         model = ERModel(entities={"User": entity}, relationships=[], templates={})
         result = self.renderer.render(model)
@@ -357,7 +371,8 @@ class TestDjangoPackageRenderer:
         """Test Manager file contains Manager class."""
         entity = Entity(
             name="User",
-            columns=[Column(name="id", type="int", is_pk=True, nullable=False)]
+            table_name="user",
+            columns=[Column(name="id", type="int", db_column="id", is_pk=True, nullable=False)]
         )
         model = ERModel(entities={"User": entity}, relationships=[], templates={})
         result = self.renderer.render(model)
@@ -370,7 +385,8 @@ class TestDjangoPackageRenderer:
         """Test Model file contains Model class."""
         entity = Entity(
             name="User",
-            columns=[Column(name="id", type="int", is_pk=True, nullable=False)]
+            table_name="user",
+            columns=[Column(name="id", type="int", db_column="id", is_pk=True, nullable=False)]
         )
         model = ERModel(entities={"User": entity}, relationships=[], templates={})
         result = self.renderer.render(model)
@@ -383,7 +399,8 @@ class TestDjangoPackageRenderer:
         """Test that Manager file imports QuerySet."""
         entity = Entity(
             name="User",
-            columns=[Column(name="id", type="int", is_pk=True, nullable=False)]
+            table_name="user",
+            columns=[Column(name="id", type="int", db_column="id", is_pk=True, nullable=False)]
         )
         model = ERModel(entities={"User": entity}, relationships=[], templates={})
         result = self.renderer.render(model)
@@ -395,7 +412,8 @@ class TestDjangoPackageRenderer:
         """Test that Model file imports Manager."""
         entity = Entity(
             name="User",
-            columns=[Column(name="id", type="int", is_pk=True, nullable=False)]
+            table_name="user",
+            columns=[Column(name="id", type="int", db_column="id", is_pk=True, nullable=False)]
         )
         model = ERModel(entities={"User": entity}, relationships=[], templates={})
         result = self.renderer.render(model)
@@ -407,7 +425,8 @@ class TestDjangoPackageRenderer:
         """Test that __init__.py imports Model classes."""
         entity = Entity(
             name="User",
-            columns=[Column(name="id", type="int", is_pk=True, nullable=False)]
+            table_name="user",
+            columns=[Column(name="id", type="int", db_column="id", is_pk=True, nullable=False)]
         )
         model = ERModel(entities={"User": entity}, relationships=[], templates={})
         result = self.renderer.render(model)
@@ -419,7 +438,8 @@ class TestDjangoPackageRenderer:
         """Test that __init__.py has __all__ list."""
         entity = Entity(
             name="User",
-            columns=[Column(name="id", type="int", is_pk=True, nullable=False)]
+            table_name="user",
+            columns=[Column(name="id", type="int", db_column="id", is_pk=True, nullable=False)]
         )
         model = ERModel(entities={"User": entity}, relationships=[], templates={})
         result = self.renderer.render(model)
@@ -432,9 +452,10 @@ class TestDjangoPackageRenderer:
         """Test that all generated files are syntactically valid."""
         entity = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="int", is_pk=True, nullable=False),
-                Column(name="name", type="varchar", max_length=100, nullable=False)
+                Column(name="id", type="int", db_column="id", is_pk=True, nullable=False),
+                Column(name="name", type="varchar", db_column="name", max_length=100, nullable=False)
             ]
         )
         model = ERModel(entities={"User": entity}, relationships=[], templates={})

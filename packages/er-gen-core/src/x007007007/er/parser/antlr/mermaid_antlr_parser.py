@@ -69,7 +69,9 @@ class MermaidERModelVisitor(MermaidERVisitor):
         entity_name_ctx = ctx.entityName()
         if entity_name_ctx:
             entity_name = entity_name_ctx.getText()
-            self.current_entity = Entity(name=entity_name)
+            # For Mermaid, table_name is same as entity name (lowercase)
+            table_name = entity_name.lower()
+            self.current_entity = Entity(name=entity_name, table_name=table_name)
             self.model.add_entity(self.current_entity)
             
             # Visit column definitions
@@ -110,6 +112,7 @@ class MermaidERModelVisitor(MermaidERVisitor):
         column = Column(
             name=column_name,
             type=column_type,
+            db_column=column_name,  # For Mermaid, db_column is same as name
             is_pk=is_pk,
             is_fk=is_fk,
             unique=is_unique,

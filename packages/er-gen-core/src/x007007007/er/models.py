@@ -5,6 +5,7 @@ from typing import List, Optional, Dict, Any
 class Column:
     name: str
     type: str
+    db_column: str  # Database column name (required)
     is_pk: bool = False
     is_fk: bool = False
     nullable: bool = True
@@ -15,6 +16,11 @@ class Column:
     scale: Optional[int] = None  # For DECIMAL, NUMERIC
     unique: bool = False
     indexed: bool = False
+    
+    @property
+    def database_column_name(self) -> str:
+        """Return the actual database column name"""
+        return self.db_column
 
 @dataclass
 class Relationship:
@@ -31,12 +37,12 @@ class Relationship:
 @dataclass
 class Entity:
     name: str
+    table_name: str  # Database table name (required)
     columns: List[Column] = field(default_factory=list)
     comment: Optional[str] = None
     extends: List[str] = field(default_factory=list)  # 继承的模板列表
     export_path: Optional[str] = None  # 导出路径，None表示不导出（只引用）
     package: Optional[str] = None  # Python模块路径，例如 "kinkotech.common.domains.account.models"
-    table_name: Optional[str] = None  # 数据库真实表名
 
 @dataclass
 class ERModel:

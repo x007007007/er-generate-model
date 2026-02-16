@@ -175,11 +175,11 @@ primary_key = true
         # Create ERModel with conflicting entity names
         er_model = ERModel()
         
-        user1 = Entity(name="User")
-        user1.columns.append(Column(name="id", type="Integer", is_pk=True))
+        user1 = Entity(name="User", table_name="app_user")
+        user1.columns.append(Column(name="id", type="Integer", is_pk=True, db_column="id"))
         
-        user2 = Entity(name="USER")
-        user2.columns.append(Column(name="id", type="Integer", is_pk=True))
+        user2 = Entity(name="USER", table_name="app_user_upper")
+        user2.columns.append(Column(name="id", type="Integer", is_pk=True, db_column="id"))
         
         er_model.entities["User"] = user1
         er_model.entities["USER"] = user2

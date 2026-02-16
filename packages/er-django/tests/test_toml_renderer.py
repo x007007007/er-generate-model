@@ -17,9 +17,10 @@ class TestTOMLRendererExtends:
         # Create entity with extends
         entity = Entity(
             name="User",
+            table_name="auth_user",
             extends=["django.contrib.auth.models.AbstractUser"],
             columns=[
-                Column(name="phone", type="CharField", max_length=20, nullable=True, unique=True)
+                Column(name="phone", type="CharField", db_column="phone", max_length=20, nullable=True, unique=True)
             ]
         )
         
@@ -43,12 +44,13 @@ class TestTOMLRendererExtends:
         # Create entity with multiple extends
         entity = Entity(
             name="Profile",
+            table_name="profile",
             extends=[
                 "kinkotech.common.base.TimeStampedModel",
                 "kinkotech.common.base.SoftDeleteModel"
             ],
             columns=[
-                Column(name="bio", type="TextField", nullable=True)
+                Column(name="bio", type="TextField", db_column="bio", nullable=True)
             ]
         )
         
@@ -74,9 +76,10 @@ class TestTOMLRendererExtends:
         # Create entity without extends
         entity = Entity(
             name="SimpleModel",
+            table_name="simple_model",
             extends=[],  # Empty list
             columns=[
-                Column(name="name", type="CharField", max_length=100)
+                Column(name="name", type="CharField", db_column="name", max_length=100)
             ]
         )
         
@@ -100,8 +103,9 @@ class TestTOMLRendererExtends:
         # Create entity with default extends (not explicitly set)
         entity = Entity(
             name="DefaultModel",
+            table_name="default_model",
             columns=[
-                Column(name="id", type="IntegerField", is_pk=True)
+                Column(name="id", type="IntegerField", db_column="id", is_pk=True)
             ]
         )
         
@@ -125,22 +129,25 @@ class TestTOMLRendererExtends:
         # Entity with extends
         entity1 = Entity(
             name="User",
+            table_name="auth_user",
             extends=["django.contrib.auth.models.AbstractUser"],
-            columns=[Column(name="phone", type="CharField", max_length=20)]
+            columns=[Column(name="phone", type="CharField", db_column="phone", max_length=20)]
         )
         
         # Entity without extends
         entity2 = Entity(
             name="Tag",
+            table_name="tag",
             extends=[],
-            columns=[Column(name="name", type="CharField", max_length=50)]
+            columns=[Column(name="name", type="CharField", db_column="name", max_length=50)]
         )
         
         # Entity with multiple extends
         entity3 = Entity(
             name="Post",
+            table_name="post",
             extends=["kinkotech.common.base.TimeStampedModel"],
-            columns=[Column(name="title", type="CharField", max_length=200)]
+            columns=[Column(name="title", type="CharField", db_column="title", max_length=200)]
         )
         
         er_model = ERModel()
@@ -174,11 +181,12 @@ class TestTOMLRendererExtends:
         # Create entity with both extends and columns
         entity = Entity(
             name="CustomUser",
+            table_name="custom_user",
             extends=["django.contrib.auth.models.AbstractUser"],
             columns=[
-                Column(name="phone", type="CharField", max_length=20, nullable=True),
-                Column(name="avatar", type="ImageField", nullable=True),
-                Column(name="bio", type="TextField", nullable=True)
+                Column(name="phone", type="CharField", db_column="phone", max_length=20, nullable=True),
+                Column(name="avatar", type="ImageField", db_column="avatar", nullable=True),
+                Column(name="bio", type="TextField", db_column="bio", nullable=True)
             ]
         )
         
@@ -217,9 +225,10 @@ class TestTOMLRendererExportPath:
         # Create entity with export_path
         entity = Entity(
             name="User",
+            table_name="auth_user",
             export_path="src/kinkotech/common/domains/account/models.toml",
             columns=[
-                Column(name="phone", type="CharField", max_length=20, nullable=True)
+                Column(name="phone", type="CharField", db_column="phone", max_length=20, nullable=True)
             ]
         )
         
@@ -243,9 +252,10 @@ class TestTOMLRendererExportPath:
         # Create entity without export_path (None)
         entity = Entity(
             name="SimpleModel",
+            table_name="simple_model",
             export_path=None,
             columns=[
-                Column(name="name", type="CharField", max_length=100)
+                Column(name="name", type="CharField", db_column="name", max_length=100)
             ]
         )
         
@@ -269,8 +279,9 @@ class TestTOMLRendererExportPath:
         # Create entity with default export_path (not explicitly set)
         entity = Entity(
             name="DefaultModel",
+            table_name="default_model",
             columns=[
-                Column(name="id", type="IntegerField", is_pk=True)
+                Column(name="id", type="IntegerField", db_column="id", is_pk=True)
             ]
         )
         
@@ -294,22 +305,25 @@ class TestTOMLRendererExportPath:
         # Entity with export_path
         entity1 = Entity(
             name="User",
+            table_name="auth_user",
             export_path="src/app1/models.toml",
-            columns=[Column(name="phone", type="CharField", max_length=20)]
+            columns=[Column(name="phone", type="CharField", db_column="phone", max_length=20)]
         )
         
         # Entity without export_path
         entity2 = Entity(
             name="Tag",
+            table_name="tag",
             export_path=None,
-            columns=[Column(name="name", type="CharField", max_length=50)]
+            columns=[Column(name="name", type="CharField", db_column="name", max_length=50)]
         )
         
         # Entity with different export_path
         entity3 = Entity(
             name="Post",
+            table_name="post",
             export_path="src/app2/models.toml",
-            columns=[Column(name="title", type="CharField", max_length=200)]
+            columns=[Column(name="title", type="CharField", db_column="title", max_length=200)]
         )
         
         er_model = ERModel()
@@ -337,12 +351,13 @@ class TestTOMLRendererExportPath:
         # Create entity with export_path, extends, and package
         entity = Entity(
             name="CustomUser",
+            table_name="custom_user",
             extends=["django.contrib.auth.models.AbstractUser"],
             package="kinkotech.common.domains.account.models",
             export_path="src/kinkotech/common/domains/account/models.toml",
             columns=[
-                Column(name="phone", type="CharField", max_length=20, nullable=True),
-                Column(name="avatar", type="ImageField", nullable=True)
+                Column(name="phone", type="CharField", db_column="phone", max_length=20, nullable=True),
+                Column(name="avatar", type="ImageField", db_column="avatar", nullable=True)
             ]
         )
         
@@ -380,9 +395,10 @@ class TestTOMLRendererExportPath:
         # Create entity with Path object as export_path
         entity = Entity(
             name="User",
+            table_name="auth_user",
             export_path=Path("src/kinkotech/common/domains/account/models.toml"),
             columns=[
-                Column(name="phone", type="CharField", max_length=20)
+                Column(name="phone", type="CharField", db_column="phone", max_length=20)
             ]
         )
         
@@ -406,9 +422,10 @@ class TestTOMLRendererExportPath:
         # Create entity with absolute path
         entity = Entity(
             name="User",
+            table_name="auth_user",
             export_path="/absolute/path/to/models.toml",
             columns=[
-                Column(name="id", type="IntegerField", is_pk=True)
+                Column(name="id", type="IntegerField", db_column="id", is_pk=True)
             ]
         )
         

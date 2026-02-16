@@ -75,6 +75,49 @@
 
 ### 已完成功能
 
+#### Django字段db_column参数和路径分离 (field-db-column-and-path-separation)
+- ✅ **db_column 参数支持**：完整支持 Django 字段的 db_column 参数
+  - Column 模型扩展：添加 `db_column` 必需字段和 `database_column_name` 属性
+  - Entity 模型扩展：添加 `table_name` 必需字段
+  - DjangoModelParser 增强：从 Django 字段提取 db_column 参数
+  - TOML 渲染器更新：仅在 db_column 与 name 不同时输出
+  - 代码生成器更新：正确生成带 db_column 参数的 Django 代码
+  - 测试覆盖：属性测试和单元测试完整覆盖
+
+- ✅ **路径配置系统**：灵活的路径配置和分离功能
+  - PathConfiguration 类：管理扫描路径、输出路径和三方包路径
+  - 配置继承规则：scan_path → output_path → third_party_output_path
+  - 相对路径解析：支持相对路径和绝对路径
+  - 包名前缀：自动推导或自定义三方包前缀
+  - 配置验证：完整的错误检查和描述性错误消息
+  - 测试覆盖：13个属性测试验证配置正确性
+
+- ✅ **三方包自动检测和分离**：智能识别和分离三方包
+  - 自动检测：基于应用物理路径判断是否为三方包
+  - er_export 命令：自动将三方包 TOML 输出到 `third/` 目录
+  - er_convert 命令：自动发现并转换 `third/` 目录下的 TOML
+  - AppDiscoveryService 增强：支持在 `third/` 子目录中查找 TOML
+  - 路径查找策略：4种策略确保找到所有 TOML 文件
+  - 测试覆盖：完整的三方包检测和路径解析测试
+
+- ✅ **命令行接口增强**：
+  - er_export 新增参数：`--output-dir`, `--third-party-output-dir`, `--third-party-prefix`
+  - er_convert 新增参数：`--output-dir`, `--third-party-output-dir`, `--third-party-prefix`
+  - 自动配置验证：启动时验证路径配置
+  - 友好的错误消息：详细的配置错误提示
+
+- ✅ **文档更新**：
+  - README 重写：面向用户的功能介绍和使用指南
+  - 三方包工作流程：完整的示例和目录结构说明
+  - 配置选项说明：详细的参数说明和使用场景
+  - 移除开发内容：开发相关内容移至独立文档
+
+- ✅ **测试覆盖**：所有测试通过
+  - 属性测试：17个属性测试验证通用正确性
+  - 单元测试：完整的边缘情况和错误处理测试
+  - 集成测试：端到端功能验证
+  - 三方包测试：5个测试验证三方包检测和路径解析
+
 #### Django ER Export 增强 (django-er-export-improvements)
 - ✅ **table_name 字段支持**：Entity 模型新增 table_name 字段
   - DjangoModelParser 从 model._meta.db_table 提取表名

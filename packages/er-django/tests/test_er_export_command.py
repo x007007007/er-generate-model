@@ -233,7 +233,7 @@ class TestErExportOutputPath(TestCase):
                 # Setup mock parser to return a simple ER model
                 mock_parser_instance = Mock()
                 er_model = ERModel()
-                entity = Entity(name='TestModel')
+                entity = Entity(name='TestModel', table_name='testapp_testmodel')
                 er_model.entities['TestModel'] = entity
                 mock_parser_instance.parse.return_value = er_model
                 mock_parser.return_value = mock_parser_instance
@@ -311,7 +311,7 @@ class TestErExportOutputPath(TestCase):
                 # Setup mock parser to return a simple ER model
                 mock_parser_instance = Mock()
                 er_model = ERModel()
-                entity = Entity(name='TestModel')
+                entity = Entity(name='TestModel', table_name='testapp_testmodel')
                 er_model.entities['TestModel'] = entity
                 mock_parser_instance.parse.return_value = er_model
                 mock_parser.return_value = mock_parser_instance
@@ -386,7 +386,7 @@ class TestErExportOutputPath(TestCase):
                 # Setup mock parser to return a simple ER model
                 mock_parser_instance = Mock()
                 er_model = ERModel()
-                entity = Entity(name='TestModel')
+                entity = Entity(name='TestModel', table_name='testapp_testmodel')
                 er_model.entities['TestModel'] = entity
                 mock_parser_instance.parse.return_value = er_model
                 mock_parser.return_value = mock_parser_instance
@@ -475,7 +475,7 @@ class TestErExportMultipleApps(TestCase):
                 def parser_side_effect(app_label):
                     parser_instance = Mock()
                     er_model = ERModel()
-                    entity = Entity(name=f'{app_label.capitalize()}Model')
+                    entity = Entity(name=f'{app_label.capitalize()}Model', table_name=f'{app_label}_model')
                     er_model.entities[f'{app_label.capitalize()}Model'] = entity
                     parser_instance.parse.return_value = er_model
                     return parser_instance
@@ -557,7 +557,7 @@ class TestErExportMultipleApps(TestCase):
                 # Setup mock parser to return a simple ER model
                 mock_parser_instance = Mock()
                 er_model = ERModel()
-                entity = Entity(name='TestModel')
+                entity = Entity(name='TestModel', table_name='testapp_testmodel')
                 er_model.entities['TestModel'] = entity
                 mock_parser_instance.parse.return_value = er_model
                 mock_parser.return_value = mock_parser_instance
@@ -638,7 +638,7 @@ class TestErExportDirectoryCreation(TestCase):
                 # Setup mock parser to return a simple ER model
                 mock_parser_instance = Mock()
                 er_model = ERModel()
-                entity = Entity(name='TestModel')
+                entity = Entity(name='TestModel', table_name='testapp_testmodel')
                 er_model.entities['TestModel'] = entity
                 mock_parser_instance.parse.return_value = er_model
                 mock_parser.return_value = mock_parser_instance
@@ -708,7 +708,7 @@ class TestErExportDirectoryCreation(TestCase):
                 # Setup mock parser to return a simple ER model
                 mock_parser_instance = Mock()
                 er_model = ERModel()
-                entity = Entity(name='TestModel')
+                entity = Entity(name='TestModel', table_name='testapp_testmodel')
                 er_model.entities['TestModel'] = entity
                 mock_parser_instance.parse.return_value = er_model
                 mock_parser.return_value = mock_parser_instance
@@ -789,7 +789,7 @@ class TestErExportDirectoryCreation(TestCase):
                 # Setup mock parser to return a simple ER model
                 mock_parser_instance = Mock()
                 er_model = ERModel()
-                entity = Entity(name='TestModel')
+                entity = Entity(name='TestModel', table_name='testapp_testmodel')
                 er_model.entities['TestModel'] = entity
                 mock_parser_instance.parse.return_value = er_model
                 mock_parser.return_value = mock_parser_instance

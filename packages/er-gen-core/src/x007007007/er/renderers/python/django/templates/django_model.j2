@@ -96,6 +96,9 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- if col.default is not none %}
 {%- set _ = param_list.append('default=' + (col.default | code_value)) %}
 {%- endif %}
+{%- if col.db_column and col.db_column != col.name %}
+{%- set _ = param_list.append("db_column='" + col.db_column + "'") %}
+{%- endif %}
 {%- if col.comment %}
 {%- set _ = param_list.append('help_text=' + (col.comment | code_value)) %}
 {%- endif %}

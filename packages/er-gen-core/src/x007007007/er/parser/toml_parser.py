@@ -184,9 +184,14 @@ class TomlERParser(Parser):
         assert 'name' in col_data, "Column must have 'name' field"
         assert 'type' in col_data, "Column must have 'type' field"
         
+        # Get db_column (required field)
+        # If not present in TOML, use name as default (for backward compatibility)
+        db_column = col_data.get('db_column', col_data['name'])
+        
         return Column(
             name=str(col_data['name']),
             type=str(col_data['type']),
+            db_column=str(db_column),
             is_pk=col_data.get('is_pk', False),
             is_fk=col_data.get('is_fk', False),
             nullable=col_data.get('nullable', True),
