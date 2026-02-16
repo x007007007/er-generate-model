@@ -73,6 +73,29 @@
 
 ## [Unreleased]
 
+### 已完成功能
+
+#### Django ER Export 增强 (django-er-export-improvements)
+- ✅ **table_name 字段支持**：Entity 模型新增 table_name 字段
+  - DjangoModelParser 从 model._meta.db_table 提取表名
+  - TOMLRenderer 输出 table_name 字段
+  - TomlERParser 验证 table_name 必需字段
+- ✅ **实体名称提取器**：新增 EntityNameExtractor 类
+  - 支持正则表达式模式匹配
+  - 灵活的实体名称过滤
+- ✅ **er_export 命令增强**：
+  - 新增 --output-dir 参数指定输出目录
+  - 新增 --entity-name-pattern 参数过滤实体
+  - 移除 export_path 字段输出
+- ✅ **er_convert 命令改进**：
+  - --toml-search-dir 重命名为 --output-dir
+  - 参数命名更加一致和直观
+- ✅ **代码生成器更新**：
+  - Django 和 SQLAlchemy 渲染器使用 entity.table_name
+  - 确保生成的代码使用正确的表名
+- ✅ **测试覆盖**：464 个测试通过（95.7% 覆盖率）
+- ✅ **文档更新**：完整的使用文档和迁移指南
+
 ### 新增功能
 
 #### Django模型多文件生成
