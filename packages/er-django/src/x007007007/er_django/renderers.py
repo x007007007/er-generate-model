@@ -76,13 +76,15 @@ class TOMLRenderer:
             if entity.extends:
                 entity_dict['extends'] = entity.extends
             
+            # Add table_name (database table name)
+            if hasattr(entity, 'table_name') and entity.table_name:
+                entity_dict['table_name'] = entity.table_name
+            
             # Add package information
             if hasattr(entity, 'package') and entity.package:
                 entity_dict['package'] = entity.package
             
-            # Add export path
-            if hasattr(entity, 'export_path') and entity.export_path:
-                entity_dict['export_path'] = str(entity.export_path)
+            # Note: export_path is no longer generated (removed for portability)
             
             # Add columns
             for col in entity.columns:

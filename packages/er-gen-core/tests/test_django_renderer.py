@@ -296,7 +296,7 @@ class TestDjangoPackageRenderer:
         assert '__init__.py' in result
         assert 'user_queryset.py' in result
         assert 'user_manager.py' in result
-        assert 'user_model.py' in result
+        assert 'user.py' in result
     
     def test_render_multiple_entities_generates_correct_count(self):
         """Test rendering N entities generates 3N + 1 files."""
@@ -321,11 +321,11 @@ class TestDjangoPackageRenderer:
         # User files
         assert 'user_queryset.py' in result
         assert 'user_manager.py' in result
-        assert 'user_model.py' in result
+        assert 'user.py' in result
         # Post files
         assert 'post_queryset.py' in result
         assert 'post_manager.py' in result
-        assert 'post_model.py' in result
+        assert 'post.py' in result
     
     def test_file_naming_convention(self):
         """Test that file names follow snake_case convention."""
@@ -338,7 +338,7 @@ class TestDjangoPackageRenderer:
         
         assert 'user_profile_queryset.py' in result
         assert 'user_profile_manager.py' in result
-        assert 'user_profile_model.py' in result
+        assert 'user_profile.py' in result
     
     def test_queryset_file_content(self):
         """Test QuerySet file contains QuerySet class."""
@@ -375,7 +375,7 @@ class TestDjangoPackageRenderer:
         model = ERModel(entities={"User": entity}, relationships=[], templates={})
         result = self.renderer.render(model)
         
-        model_content = result['user_model.py']
+        model_content = result['user.py']
         assert "class User" in model_content
         assert "models.Model" in model_content
     
@@ -400,7 +400,7 @@ class TestDjangoPackageRenderer:
         model = ERModel(entities={"User": entity}, relationships=[], templates={})
         result = self.renderer.render(model)
         
-        model_content = result['user_model.py']
+        model_content = result['user.py']
         assert "from .user_manager import UserManager" in model_content
     
     def test_init_imports_models(self):
@@ -413,7 +413,7 @@ class TestDjangoPackageRenderer:
         result = self.renderer.render(model)
         
         init_content = result['__init__.py']
-        assert "from .user_model import User" in init_content
+        assert "from .user import User" in init_content
     
     def test_init_has_all_export(self):
         """Test that __init__.py has __all__ list."""

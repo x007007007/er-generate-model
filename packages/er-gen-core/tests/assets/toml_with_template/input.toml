@@ -5,6 +5,7 @@ columns = [
 ]
 
 [entities.USER]
+table_name = "test_user"
 extends = ["audit_fields"]
 columns = [
     {name = "username", type = "string"},

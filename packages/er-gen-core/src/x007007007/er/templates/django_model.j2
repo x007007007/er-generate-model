@@ -111,9 +111,13 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- endif %}
 {%- endfor %}
     objects = {{ entity.name }}Manager()
+{%- if entity.table_name %}
+{%- set table_name = entity.table_name %}
+{%- else %}
 {%- set table_name = entity.name|lower %}
 {%- if table_prefix %}
 {%- set table_name = table_prefix + '_' + table_name %}
+{%- endif %}
 {%- endif %}
     class Meta:
         app_label = '{{ app_label }}'

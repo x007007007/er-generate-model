@@ -98,10 +98,10 @@ $ uv run er-gen-tool convert input.mmd -t mermaid -f django --split-models -d /t
 ```
 Result: ✅ Successfully generates Django package with split models:
 - `__init__.py` - Package initialization with imports
-- `user_model.py` - User model
+- `user.py` - User model
 - `user_manager.py` - User manager
 - `user_queryset.py` - User queryset
-- `post_model.py` - Post model
+- `post.py` - Post model
 - `post_manager.py` - Post manager
 - `post_queryset.py` - Post queryset
 

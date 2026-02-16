@@ -372,11 +372,11 @@ class TestErExportOutputDirectory(TestCase):
 class TestErExportArgumentParser(TestCase):
     """Test argument parser for output-dir parameter"""
     
-    def test_output_dir_default_is_none(self):
+    def test_output_dir_default_is_src(self):
         """
-        Test that --output-dir parameter defaults to None.
+        Test that --output-dir parameter defaults to 'src'.
         
-        Validates: Requirement 3.1
+        Validates: Requirement 2.1
         """
         from x007007007.er_django.management.commands.er_export import Command
         
@@ -386,8 +386,8 @@ class TestErExportArgumentParser(TestCase):
         # Parse with no --output-dir argument
         options = parser.parse_args([])
         
-        # Check that output_dir defaults to None
-        assert options.output_dir is None, "Default output_dir should be None"
+        # Check that output_dir defaults to 'src'
+        assert options.output_dir == 'src', "Default output_dir should be 'src'"
     
     def test_output_dir_accepts_value(self):
         """

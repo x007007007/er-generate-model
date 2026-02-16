@@ -1,4 +1,5 @@
 [entities.USER]
+table_name = "test_user"
 extends = ["nonexistent_template"]
 columns = [
     {name = "id", type = "int"},

@@ -1,5 +1,6 @@
 """Django model code renderers."""
 import logging
+import re
 from pathlib import Path
 from typing import Dict
 from jinja2 import PackageLoader
@@ -15,6 +16,17 @@ def django_field_type(col):
     """Jinja2 filter for Django field type."""
     field_type, params = TypeMapper.get_django_type(col.type, col.max_length)
     return field_type, params
+
+
+def field_name_from_entity(entity_name: str) -> str:
+    """
+    从实体名生成字段名，去掉 Model 后缀。
+    例如: RoleModel -> role, UserProfile -> user_profile
+    """
+    # 去掉 Model 后缀（如果存在）
+    if entity_name.endswith('Model'):
+        entity_name = entity_name[:-5]  # 去掉 'Model'
+    return to_snake_case(entity_name)
 
 
 class DjangoRenderer(PythonRenderer):
@@ -35,6 +47,8 @@ class DjangoRenderer(PythonRenderer):
         # Register filters
         self.env.filters['django_field_type'] = django_field_type
         self.env.filters['code_value'] = self.serialize_value
+        self.env.filters['snake_case'] = to_snake_case
+        self.env.filters['field_name'] = field_name_from_entity
         
         self.template = self.env.get_template("django_model.j2")
     
@@ -68,6 +82,8 @@ class DjangoPackageRenderer(PythonRenderer):
         # Register filters
         self.env.filters['django_field_type'] = django_field_type
         self.env.filters['code_value'] = self.serialize_value
+        self.env.filters['snake_case'] = to_snake_case
+        self.env.filters['field_name'] = field_name_from_entity
         
         # Load templates for each component
         self.model_template = self.env.get_template("django_model_only.j2")
@@ -117,7 +133,7 @@ class DjangoPackageRenderer(PythonRenderer):
             )
             
             # 3. Model file
-            model_filename = f"{base_filename}_model.py"
+            model_filename = f"{base_filename}.py"
             files[model_filename] = self.model_template.render(
                 entity=entity,
                 model=model,

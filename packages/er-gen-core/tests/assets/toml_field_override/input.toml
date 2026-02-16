@@ -5,6 +5,7 @@ columns = [
 ]
 
 [entities.USER]
+table_name = "test_user"
 extends = ["base"]
 columns = [
     {name = "name", type = "string", comment = "Overridden name"},

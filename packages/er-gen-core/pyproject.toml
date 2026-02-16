@@ -34,3 +34,7 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"x007007007.er.renderers.python.django" = ["templates/*.j2"]
+"x007007007.er.renderers.python.sqlalchemy" = ["templates/*.j2"]

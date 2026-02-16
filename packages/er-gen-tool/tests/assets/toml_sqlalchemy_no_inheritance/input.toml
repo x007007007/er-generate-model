@@ -1,4 +1,5 @@
 [entities.USER]
+table_name = "user"
 columns = [
     {name = "username", type = "string"},
 ]

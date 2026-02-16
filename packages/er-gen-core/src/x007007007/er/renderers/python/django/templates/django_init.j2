@@ -1,7 +1,7 @@
 """Django models package."""
 
 {%- for info in entity_info %}
-from .{{ info.filename }}_model import {{ info.name }}
+from .{{ info.filename }} import {{ info.name }}
 {%- endfor %}
 
 __all__ = [

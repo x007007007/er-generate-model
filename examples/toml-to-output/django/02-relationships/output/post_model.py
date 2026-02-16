@@ -8,7 +8,7 @@ class POST(models.Model):
     author = models.ForeignKey(
         'USER',
         on_delete=models.CASCADE,
-        related_name='post_set',
+        related_name='_set',
         help_text="Foreign key to User"
     )
     title = models.CharField(max_length=255, help_text="Post title")

@@ -50,7 +50,7 @@ class POSTManager(models.Manager):
 class POST(models.Model):
     id = models.IntegerField(primary_key=True)
     title = models.CharField(max_length=255)
-    user = models.ForeignKey('USER', on_delete=models.CASCADE, related_name='post_set')
+    user = models.ForeignKey('USER', on_delete=models.CASCADE, related_name='_set')
     objects = POSTManager()
     class Meta:
         app_label = 'app'

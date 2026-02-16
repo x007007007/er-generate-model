@@ -5,6 +5,7 @@ columns = [
 ]
 
 [entities.USER]
+table_name = "test_user"
 extends = ["create_update_time"]
 columns = [
     {name = "username", type = "string"},

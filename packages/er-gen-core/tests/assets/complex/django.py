@@ -52,7 +52,7 @@ class PROFILEManager(models.Manager):
 
 class PROFILE(models.Model):
     id = models.IntegerField(primary_key=True, help_text="Profile primary key")
-    user = models.OneToOneField('USER', on_delete=models.CASCADE, related_name='profile_rel', help_text="Foreign key to USER")
+    user = models.OneToOneField('USER', on_delete=models.CASCADE, related_name='_rel', help_text="Foreign key to USER")
     bio = models.CharField(max_length=255, help_text="User biography")
     avatar_url = models.CharField(max_length=255, help_text="Avatar image URL")
     objects = PROFILEManager()
@@ -81,12 +81,12 @@ class POSTManager(models.Manager):
 
 class POST(models.Model):
     id = models.IntegerField(primary_key=True, help_text="Post primary key")
-    author = models.ForeignKey('USER', on_delete=models.CASCADE, related_name='post_set', help_text="Foreign key to USER (author)")
+    author = models.ForeignKey('USER', on_delete=models.CASCADE, related_name='_set', help_text="Foreign key to USER (author)")
     title = models.CharField(max_length=255, help_text="Post title")
     content = models.CharField(max_length=255, help_text="Post content")
     created_at = models.DateField(help_text="Post creation time")
     status = models.CharField(max_length=255, help_text="enum:draft,published,archived - Post status")
-    tag_set = models.ManyToManyField('TAG', related_name='post_set')
+    tag_set = models.ManyToManyField('TAG', related_name='_set')
     objects = POSTManager()
     class Meta:
         app_label = 'complex'

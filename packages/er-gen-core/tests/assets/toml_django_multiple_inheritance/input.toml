@@ -18,6 +18,7 @@ columns = [
 ]
 
 [entities.USER]
+table_name = "test_user"
 extends = ["create_update_time", "enable", "name"]
 columns = [
     {name = "email", type = "string"},

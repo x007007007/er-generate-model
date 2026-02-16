@@ -4,6 +4,7 @@ columns = [
 ]
 
 [entities.USER]
+table_name = "user"
 extends = "audit_fields"
 columns = []
 

@@ -213,7 +213,7 @@ class TestTOMLRendererExportPath:
     """Test TOMLRenderer export_path field output - Task 7.3"""
     
     def test_render_with_export_path_field(self):
-        """Test that export_path field is output when present"""
+        """Test that export_path field is NOT output even when present (per requirement 2.4)"""
         # Create entity with export_path
         entity = Entity(
             name="User",
@@ -235,8 +235,8 @@ class TestTOMLRendererExportPath:
         
         assert "entities" in data
         assert "User" in data["entities"]
-        assert "export_path" in data["entities"]["User"]
-        assert data["entities"]["User"]["export_path"] == "src/kinkotech/common/domains/account/models.toml"
+        # Per requirement 2.4: export_path should NOT be in output
+        assert "export_path" not in data["entities"]["User"]
     
     def test_render_without_export_path_field(self):
         """Test that export_path field is not output when None"""
@@ -290,7 +290,7 @@ class TestTOMLRendererExportPath:
         assert "export_path" not in data["entities"]["DefaultModel"]
     
     def test_render_multiple_entities_mixed_export_path(self):
-        """Test rendering multiple entities with mixed export_path configurations"""
+        """Test rendering multiple entities - export_path should NOT be output (per requirement 2.4)"""
         # Entity with export_path
         entity1 = Entity(
             name="User",
@@ -327,19 +327,13 @@ class TestTOMLRendererExportPath:
         assert "entities" in data
         assert len(data["entities"]) == 3
         
-        # User should have export_path
-        assert "export_path" in data["entities"]["User"]
-        assert data["entities"]["User"]["export_path"] == "src/app1/models.toml"
-        
-        # Tag should not have export_path
+        # Per requirement 2.4: export_path should NOT be in output for any entity
+        assert "export_path" not in data["entities"]["User"]
         assert "export_path" not in data["entities"]["Tag"]
-        
-        # Post should have export_path
-        assert "export_path" in data["entities"]["Post"]
-        assert data["entities"]["Post"]["export_path"] == "src/app2/models.toml"
+        assert "export_path" not in data["entities"]["Post"]
     
     def test_render_export_path_with_extends_and_package(self):
-        """Test that export_path field is output correctly along with extends and package"""
+        """Test that export_path is NOT output even with extends and package (per requirement 2.4)"""
         # Create entity with export_path, extends, and package
         entity = Entity(
             name="CustomUser",
@@ -365,15 +359,15 @@ class TestTOMLRendererExportPath:
         assert "entities" in data
         assert "CustomUser" in data["entities"]
         
-        # Check all fields are present
+        # Check extends and package are present
         assert "extends" in data["entities"]["CustomUser"]
         assert data["entities"]["CustomUser"]["extends"] == ["django.contrib.auth.models.AbstractUser"]
         
         assert "package" in data["entities"]["CustomUser"]
         assert data["entities"]["CustomUser"]["package"] == "kinkotech.common.domains.account.models"
         
-        assert "export_path" in data["entities"]["CustomUser"]
-        assert data["entities"]["CustomUser"]["export_path"] == "src/kinkotech/common/domains/account/models.toml"
+        # Per requirement 2.4: export_path should NOT be in output
+        assert "export_path" not in data["entities"]["CustomUser"]
         
         # Check columns are also present
         assert "columns" in data["entities"]["CustomUser"]
@@ -404,10 +398,8 @@ class TestTOMLRendererExportPath:
         
         assert "entities" in data
         assert "User" in data["entities"]
-        assert "export_path" in data["entities"]["User"]
-        # Should be converted to string
-        assert isinstance(data["entities"]["User"]["export_path"], str)
-        assert data["entities"]["User"]["export_path"] == "src/kinkotech/common/domains/account/models.toml"
+        # Per requirement 2.4: export_path should NOT be in output
+        assert "export_path" not in data["entities"]["User"]
     
     def test_render_export_path_with_absolute_path(self):
         """Test that export_path works with absolute paths"""
@@ -432,5 +424,5 @@ class TestTOMLRendererExportPath:
         
         assert "entities" in data
         assert "User" in data["entities"]
-        assert "export_path" in data["entities"]["User"]
-        assert data["entities"]["User"]["export_path"] == "/absolute/path/to/models.toml"
+        # Per requirement 2.4: export_path should NOT be in output
+        assert "export_path" not in data["entities"]["User"]

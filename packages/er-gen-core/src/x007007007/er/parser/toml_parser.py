@@ -124,11 +124,14 @@ class TomlERParser(Parser):
                 # 按顺序合并所有模板的字段
                 for template_name in extends_list:
                     assert isinstance(template_name, str), f"Template name in extends must be a string"
-                    if template_name not in templates:
-                        raise ValueError(f"Entity '{entity_name}' extends unknown template '{template_name}'")
-                    # 复制模板字段（深拷贝），按顺序添加
-                    for col in templates[template_name]['columns']:
-                        base_columns.append(Column(**col.__dict__))
+                    # 如果模板存在于templates中，则展开其字段
+                    # 如果不存在（如Django内置类或第三方库类），则跳过字段展开，仅保留继承关系
+                    if template_name in templates:
+                        # 复制模板字段（深拷贝），按顺序添加
+                        for col in templates[template_name]['columns']:
+                            base_columns.append(Column(**col.__dict__))
+                    # 如果template_name不在templates中，说明是外部类（如AbstractUser）
+                    # 这种情况下，我们不展开字段，但保留extends关系供代码生成器使用
             
             # 解析实体自己的字段
             columns_data = entity_data.get('columns', [])
@@ -145,13 +148,23 @@ class TomlERParser(Parser):
                 column = self._parse_column(col_data)
                 all_columns[column.name] = column  # 实体自己的字段会覆盖继承的字段
             
+            # 验证必需字段：table_name
+            table_name = entity_data.get('table_name')
+            if table_name is None:
+                raise ValueError(
+                    f"Entity '{entity_name}' is missing required field 'table_name'. "
+                    f"This TOML file was generated with an older version of er_export. "
+                    f"Please regenerate it using: python manage.py er_export <app_label> --output-dir=src"
+                )
+            
             entity = Entity(
                 name=entity_name,
                 columns=list(all_columns.values()),
                 comment=entity_data.get('comment'),
                 extends=extends_list,  # 保存继承的模板列表
-                export_path=entity_data.get('export_path'),  # 保存导出路径
-                package=entity_data.get('package')  # 保存Python模块路径
+                export_path=entity_data.get('export_path'),  # 保存导出路径（向后兼容，但忽略）
+                package=entity_data.get('package'),  # 保存Python模块路径
+                table_name=table_name  # 保存数据库真实表名
             )
             
             entities[entity_name] = entity

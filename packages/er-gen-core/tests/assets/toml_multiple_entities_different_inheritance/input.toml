@@ -11,18 +11,21 @@ columns = [
 ]
 
 [entities.USER]
+table_name = "test_user"
 extends = ["create_update_time", "enable"]
 columns = [
     {name = "username", type = "string"},
 ]
 
 [entities.POST]
+table_name = "test_post"
 extends = ["create_update_time"]
 columns = [
     {name = "title", type = "string"},
 ]
 
 [entities.TAG]
+table_name = "test_tag"
 columns = [
     {name = "name", type = "string"},
 ]

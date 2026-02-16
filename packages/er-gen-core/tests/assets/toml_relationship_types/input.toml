@@ -1,10 +1,13 @@
 [entities.USER]
+table_name = "test_user"
 columns = [{name = "id", type = "int", is_pk = true}]
 
 [entities.POST]
+table_name = "test_post"
 columns = [{name = "id", type = "int", is_pk = true}]
 
 [entities.TAG]
+table_name = "test_tag"
 columns = [{name = "id", type = "int", is_pk = true}]
 
 [[relationships]]

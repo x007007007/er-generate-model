@@ -15,6 +15,7 @@ def test_cli_default_input_type_is_toml():
     with tempfile.NamedTemporaryFile(mode='w', suffix='.toml', delete=False) as f:
         f.write("""
 [entities.User]
+table_name = "user"
 columns = [
     { name = "id", type = "int", is_pk = true, nullable = false },
     { name = "name", type = "varchar", max_length = 100, nullable = false }
@@ -109,6 +110,7 @@ def test_cli_toml_with_default_values():
     with tempfile.NamedTemporaryFile(mode='w', suffix='.toml', delete=False) as f:
         f.write("""
 [entities.Post]
+table_name = "post"
 columns = [
     { name = "id", type = "int", is_pk = true, nullable = false },
     { name = "title", type = "varchar", max_length = 200, nullable = false, default = "Untitled" },
@@ -140,6 +142,7 @@ def test_cli_toml_with_comments():
     with tempfile.NamedTemporaryFile(mode='w', suffix='.toml', delete=False) as f:
         f.write("""
 [entities.Article]
+table_name = "article"
 columns = [
     { name = "id", type = "int", is_pk = true, nullable = false },
     { name = "content", type = "text", nullable = false, comment = "Article content" }
@@ -168,6 +171,7 @@ def test_cli_toml_with_quotes_in_values():
     with tempfile.NamedTemporaryFile(mode='w', suffix='.toml', delete=False) as f:
         f.write("""
 [entities.Product]
+table_name = "product"
 columns = [
     { name = "id", type = "int", is_pk = true, nullable = false },
     { name = "name", type = "varchar", max_length = 100, nullable = false, comment = 'Product "name"' }
@@ -224,6 +228,7 @@ def test_cli_sqlalchemy_with_toml_default():
     with tempfile.NamedTemporaryFile(mode='w', suffix='.toml', delete=False) as f:
         f.write("""
 [entities.User]
+table_name = "user"
 columns = [
     { name = "id", type = "int", is_pk = true, nullable = false },
     { name = "email", type = "varchar", max_length = 255, nullable = false }

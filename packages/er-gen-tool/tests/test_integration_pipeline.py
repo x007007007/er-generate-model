@@ -11,6 +11,7 @@ def test_full_pipeline_toml_to_django_with_quotes():
     # Create TOML with entities having default values and comments
     toml_content = '''
 [entities.User]
+table_name = "user"
 comment = "User model with special quotes"
 columns = [
     {name = "id", type = "int", is_pk = true},
@@ -47,6 +48,7 @@ def test_full_pipeline_toml_to_django_package_with_quotes():
     """Test full pipeline: TOML → Django package with proper quote handling."""
     toml_content = '''
 [entities.Product]
+table_name = "product"
 comment = "Product with special pricing"
 columns = [
     {name = "id", type = "int", is_pk = true},
@@ -65,12 +67,12 @@ columns = [
     
     # Verify we have the expected files
     assert '__init__.py' in files
-    assert 'product_model.py' in files
+    assert 'product.py' in files
     assert 'product_manager.py' in files
     assert 'product_queryset.py' in files
     
     # Verify model file has proper escaping
-    model_code = files['product_model.py']
+    model_code = files['product.py']
     assert 'default="New Product"' in model_code
     assert 'help_text=' in model_code
     
@@ -87,6 +89,7 @@ def test_full_pipeline_with_special_characters():
     """Test pipeline with strings containing newlines, tabs, and backslashes."""
     toml_content = '''
 [entities.Config]
+table_name = "config"
 comment = "Configuration settings"
 columns = [
     {name = "id", type = "int", is_pk = true},
@@ -122,6 +125,7 @@ def test_full_pipeline_cli_default_behavior():
     
     toml_content = '''
 [entities.SimpleModel]
+table_name = "simplemodel"
 comment = "Simple test model"
 columns = [
     {name = "id", type = "int", is_pk = true},
@@ -150,6 +154,7 @@ def test_full_pipeline_with_write_to_directory():
     """Test full pipeline with writing to directory."""
     toml_content = '''
 [entities.Author]
+table_name = "author"
 comment = "Author model"
 columns = [
     {name = "id", type = "int", is_pk = true},
@@ -157,6 +162,7 @@ columns = [
 ]
 
 [entities.Book]
+table_name = "book"
 comment = "Book model"
 columns = [
     {name = "id", type = "int", is_pk = true},
@@ -177,10 +183,10 @@ columns = [
         # Verify files were created
         output_path = Path(tmpdir)
         assert (output_path / '__init__.py').exists()
-        assert (output_path / 'author_model.py').exists()
+        assert (output_path / 'author.py').exists()
         assert (output_path / 'author_manager.py').exists()
         assert (output_path / 'author_queryset.py').exists()
-        assert (output_path / 'book_model.py').exists()
+        assert (output_path / 'book.py').exists()
         assert (output_path / 'book_manager.py').exists()
         assert (output_path / 'book_queryset.py').exists()
         

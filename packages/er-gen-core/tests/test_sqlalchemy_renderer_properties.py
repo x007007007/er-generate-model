@@ -62,7 +62,8 @@ def simple_entity(draw):
     return Entity(
         name=name,
         columns=columns,
-        comment=draw(st.one_of(st.none(), safe_comment))
+        comment=draw(st.one_of(st.none(), safe_comment)),
+        table_name=name.lower()  # Add table_name based on entity name
     )
 
 

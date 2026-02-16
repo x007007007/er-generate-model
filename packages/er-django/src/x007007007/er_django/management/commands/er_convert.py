@@ -43,17 +43,30 @@ class Command(BaseCommand):
             default=None,
             help='Custom BaseModel import path for SQLAlchemy (e.g., "myproject.database.Base")'
         )
+        
+        parser.add_argument(
+            '--output-dir',
+            type=str,
+            default='src',
+            help='Root directory for TOML search and code output (default: src)'
+        )
     
     def handle(self, *args, **options):
         apps_to_convert = options.get('apps', [])
         framework = options.get('framework')
         output_subdir = options.get('output_subdir')
         base_model_import = options.get('base_model_import')
+        output_dir = options.get('output_dir')
+        
+        # Convert output_dir to Path
+        output_path = Path(output_dir) if output_dir else Path('src')
         
         # Auto-discover or validate apps
         if not apps_to_convert:
             # Auto-discover all apps with models.toml
-            apps_to_convert = AppDiscoveryService.discover_apps_with_toml()
+            apps_to_convert = AppDiscoveryService.discover_apps_with_toml(
+                toml_search_dir=output_path
+            )
             
             if not apps_to_convert:
                 raise CommandError("No apps with models.toml found")
@@ -65,7 +78,7 @@ class Command(BaseCommand):
             # Print message before validation
             self.stdout.write(f"Converting specified apps: {', '.join(apps_to_convert)}")
             # Validate specified apps (fail-fast)
-            self._validate_apps(apps_to_convert)
+            self._validate_apps(apps_to_convert, output_path)
         
         # Convert each app (fail-fast)
         converted_count = 0
@@ -77,7 +90,8 @@ class Command(BaseCommand):
                     app_label=app_label,
                     framework=framework,
                     output_subdir=output_subdir,
-                    base_model_import=base_model_import
+                    base_model_import=base_model_import,
+                    output_dir=output_path
                 )
                 converted_count += 1
                 total_files += files_generated
@@ -93,7 +107,7 @@ class Command(BaseCommand):
         )
         self.stdout.write(f"Total files generated: {total_files}")
     
-    def _validate_apps(self, app_labels: List[str]) -> None:
+    def _validate_apps(self, app_labels: List[str], output_dir: Optional[Path] = None) -> None:
         """
         Validate that specified apps exist and have models.toml files.
         
@@ -103,6 +117,7 @@ class Command(BaseCommand):
         
         Args:
             app_labels: List of app labels to validate
+            output_dir: Optional directory to search for TOML files
         
         Raises:
             CommandError: If any app doesn't exist or doesn't have models.toml
@@ -121,7 +136,7 @@ class Command(BaseCommand):
             
             # Validate app has models.toml file
             try:
-                AppDiscoveryService.get_toml_path(app_label)
+                AppDiscoveryService.get_toml_path(app_label, toml_search_dir=output_dir)
             except FileNotFoundError as e:
                 raise CommandError(str(e))
     
@@ -130,7 +145,8 @@ class Command(BaseCommand):
         app_label: str,
         framework: str,
         output_subdir: Optional[str],
-        base_model_import: Optional[str]
+        base_model_import: Optional[str],
+        output_dir: Optional[Path] = None
     ) -> int:
         """
         Convert a single app's TOML file to target framework code.
@@ -147,6 +163,7 @@ class Command(BaseCommand):
             framework: Target framework ('django' or 'sqlalchemy')
             output_subdir: Custom output subdirectory name
             base_model_import: Custom BaseModel import path for SQLAlchemy
+            output_dir: Optional directory to search for TOML files
         
         Returns:
             Number of files generated
@@ -160,7 +177,7 @@ class Command(BaseCommand):
         
         # Get TOML file path (fail-fast if not found)
         try:
-            toml_path = AppDiscoveryService.get_toml_path(app_label)
+            toml_path = AppDiscoveryService.get_toml_path(app_label, toml_search_dir=output_dir)
         except FileNotFoundError as e:
             raise CommandError(str(e))
         
@@ -183,16 +200,22 @@ class Command(BaseCommand):
             raise CommandError(f"Failed to parse TOML file {toml_path}: {e}")
         
         # Determine output directory
-        app_config = apps.get_app_config(app_label)
-        app_path = Path(app_config.path)
+        # For third-party packages with models.toml in src/, output to the same directory
+        toml_dir = toml_path.parent
         
-        # Use custom subdir if specified, otherwise use framework-specific default
+        # Use custom subdir if specified
         if output_subdir:
-            subdir_name = output_subdir
+            output_dir = toml_dir / output_subdir
         else:
-            subdir_name = 'models' if framework == 'django' else 'sqlalchemy'
-        
-        output_dir = app_path / subdir_name
+            # Default behavior depends on framework:
+            # - Django: output to models/ subdirectory
+            # - SQLAlchemy: output to sqlalchemy/ subdirectory
+            if framework == 'django':
+                output_dir = toml_dir / 'models'
+            elif framework == 'sqlalchemy':
+                output_dir = toml_dir / 'sqlalchemy'
+            else:
+                output_dir = toml_dir
         
         self.stdout.write(f"  Output directory: {output_dir}")
         

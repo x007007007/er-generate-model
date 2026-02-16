@@ -1,10 +1,12 @@
 [entities.USER]
+table_name = "user"
 columns = [
     {name = "id", type = "int", is_pk = true},
     {name = "username", type = "string"},
 ]
 
 [entities.POST]
+table_name = "post"
 columns = [
     {name = "id", type = "int", is_pk = true},
 ]

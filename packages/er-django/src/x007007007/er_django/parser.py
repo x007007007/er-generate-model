@@ -87,47 +87,61 @@ class DjangoModelParser(Parser):
         return list(apps.get_models())
     
     def _convert_model_to_entity(self, model: Type[models.Model]) -> Entity:
-        """
-        Convert Django model to Entity with inheritance support.
-        
-        Args:
-            model: Django model class
-            
-        Returns:
-            Entity instance with inheritance and package information
-            
-        Requirements: 6.1, 7.1, 9.1
-        """
-        # Extract inheritance information
-        extends = self._extract_inheritance(model)
-        
-        # Get package path
-        package_path = model.__module__
-        
-        # Create entity with inheritance and package information
-        entity = Entity(
-            name=model.__name__,
-            comment=self.introspector.get_model_comment(model),
-            extends=extends,
-            package=package_path
-        )
-        
-        # Get only the model's own fields (not inherited)
-        own_fields = self._get_own_fields(model)
-        
-        for field in own_fields:
-            # Skip reverse relations and auto-created fields
-            if field.auto_created and not field.concrete:
-                continue
-            
-            # Skip ManyToManyField (handled in relationships)
-            if isinstance(field, ManyToManyField):
-                continue
-            
-            column = self._convert_field_to_column(field)
-            entity.columns.append(column)
-        
-        return entity
+            """
+            Convert Django model to Entity with inheritance support and table_name.
+
+            Args:
+                model: Django model class
+
+            Returns:
+                Entity instance with inheritance, package information, and table_name
+
+            Requirements: 6.1, 7.1, 9.1, 2.2, 3.2
+            """
+            # Extract inheritance information
+            extends = self._extract_inheritance(model)
+
+            # Get package path
+            package_path = model.__module__
+
+            # Get database table name
+            try:
+                table_name = model._meta.db_table
+            except AttributeError:
+                # Fallback to default naming rule if db_table is not available
+                table_name = f"{model._meta.app_label}_{model.__name__.lower()}"
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(
+                    f"Could not get db_table for model {model.__name__}, "
+                    f"using default: {table_name}"
+                )
+
+            # Create entity with inheritance, package information, and table_name
+            entity = Entity(
+                name=model.__name__,
+                comment=self.introspector.get_model_comment(model),
+                extends=extends,
+                package=package_path,
+                table_name=table_name
+            )
+
+            # Get only the model's own fields (not inherited)
+            own_fields = self._get_own_fields(model)
+
+            for field in own_fields:
+                # Skip reverse relations and auto-created fields
+                if field.auto_created and not field.concrete:
+                    continue
+
+                # Skip ManyToManyField (handled in relationships)
+                if isinstance(field, ManyToManyField):
+                    continue
+
+                column = self._convert_field_to_column(field)
+                entity.columns.append(column)
+
+            return entity
     def _extract_inheritance(self, model: Type[models.Model]) -> List[str]:
         """
         Extract inheritance information from Django model.

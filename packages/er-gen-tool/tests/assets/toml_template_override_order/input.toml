@@ -9,6 +9,7 @@ columns = [
 ]
 
 [entities.USER]
+table_name = "user"
 extends = ["template1", "template2"]
 columns = []
 

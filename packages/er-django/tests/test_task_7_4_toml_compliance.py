@@ -311,7 +311,8 @@ class TestTOMLCompliance:
             assert len(model_data["extends"]) == 2
             assert "package" in model_data
             assert model_data["package"] == "kinkotech.complex.models"
-            assert "export_path" in model_data
+            # export_path should NOT be present (removed in Task 3.1)
+            assert "export_path" not in model_data
             
             # Check columns
             assert "columns" in model_data

@@ -64,7 +64,8 @@ def simple_entity(draw):
     return Entity(
         name=name,
         columns=columns,
-        comment=draw(st.one_of(st.none(), safe_comment))
+        comment=draw(st.one_of(st.none(), safe_comment)),
+        table_name=name.lower()  # Add table_name based on entity name
     )
 
 
@@ -251,7 +252,7 @@ class TestProperty9ThreeFileStructureGeneration:
                 f"Missing queryset file for {entity_name}"
             assert f'{base_name}_manager.py' in result, \
                 f"Missing manager file for {entity_name}"
-            assert f'{base_name}_model.py' in result, \
+            assert f'{base_name}.py' in result, \
                 f"Missing model file for {entity_name}"
 
 
@@ -264,7 +265,7 @@ class TestProperty10FileNamingConvention:
     For any entity with name EntityName, the generated files should be named:
     - entity_name_queryset.py (QuerySet file)
     - entity_name_manager.py (Manager file)
-    - entity_name_model.py (Model file)
+    - entity_name.py (Model file)
     """
     
     @settings(max_examples=100, suppress_health_check=[HealthCheck.too_slow])
@@ -295,10 +296,10 @@ class TestProperty10FileNamingConvention:
             if filename == '__init__.py':
                 continue
             
-            # Should match pattern: <name>_{queryset|manager|model}.py
+            # Should match pattern: <name>_{queryset|manager}.py or <name>.py
             assert filename.endswith('_queryset.py') or \
                    filename.endswith('_manager.py') or \
-                   filename.endswith('_model.py'), \
+                   (filename.endswith('.py') and not filename.startswith('_')), \
                 f"Filename {filename} doesn't match expected pattern"
 
 
@@ -324,7 +325,7 @@ class TestProperty11ImportCorrectness:
         for entity_name in model.entities.keys():
             from x007007007.er.renderers.python.django import to_snake_case
             base_name = to_snake_case(entity_name)
-            model_file = f'{base_name}_model.py'
+            model_file = f'{base_name}.py'
             
             if model_file in result:
                 content = result[model_file]
@@ -364,7 +365,7 @@ class TestProperty11ImportCorrectness:
             base_name = to_snake_case(entity_name)
             
             # Should import Model from model file
-            assert f'from .{base_name}_model import {entity_name}' in init_content, \
+            assert f'from .{base_name} import {entity_name}' in init_content, \
                 f"__init__.py doesn't import {entity_name} correctly"
             
             # Should NOT import Manager or QuerySet
@@ -427,7 +428,7 @@ class TestProperty12GeneratedPackageValidity:
         for entity_name in model.entities.keys():
             from x007007007.er.renderers.python.django import to_snake_case
             base_name = to_snake_case(entity_name)
-            model_file = f'{base_name}_model.py'
+            model_file = f'{base_name}.py'
             
             if model_file in result:
                 content = result[model_file]

@@ -148,15 +148,26 @@ def test_toml_parser_complex():
 
 
 def test_toml_parser_invalid_template():
-    """测试无效模板引用。"""
+    """测试引用不存在的模板时的行为。
+    
+    根据设计文档，如果模板不在templates中，说明是外部类（如AbstractUser），
+    这种情况下不展开字段，但保留extends关系供代码生成器使用。
+    """
     parser = TomlERParser()
     asset_path = get_asset_path("toml_invalid_template", "input.toml")
     
     with open(asset_path, 'r', encoding='utf-8') as f:
         toml_content = f.read()
     
-    with pytest.raises(ValueError, match="unknown template"):
-        parser.parse(toml_content)
+    # 不应该抛出错误，而是正常解析
+    model = parser.parse(toml_content)
+    assert "USER" in model.entities
+    
+    user = model.entities["USER"]
+    # extends关系应该被保留
+    assert user.extends == ["nonexistent_template"]
+    # 但不会展开字段（因为模板不存在）
+    assert len(user.columns) == 1  # 只有自己定义的id字段
 
 
 def test_toml_parser_single_extends_not_allowed():
@@ -221,6 +232,7 @@ def test_toml_parser_package_field():
     
     toml_content = """
 [entities.User]
+table_name = "test_user"
 package = "kinkotech.common.domains.account.models"
 extends = []
 
@@ -249,6 +261,7 @@ def test_toml_parser_package_field_optional():
     
     toml_content = """
 [entities.Product]
+table_name = "test_product"
 extends = []
 
 [[entities.Product.columns]]
@@ -278,6 +291,7 @@ name = "created_at"
 type = "datetime"
 
 [entities.Order]
+table_name = "test_order"
 extends = ["BaseModel"]
 package = "myapp.orders.models"
 export_path = "src/myapp/orders/models.toml"
@@ -296,3 +310,80 @@ is_pk = true
     assert order.export_path == "src/myapp/orders/models.toml"
     assert order.extends == ["BaseModel"]
     assert len(order.columns) == 2  # created_at + id
+
+
+def test_toml_parser_table_name_required():
+    """测试table_name字段为必需（Task 9.1）。"""
+    parser = TomlERParser()
+    
+    # TOML缺少table_name字段
+    toml_content = """
+[entities.Account]
+package = "kinkotech.common.domains.account.models"
+extends = []
+
+[[entities.Account.columns]]
+name = "id"
+type = "int"
+is_pk = true
+"""
+    
+    # 应该抛出ValueError并包含清晰的错误信息
+    with pytest.raises(ValueError) as exc_info:
+        parser.parse(toml_content)
+    
+    error_message = str(exc_info.value)
+    assert "Account" in error_message
+    assert "table_name" in error_message
+    assert "missing required field" in error_message
+    assert "er_export" in error_message  # 应该提示如何重新生成
+
+
+def test_toml_parser_table_name_present():
+    """测试包含table_name字段的TOML可以正常解析（Task 9.1）。"""
+    parser = TomlERParser()
+    
+    toml_content = """
+[entities.Account]
+table_name = "kinkotech_com_account_accountmodel"
+package = "kinkotech.common.domains.account.models"
+extends = []
+
+[[entities.Account.columns]]
+name = "id"
+type = "int"
+is_pk = true
+"""
+    
+    model = parser.parse(toml_content)
+    assert "Account" in model.entities
+    
+    account = model.entities["Account"]
+    assert account.table_name == "kinkotech_com_account_accountmodel"
+    assert account.package == "kinkotech.common.domains.account.models"
+
+
+def test_toml_parser_export_path_ignored():
+    """测试export_path字段被忽略（向后兼容，Task 9.1）。"""
+    parser = TomlERParser()
+    
+    toml_content = """
+[entities.User]
+table_name = "myapp_user"
+package = "myapp.models"
+export_path = "/absolute/path/to/models.toml"
+extends = []
+
+[[entities.User.columns]]
+name = "id"
+type = "int"
+is_pk = true
+"""
+    
+    # 应该能够正常解析，export_path被保留但不影响功能
+    model = parser.parse(toml_content)
+    assert "User" in model.entities
+    
+    user = model.entities["User"]
+    assert user.table_name == "myapp_user"
+    assert user.export_path == "/absolute/path/to/models.toml"  # 保留但不使用

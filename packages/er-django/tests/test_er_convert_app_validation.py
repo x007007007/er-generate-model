@@ -104,7 +104,7 @@ class TestErConvertAppValidation(TestCase):
         assert 'not found' in error_msg.lower()
         
         # Verify that get_toml_path was called
-        mock_discovery_service.get_toml_path.assert_called_with('testapp')
+        mock_discovery_service.get_toml_path.assert_called_with('testapp', toml_search_dir=Path('src'))
     
     @patch('x007007007.er_django.management.commands.er_convert.apps')
     def test_fail_fast_on_first_invalid_app(self, mock_apps):
@@ -232,8 +232,8 @@ class TestErConvertAppValidation(TestCase):
         
         # Verify that get_toml_path was called twice (once for each app)
         assert mock_discovery_service.get_toml_path.call_count == 2
-        mock_discovery_service.get_toml_path.assert_any_call('app1')
-        mock_discovery_service.get_toml_path.assert_any_call('app2')
+        mock_discovery_service.get_toml_path.assert_any_call('app1', toml_search_dir=Path('src'))
+        mock_discovery_service.get_toml_path.assert_any_call('app2', toml_search_dir=Path('src'))
     
     def test_validate_apps_method_exists(self):
         """
@@ -279,9 +279,9 @@ class TestErConvertAppValidation(TestCase):
         
         # Verify that get_toml_path was called for each app
         assert mock_discovery_service.get_toml_path.call_count == 3
-        mock_discovery_service.get_toml_path.assert_any_call('app1')
-        mock_discovery_service.get_toml_path.assert_any_call('app2')
-        mock_discovery_service.get_toml_path.assert_any_call('app3')
+        mock_discovery_service.get_toml_path.assert_any_call('app1', toml_search_dir=None)
+        mock_discovery_service.get_toml_path.assert_any_call('app2', toml_search_dir=None)
+        mock_discovery_service.get_toml_path.assert_any_call('app3', toml_search_dir=None)
     
     @patch('x007007007.er_django.management.commands.er_convert.apps')
     def test_validate_apps_raises_command_error_on_invalid_app(self, mock_apps):

@@ -106,18 +106,22 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- for rel in model.relationships %}
 {%- if rel.left_entity == entity.name %}
 {%- if rel.relation_type == 'many-to-many' %}
-    {{ rel.right_entity|lower }}_set = models.ManyToManyField('{{ rel.right_entity }}', related_name='{{ entity.name|lower }}_set')
+    {{ rel.right_entity|field_name }}_set = models.ManyToManyField('{{ rel.right_entity }}', related_name='{{ entity.name|lower }}_set')
 {%- endif %}
 {%- endif %}
 {%- endfor %}
     objects = {{ entity.name }}Manager()
+    class Meta:
+        app_label = '{{ app_label }}'
+{%- if entity.table_name %}
+        db_table = '{{ entity.table_name }}'
+{%- else %}
 {%- set table_name = entity.name|lower %}
 {%- if table_prefix %}
 {%- set table_name = table_prefix + '_' + table_name %}
 {%- endif %}
-    class Meta:
-        app_label = '{{ app_label }}'
         db_table = '{{ table_name }}'
+{%- endif %}
 {%- if entity.comment %}
         verbose_name = {{ entity.comment | code_value }}
 {%- endif %}

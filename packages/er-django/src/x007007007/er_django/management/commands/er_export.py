@@ -11,6 +11,7 @@ from pathlib import Path
 
 from x007007007.er_django.parser import DjangoModelParser
 from x007007007.er_django.path_resolver import PathResolver
+from x007007007.er_django.entity_name_extractor import EntityNameExtractor
 from x007007007.er_django.settings import (
     get_er_settings, ensure_directory_exists, get_output_filename
 )
@@ -40,8 +41,8 @@ class Command(BaseCommand):
         parser.add_argument(
             '--output-dir',
             type=str,
-            default=None,
-            help='Output directory (default: ./src)'
+            default='src',
+            help='Output directory (default: src)'
         )
         parser.add_argument(
             '--models',
@@ -63,20 +64,31 @@ class Command(BaseCommand):
             type=str,
             help='Custom base name for output file'
         )
+        parser.add_argument(
+            '--entity-name-pattern',
+            type=str,
+            default=EntityNameExtractor.DEFAULT_PATTERN,
+            help='Regex pattern to extract business entity name from model name. '
+                 'Must have one capture group. Default: "(.+)Model$" (removes "Model" suffix)'
+        )
     
     def handle(self, *args, **options):
         # Get ER settings
         er_settings = get_er_settings()
         
+        # Create entity name extractor with error handling
+        entity_name_pattern = options.get('entity_name_pattern') or EntityNameExtractor.DEFAULT_PATTERN
+        try:
+            name_extractor = EntityNameExtractor(entity_name_pattern)
+        except ValueError as e:
+            raise CommandError(f"Invalid entity name pattern: {e}")
+        
         apps_to_export = options.get('apps', [])
         output_format = options.get('format')  # Already has default value 'toml'
         output_path = options.get('output')
         
-        # Determine output directory: use --output-dir if specified, otherwise use ./src
-        output_dir = options.get('output_dir')
-        if output_dir is None:
-            # Use ./src as default output directory
-            output_dir = './src'
+        # Determine output directory: use --output-dir (default is 'src')
+        output_dir = options.get('output_dir') or 'src'
         
         # Handle relative and absolute paths
         if not os.path.isabs(output_dir):
@@ -183,6 +195,9 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING(f"No models found in app '{app_label}'"))
                 continue
             
+            # Apply entity naming rules
+            er_model = self._apply_entity_naming(er_model, name_extractor)
+            
             self.stdout.write(f"Found {len(er_model.entities)} models in app '{app_label}'")
             total_entities += len(er_model.entities)
             
@@ -252,3 +267,55 @@ class Command(BaseCommand):
                 self.stdout.write(f"Excluded apps: {', '.join(excluded_apps)}")
         else:
             self.stdout.write(self.style.WARNING("No models found to export"))
+    
+    def _apply_entity_naming(self, er_model, name_extractor):
+        """
+        Apply business entity naming rules to ERModel.
+
+        This method renames entities in the ERModel according to the
+        business naming pattern, and updates all references in relationships.
+
+        Args:
+            er_model: Original ERModel with model class names
+            name_extractor: EntityNameExtractor instance
+
+        Returns:
+            New ERModel with renamed entities
+        """
+        from x007007007.er.models import ERModel, Relationship
+
+        # Create name mapping: model name → business name
+        name_mapping = {}
+        for entity_name in er_model.entities.keys():
+            business_name = name_extractor.extract(entity_name)
+            name_mapping[entity_name] = business_name
+
+        # Create new ERModel
+        new_model = ERModel()
+
+        # Rename entities
+        for old_name, entity in er_model.entities.items():
+            new_name = name_mapping[old_name]
+            entity.name = new_name
+            new_model.entities[new_name] = entity
+
+        # Update relationships with new entity names
+        for rel in er_model.relationships:
+            new_rel = Relationship(
+                left_entity=name_mapping.get(rel.left_entity, rel.left_entity),
+                right_entity=name_mapping.get(rel.right_entity, rel.right_entity),
+                relation_type=rel.relation_type,
+                left_column=rel.left_column,
+                right_column=rel.right_column,
+                left_cardinality=rel.left_cardinality,
+                right_cardinality=rel.right_cardinality,
+                left_label=rel.left_label,
+                right_label=rel.right_label
+            )
+            new_model.relationships.append(new_rel)
+
+        # Copy templates if any
+        new_model.templates = er_model.templates.copy()
+
+        return new_model
+

@@ -27,9 +27,13 @@ from {{ template_info.export_path }} import {{ base_class_name }}
 {%- endif %}
 
 class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% else %}Base{% endif %}):
+{%- if entity.table_name %}
+{%- set table_name = entity.table_name %}
+{%- else %}
 {%- set table_name = entity.name|lower %}
 {%- if table_prefix %}
 {%- set table_name = table_prefix + '_' + table_name %}
+{%- endif %}
 {%- endif %}
     __tablename__ = '{{ table_name }}'
 {%- set inherited_column_names = [] %}
