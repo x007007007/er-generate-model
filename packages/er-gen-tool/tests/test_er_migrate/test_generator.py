@@ -234,7 +234,7 @@ class TestMigrationGenerator:
         """测试计算依赖关系"""
         # 创建初始迁移
         initial_model = ERModel()
-        user = Entity(name="User", table_name="user", columns=[Column(name="id", type="uuid", db_column="id", is_pk=True)])
+        user = Entity(name="User", columns=[Column(name="id", type="uuid", db_column="id", is_pk=True)])
         initial_model.add_entity(user)
         
         generator = MigrationGenerator(str(tmp_path))
@@ -265,7 +265,7 @@ class TestMigrationGenerator:
         """测试多个命名空间"""
         # 创建auth命名空间的迁移
         auth_model = ERModel()
-        user = Entity(name="User", table_name="user", columns=[Column(name="id", type="uuid", db_column="id", is_pk=True)])
+        user = Entity(name="User", columns=[Column(name="id", type="uuid", db_column="id", is_pk=True)])
         auth_model.add_entity(user)
         
         generator = MigrationGenerator(str(tmp_path))
@@ -276,7 +276,7 @@ class TestMigrationGenerator:
         
         # 创建blog命名空间的迁移
         blog_model = ERModel()
-        post = Entity(name="Post", table_name="post", columns=[Column(name="id", type="uuid", db_column="id", is_pk=True)])
+        post = Entity(name="Post", columns=[Column(name="id", type="uuid", db_column="id", is_pk=True)])
         blog_model.add_entity(post)
         
         blog_migration = generator.generate("blog", blog_model)

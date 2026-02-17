@@ -45,13 +45,13 @@ class TestTableOperations:
     def test_detect_dropped_table(self):
         """T-002: 检测删除表"""
         old_model = ERModel()
-        user = Entity(name="User", table_name="user", columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)])
-        temp = Entity(name="TempData", table_name="temp_data", columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)])
+        user = Entity(name="User", columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)])
+        temp = Entity(name="TempData", columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)])
         old_model.add_entity(user)
         old_model.add_entity(temp)
         
         new_model = ERModel()
-        user_new = Entity(name="User", table_name="user", columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)])
+        user_new = Entity(name="User", columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)])
         new_model.add_entity(user_new)
         
         differ = ERDiffer()

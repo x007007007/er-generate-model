@@ -25,10 +25,8 @@ def test_task_7_2_complete_example():
         extends=["django.contrib.auth.models.AbstractUser"],
         package="kinkotech.common.domains.account.models",
         columns=[
-            Column(name="phone",
-            table_name="user", db_column="phone", type="CharField", max_length=20, nullable=True, unique=True),
-            Column(name="avatar",
-            table_name="user", db_column="avatar", type="ImageField", nullable=True)
+            Column(name="phone", db_column="phone", type="CharField", max_length=20, nullable=True, unique=True),
+            Column(name="avatar", db_column="avatar", type="ImageField", nullable=True)
         ]
     )
     
@@ -39,10 +37,8 @@ def test_task_7_2_complete_example():
         extends=["kinkotech.common.base.TimeStampedModel"],
         package="kinkotech.common.domains.account.models",
         columns=[
-            Column(name="user",
-            table_name="profile", db_column="user", type="OneToOneField", is_fk=True, nullable=False),
-            Column(name="bio",
-            table_name="profile", db_column="bio", type="TextField", nullable=True)
+            Column(name="user", db_column="user", type="OneToOneField", is_fk=True, nullable=False),
+            Column(name="bio", db_column="bio", type="TextField", nullable=True)
         ]
     )
     
@@ -52,8 +48,7 @@ def test_task_7_2_complete_example():
             table_name="tag",
         package=None,  # None - should not be output
         columns=[
-            Column(name="name",
-            table_name="tag", db_column="name", type="CharField", max_length=50, unique=True)
+            Column(name="name", db_column="name", type="CharField", max_length=50, unique=True)
         ]
     )
     
@@ -63,8 +58,7 @@ def test_task_7_2_complete_example():
             table_name="category",
         package="",  # Empty string - should not be output
         columns=[
-            Column(name="title",
-            table_name="category", db_column="title", type="CharField", max_length=100)
+            Column(name="title", db_column="title", type="CharField", max_length=100)
         ]
     )
     
@@ -167,8 +161,7 @@ def test_package_field_with_various_module_paths():
             name="TestModel",
             table_name="test_model",
             package=package_path,
-            columns=[Column(name="id",
-            table_name="test_model", db_column="id", type="IntegerField", is_pk=True)]
+            columns=[Column(name="id", db_column="id", type="IntegerField", is_pk=True)]
         )
         
         er_model = ERModel()

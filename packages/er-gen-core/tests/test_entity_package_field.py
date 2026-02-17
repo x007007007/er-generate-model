@@ -14,7 +14,7 @@ from x007007007.er.models import Entity, Column
 
 def test_entity_package_field_default_none():
     """Test that package field defaults to None for backward compatibility."""
-    entity = Entity(name="User")
+    entity = Entity(name="User", table_name="user")
     assert entity.package is None
 
 
@@ -35,10 +35,8 @@ def test_entity_package_field_with_columns():
             table_name="user",
         package="myapp.models",
         columns=[
-            Column(name="id",
-            table_name="user", db_column="id", type="int", is_pk=True),
-            Column(name="username",
-            table_name="user", db_column="username", type="str")
+            Column(name="id", db_column="id", type="int", is_pk=True),
+            Column(name="username", db_column="username", type="str")
         ],
         comment="User model"
     )
@@ -69,7 +67,7 @@ def test_entity_package_field_serialization():
 
 def test_entity_package_field_none_serialization():
     """Test that package field with None value is included in serialization."""
-    entity = Entity(name="Product")
+    entity = Entity(name="Product", table_name="product")
     entity_dict = asdict(entity)
     
     assert "package" in entity_dict
@@ -81,8 +79,7 @@ def test_entity_with_all_fields():
     entity = Entity(
         name="Order",
             table_name="order",
-        columns=[Column(name="id",
-            table_name="order", db_column="id", type="int", is_pk=True)],
+        columns=[Column(name="id", db_column="id", type="int", is_pk=True)],
         comment="Order entity",
         extends=["TimestampedModel", "SoftDeleteModel"],
         export_path="src/orders/models.toml",

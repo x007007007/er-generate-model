@@ -57,10 +57,8 @@ class TestSQLAlchemyRenderer:
             name="User",
             table_name="user",
             columns=[
-                Column(name="id",
-            table_name="user", db_column="id", type="int", is_pk=True, nullable=False),
-                Column(name="name",
-            table_name="user", db_column="name", type="varchar", max_length=100, nullable=False)
+                Column(name="id", db_column="id", type="int", is_pk=True, nullable=False),
+                Column(name="name", db_column="name", type="varchar", max_length=100, nullable=False)
             ],
             comment="User model"
         )
@@ -79,12 +77,9 @@ class TestSQLAlchemyRenderer:
             name="Post",
             table_name="post",
             columns=[
-                Column(name="id",
-            table_name="post", db_column="id", type="int", is_pk=True, nullable=False),
-                Column(name="title",
-            table_name="post", db_column="title", type="varchar", max_length=200, nullable=False, default="Untitled"),
-                Column(name="published",
-            table_name="post", db_column="published", type="boolean", nullable=False, default=False)
+                Column(name="id", db_column="id", type="int", is_pk=True, nullable=False),
+                Column(name="title", db_column="title", type="varchar", max_length=200, nullable=False, default="Untitled"),
+                Column(name="published", db_column="published", type="boolean", nullable=False, default=False)
             ]
         )
         model = ERModel(entities={"Post": entity}, relationships=[], templates={})
@@ -101,10 +96,8 @@ class TestSQLAlchemyRenderer:
             name="Article",
             table_name="article",
             columns=[
-                Column(name="id",
-            table_name="article", db_column="id", type="int", is_pk=True, nullable=False),
-                Column(name="content",
-            table_name="article", db_column="content", type="text", nullable=False, comment="Article content")
+                Column(name="id", db_column="id", type="int", is_pk=True, nullable=False),
+                Column(name="content", db_column="content", type="text", nullable=False, comment="Article content")
             ]
         )
         model = ERModel(entities={"Article": entity}, relationships=[], templates={})
@@ -120,10 +113,8 @@ class TestSQLAlchemyRenderer:
             name="Product",
             table_name="product",
             columns=[
-                Column(name="id",
-            table_name="product", db_column="id", type="int", is_pk=True, nullable=False),
-                Column(name="name",
-            table_name="product", db_column="name", type="varchar", max_length=100, nullable=False, comment='Product "name"')
+                Column(name="id", db_column="id", type="int", is_pk=True, nullable=False),
+                Column(name="name", db_column="name", type="varchar", max_length=100, nullable=False, comment='Product "name"')
             ]
         )
         model = ERModel(entities={"Product": entity}, relationships=[], templates={})
@@ -140,14 +131,12 @@ class TestSQLAlchemyRenderer:
         user = Entity(
             name="User",
             table_name="user",
-            columns=[Column(name="id",
-            table_name="user", db_column="id", type="int", is_pk=True, nullable=False)]
+            columns=[Column(name="id", db_column="id", type="int", is_pk=True, nullable=False)]
         )
         post = Entity(
             name="Post",
             table_name="post",
-            columns=[Column(name="id",
-            table_name="post", db_column="id", type="int", is_pk=True, nullable=False)]
+            columns=[Column(name="id", db_column="id", type="int", is_pk=True, nullable=False)]
         )
         model = ERModel(
             entities={"User": user, "Post": post},
@@ -165,8 +154,7 @@ class TestSQLAlchemyRenderer:
         entity = Entity(
             name="User",
             table_name="user",
-            columns=[Column(name="id",
-            table_name="user", db_column="id", type="int", is_pk=True, nullable=False)]
+            columns=[Column(name="id", db_column="id", type="int", is_pk=True, nullable=False)]
         )
         model = ERModel(entities={"User": entity}, relationships=[], templates={})
         result = renderer.render(model)
@@ -185,12 +173,9 @@ class TestSQLAlchemyRenderer:
             name="User",
             table_name="user",
             columns=[
-                Column(name="id",
-            table_name="user", db_column="id", type="int", is_pk=True, nullable=False),
-                Column(name="name",
-            table_name="user", db_column="name", type="varchar", max_length=100, nullable=False),
-                Column(name="email",
-            table_name="user", db_column="email", type="varchar", max_length=255, nullable=False)
+                Column(name="id", db_column="id", type="int", is_pk=True, nullable=False),
+                Column(name="name", db_column="name", type="varchar", max_length=100, nullable=False),
+                Column(name="email", db_column="email", type="varchar", max_length=255, nullable=False)
             ]
         )
         model = ERModel(entities={"User": entity}, relationships=[], templates={})
@@ -208,10 +193,8 @@ class TestSQLAlchemyRenderer:
             name="Counter",
             table_name="counter",
             columns=[
-                Column(name="id",
-            table_name="counter", db_column="id", type="int", is_pk=True, nullable=False),
-                Column(name="count",
-            table_name="counter", db_column="count", type="int", nullable=False, default=0)
+                Column(name="id", db_column="id", type="int", is_pk=True, nullable=False),
+                Column(name="count", db_column="count", type="int", nullable=False, default=0)
             ]
         )
         model = ERModel(entities={"Counter": entity}, relationships=[], templates={})
@@ -228,10 +211,8 @@ class TestSQLAlchemyRenderer:
             name="Flag",
             table_name="flag",
             columns=[
-                Column(name="id",
-            table_name="flag", db_column="id", type="int", is_pk=True, nullable=False),
-                Column(name="active",
-            table_name="flag", db_column="active", type="boolean", nullable=False, default=False)
+                Column(name="id", db_column="id", type="int", is_pk=True, nullable=False),
+                Column(name="active", db_column="active", type="boolean", nullable=False, default=False)
             ]
         )
         model = ERModel(entities={"Flag": entity}, relationships=[], templates={})
@@ -248,10 +229,8 @@ class TestSQLAlchemyRenderer:
             name="Text",
             table_name="text",
             columns=[
-                Column(name="id",
-            table_name="text", db_column="id", type="int", is_pk=True, nullable=False),
-                Column(name="content",
-            table_name="text", db_column="content", type="varchar", max_length=100, nullable=False, default="")
+                Column(name="id", db_column="id", type="int", is_pk=True, nullable=False),
+                Column(name="content", db_column="content", type="varchar", max_length=100, nullable=False, default="")
             ]
         )
         model = ERModel(entities={"Text": entity}, relationships=[], templates={})

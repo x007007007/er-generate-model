@@ -27,10 +27,8 @@ def test_task_7_1_complete_example():
         extends=["django.contrib.auth.models.AbstractUser"],
         package="kinkotech.common.domains.account.models",
         columns=[
-            Column(name="phone",
-            table_name="user", db_column="phone", type="CharField", max_length=20, nullable=True, unique=True),
-            Column(name="avatar",
-            table_name="user", db_column="avatar", type="ImageField", nullable=True)
+            Column(name="phone", db_column="phone", type="CharField", max_length=20, nullable=True, unique=True),
+            Column(name="avatar", db_column="avatar", type="ImageField", nullable=True)
         ]
     )
     
@@ -44,10 +42,8 @@ def test_task_7_1_complete_example():
         ],
         package="kinkotech.common.domains.account.models",
         columns=[
-            Column(name="user",
-            table_name="profile", db_column="user", type="OneToOneField", is_fk=True, nullable=False),
-            Column(name="bio",
-            table_name="profile", db_column="bio", type="TextField", nullable=True)
+            Column(name="user", db_column="user", type="OneToOneField", is_fk=True, nullable=False),
+            Column(name="bio", db_column="bio", type="TextField", nullable=True)
         ]
     )
     
@@ -58,8 +54,7 @@ def test_task_7_1_complete_example():
         extends=[],  # Empty list - should not be output
         package="kinkotech.common.domains.blog.models",
         columns=[
-            Column(name="name",
-            table_name="tag", db_column="name", type="CharField", max_length=50, unique=True)
+            Column(name="name", db_column="name", type="CharField", max_length=50, unique=True)
         ]
     )
     

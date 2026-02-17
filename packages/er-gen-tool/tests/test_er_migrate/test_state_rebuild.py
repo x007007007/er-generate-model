@@ -58,15 +58,15 @@ class TestStateRebuildTableOperations:
         
         # 创建两个表
         model1 = ERModel()
-        model1.add_entity(Entity(name="User", table_name="user", columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)]))
-        model1.add_entity(Entity(name="Post", table_name="post", columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)]))
+        model1.add_entity(Entity(name="User", columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)]))
+        model1.add_entity(Entity(name="Post", columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)]))
         
         migration1 = generator.generate("test", model1)
         fm.save_migration(migration1)
         
         # 删除Post表
         model2 = ERModel()
-        model2.add_entity(Entity(name="User", table_name="user", columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)]))
+        model2.add_entity(Entity(name="User", columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)]))
         
         migration2 = generator.generate("test", model2)
         assert migration2 is not None
@@ -99,7 +99,7 @@ class TestStateRebuildTableOperations:
         
         # 只保留User表
         model2 = ERModel()
-        model2.add_entity(Entity(name="User", table_name="user", columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)]))
+        model2.add_entity(Entity(name="User", columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)]))
         
         migration2 = generator.generate("test", model2)
         assert migration2 is not None

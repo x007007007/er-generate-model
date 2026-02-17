@@ -84,7 +84,7 @@ def test_sqlalchemy_renderer():
 
 def test_er_model_add_entity():
     model = ERModel()
-    entity = Entity(name="TEST")
+    entity = Entity(name="TEST", table_name="t_e_s_t")
     model.add_entity(entity)
     assert "TEST" in model.entities
     assert model.entities["TEST"] == entity
@@ -92,8 +92,8 @@ def test_er_model_add_entity():
 def test_er_model_add_relationship():
     model = ERModel()
     # Add entities first
-    model.add_entity(Entity(name="A"))
-    model.add_entity(Entity(name="B"))
+    model.add_entity(Entity(name="A", table_name="a"))
+    model.add_entity(Entity(name="B", table_name="b"))
     rel = Relationship(left_entity="A", right_entity="B", relation_type="one-to-many")
     model.add_relationship(rel)
     assert len(model.relationships) == 1
@@ -216,7 +216,7 @@ def test_renderer_with_empty_model():
 def test_renderer_with_entity_no_columns():
     """Test renderers handle entities without columns and output matches expected files."""
     model = ERModel()
-    entity = Entity(name="EMPTY")
+    entity = Entity(name="EMPTY", table_name="e_m_p_t_y")
     model.add_entity(entity)
     
     django_expected_file = get_asset_path("renderer_no_columns", "django.py")
@@ -240,7 +240,7 @@ def test_renderer_with_entity_no_columns():
 def test_renderer_type_mapping():
     """Test renderers map different data types correctly"""
     model = ERModel()
-    entity = Entity(name="TEST")
+    entity = Entity(name="TEST", table_name="t_e_s_t")
     entity.columns = [
         Column(name="int_col", db_column="int_col", type="int", is_pk=False),
         Column(name="string_col", db_column="string_col", type="string", is_pk=False),
@@ -292,8 +292,8 @@ def test_renderer_invalid_model_type():
 def test_er_model_validate():
     """Test ERModel validate method"""
     model = ERModel()
-    entity_a = Entity(name="A")
-    entity_b = Entity(name="B")
+    entity_a = Entity(name="A", table_name="a")
+    entity_b = Entity(name="B", table_name="b")
     model.add_entity(entity_a)
     model.add_entity(entity_b)
     

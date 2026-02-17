@@ -12,11 +12,16 @@
   - 批量更新了所有测试文件中的 `Column` 构造函数调用，添加必需的 `db_column` 参数
   - 批量更新了所有测试文件中的 `Entity` 构造函数调用，添加必需的 `table_name` 参数
   - 修复了自动化脚本错误添加 `table_name` 到 `Column` 的问题
+  - 修复了多行 `Column` 调用中的 `table_name` 参数问题
+  - 修复了缺少 `table_name` 的 `Entity` 调用
   - 影响范围：
-    - `packages/er-gen-tool/tests/test_er_migrate/` 下的所有测试文件
-    - `packages/er-django/tests/` 下的部分测试文件
-    - `packages/er-gen-core/tests/` 下的部分测试文件
-  - 测试通过率从 658/790 (83%) 提升到 719/790 (91%)
+    - `packages/er-gen-tool/tests/` - 所有测试文件
+    - `packages/er-django/tests/` - 所有测试文件
+    - `packages/er-gen-core/tests/` - 所有测试文件
+    - `packages/er-gen-mcp/tests/` - 所有测试文件
+    - `packages/er-gen-tool-ai/tests/` - 所有测试文件
+  - 测试通过率从 658/790 (83%) 提升到 738/790 (93%)
+  - 剩余50个失败主要是输出格式不匹配（需要更新golden文件）和CLI配置问题
 
 ## [0.3.0] - 2024-01-XX
 

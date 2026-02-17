@@ -75,7 +75,7 @@ class TestEntityModelBasicFunctionality:
         """Test that table_name is a required field."""
         # table_name must be provided when creating an Entity
         with pytest.raises(TypeError, match="missing 1 required positional argument: 'table_name'"):
-            Entity(name="User")
+            Entity(name="User", table_name="user")
     
     def test_entity_with_table_name(self):
         """Test Entity creation with table_name."""
