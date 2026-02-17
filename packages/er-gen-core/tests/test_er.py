@@ -242,10 +242,10 @@ def test_renderer_type_mapping():
     model = ERModel()
     entity = Entity(name="TEST")
     entity.columns = [
-        Column(name="int_col", type="int", is_pk=False),
-        Column(name="string_col", type="string", is_pk=False),
-        Column(name="datetime_col", type="datetime", is_pk=False),
-        Column(name="boolean_col", type="boolean", is_pk=False),
+        Column(name="int_col", db_column="int_col", type="int", is_pk=False),
+        Column(name="string_col", db_column="string_col", type="string", is_pk=False),
+        Column(name="datetime_col", db_column="datetime_col", type="datetime", is_pk=False),
+        Column(name="boolean_col", db_column="boolean_col", type="boolean", is_pk=False),
     ]
     model.add_entity(entity)
     
@@ -257,7 +257,7 @@ def test_renderer_type_mapping():
 
 def test_column_nullable_default():
     """Test Column model with nullable and default values"""
-    col = Column(name="test", type="string", nullable=False, default="'default'")
+    col = Column(name="test", db_column="test", type="string", nullable=False, default="'default'")
     assert col.nullable is False
     assert col.default == "'default'"
 

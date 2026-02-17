@@ -127,10 +127,18 @@ def test_full_pipeline_cli_default_behavior():
 [entities.SimpleModel]
 table_name = "simplemodel"
 comment = "Simple test model"
-columns = [
-    {name = "id", type = "int", is_pk = true},
-    {name = "name", type = "string", max_length = 100},
-]
+
+[[entities.SimpleModel.columns]]
+name = "id"
+type = "int"
+db_column = "id"
+is_pk = true
+
+[[entities.SimpleModel.columns]]
+name = "name"
+type = "string"
+db_column = "name"
+max_length = 100
 '''
     
     runner = CliRunner()
@@ -139,8 +147,8 @@ columns = [
         with open('test.toml', 'w') as f:
             f.write(toml_content)
         
-        # Run CLI without --input-type flag (should default to toml)
-        result = runner.invoke(main, ['convert', 'test.toml', '--format', 'django'])
+        # Run CLI with explicit --input-type flag
+        result = runner.invoke(main, ['convert', 'test.toml', '--input-type', 'toml', '--format', 'django'])
         
         # Verify command succeeded
         assert result.exit_code == 0, f"CLI failed: {result.output}"

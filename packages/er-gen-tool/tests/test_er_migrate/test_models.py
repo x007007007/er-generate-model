@@ -3,7 +3,7 @@
 """
 import pytest
 from pydantic import ValidationError
-from x007007007.er_tool.migrate.models import (
+from x007007007.er_tool.migration_core.models import (
     ColumnDefinition,
     IndexDefinition,
     ForeignKeyDefinition,

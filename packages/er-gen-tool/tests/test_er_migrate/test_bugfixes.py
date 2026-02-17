@@ -3,10 +3,10 @@
 """
 import pytest
 from x007007007.er.models import Entity, Column, Relationship, ERModel
-from x007007007.er_tool.migrate.differ import ERDiffer
-from x007007007.er_tool.migrate.converter import ERConverter
-from x007007007.er_tool.migrate.generator import MigrationGenerator
-from x007007007.er_tool.migrate.models import (
+from x007007007.er_tool.migration_core.differ import ERDiffer
+from x007007007.er_tool.migration_core.converter import ERConverter
+from x007007007.er_tool.migration_core.generator import MigrationGenerator
+from x007007007.er_tool.migration_core.models import (
     AddForeignKey,
     RenameTable,
 )
@@ -22,19 +22,21 @@ class TestForeignKeyBugs:
         
         user = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string")
             ]
         )
         er_model.add_entity(user)
         
         post = Entity(
             name="Post",
+            table_name="post",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="author_id", type="uuid", is_fk=True),
-                Column(name="title", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="author_id", db_column="author_id", type="uuid", is_fk=True),
+                Column(name="title", db_column="title", type="string")
             ]
         )
         er_model.add_entity(post)
@@ -55,7 +57,7 @@ class TestForeignKeyBugs:
         assert migration1 is not None
         
         # 保存迁移
-        from x007007007.er_tool.migrate.file_manager import FileManager
+        from x007007007.er_tool.migration_core.file_manager import FileManager
         fm = FileManager(str(tmp_path))
         fm.save_migration(migration1)
         
@@ -119,10 +121,11 @@ class TestRenameTableOperation:
         old_model = ERModel()
         old_user = Entity(
             name="OldUser",
+            table_name="old_user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string"),
-                Column(name="email", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string"),
+                Column(name="email", db_column="email", type="string")
             ]
         )
         old_model.add_entity(old_user)
@@ -131,10 +134,11 @@ class TestRenameTableOperation:
         new_model = ERModel()
         new_user = Entity(
             name="NewUser",
+            table_name="new_user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string"),
-                Column(name="email", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string"),
+                Column(name="email", db_column="email", type="string")
             ]
         )
         new_model.add_entity(new_user)
@@ -165,24 +169,26 @@ class TestRenameTableOperation:
         old_model = ERModel()
         old_user = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string"),
-                Column(name="email", type="string"),
-                Column(name="created_at", type="datetime")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string"),
+                Column(name="email", db_column="email", type="string"),
+                Column(name="created_at", db_column="created_at", type="datetime")
             ]
         )
         old_model.add_entity(old_user)
         
         new_model = ERModel()
         new_user = Entity(
-            name="Account",  # 重命名
+            name="Account",
+            table_name="account",  # 重命名
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string"),
-                Column(name="email", type="string"),
-                Column(name="created_at", type="datetime"),
-                Column(name="updated_at", type="datetime")  # 新增一列
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string"),
+                Column(name="email", db_column="email", type="string"),
+                Column(name="created_at", db_column="created_at", type="datetime"),
+                Column(name="updated_at", db_column="updated_at", type="datetime")  # 新增一列
             ]
         )
         new_model.add_entity(new_user)
@@ -212,15 +218,17 @@ class TestStateRebuildBugs:
         
         user = Entity(
             name="User",
-            columns=[Column(name="id", type="uuid", is_pk=True)]
+            table_name="user",
+            columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)]
         )
         er_model.add_entity(user)
         
         post = Entity(
             name="Post",
+            table_name="post",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="author_id", type="uuid", is_fk=True)
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="author_id", db_column="author_id", type="uuid", is_fk=True)
             ]
         )
         er_model.add_entity(post)
@@ -238,7 +246,7 @@ class TestStateRebuildBugs:
         generator = MigrationGenerator(str(tmp_path))
         migration = generator.generate("test", er_model)
         
-        from x007007007.er_tool.migrate.file_manager import FileManager
+        from x007007007.er_tool.migration_core.file_manager import FileManager
         fm = FileManager(str(tmp_path))
         fm.save_migration(migration)
         

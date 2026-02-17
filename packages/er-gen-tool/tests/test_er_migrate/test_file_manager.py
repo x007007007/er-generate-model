@@ -3,8 +3,8 @@
 """
 import pytest
 from pathlib import Path
-from x007007007.er_tool.migrate.file_manager import FileManager
-from x007007007.er_tool.migrate.models import (
+from x007007007.er_tool.migration_core.file_manager import FileManager
+from x007007007.er_tool.migration_core.models import (
     Migration,
     CreateTable,
     ColumnDefinition,

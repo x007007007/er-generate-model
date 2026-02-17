@@ -221,7 +221,7 @@ class TestErExportOutputPath(TestCase):
             with patch('x007007007.er_django.management.commands.er_export.apps.get_app_configs') as mock_apps, \
                  patch('x007007007.er_django.management.commands.er_export.apps.get_app_config') as mock_app_config, \
                  patch('x007007007.er_django.management.commands.er_export.DjangoModelParser') as mock_parser, \
-                 patch('x007007007.er_django.management.commands.er_export.PathResolver') as mock_resolver:
+                 patch('x007007007.er_django.management.commands.er_export.PathResolver') as mock_resolver_class:
                 
                 # Setup mock app config
                 mock_app = Mock()
@@ -238,9 +238,11 @@ class TestErExportOutputPath(TestCase):
                 mock_parser_instance.parse.return_value = er_model
                 mock_parser.return_value = mock_parser_instance
                 
-                # Setup mock resolver
+                # Setup mock resolver instance
+                mock_resolver_instance = Mock()
                 output_file = Path(temp_dir) / 'src' / 'testapp' / 'models.toml'
-                mock_resolver.resolve_output_path.return_value = output_file
+                mock_resolver_instance.resolve_output_path.return_value = output_file
+                mock_resolver_class.return_value = mock_resolver_instance
                 
                 # Capture stdout
                 out = StringIO()
@@ -260,11 +262,13 @@ class TestErExportOutputPath(TestCase):
                 
                 cmd.handle(**options)
                 
-                # Verify that PathResolver was called with ./src directory
-                mock_resolver.resolve_output_path.assert_called_once()
-                call_args = mock_resolver.resolve_output_path.call_args
+                # Verify that PathResolver instance method was called with ./src directory
+                mock_resolver_instance.resolve_output_path.assert_called_once()
+                # Check the PathConfiguration that was passed to PathResolver constructor
+                resolver_init_call = mock_resolver_class.call_args
+                path_config = resolver_init_call[0][0]  # First positional argument
                 expected_path = str((Path(temp_dir) / 'src').resolve())
-                actual_path = str(Path(call_args[1]['base_dir']).resolve())
+                actual_path = str(path_config.output_path.resolve())
                 assert actual_path == expected_path, "Should use ./src directory as default"
                 
         finally:
@@ -299,7 +303,7 @@ class TestErExportOutputPath(TestCase):
             with patch('x007007007.er_django.management.commands.er_export.apps.get_app_configs') as mock_apps, \
                  patch('x007007007.er_django.management.commands.er_export.apps.get_app_config') as mock_app_config, \
                  patch('x007007007.er_django.management.commands.er_export.DjangoModelParser') as mock_parser, \
-                 patch('x007007007.er_django.management.commands.er_export.PathResolver') as mock_resolver:
+                 patch('x007007007.er_django.management.commands.er_export.PathResolver') as mock_resolver_class:
                 
                 # Setup mock app config
                 mock_app = Mock()
@@ -316,9 +320,11 @@ class TestErExportOutputPath(TestCase):
                 mock_parser_instance.parse.return_value = er_model
                 mock_parser.return_value = mock_parser_instance
                 
-                # Setup mock resolver
+                # Setup mock resolver instance
+                mock_resolver_instance = Mock()
                 output_file = Path(temp_dir) / 'erexport' / 'testapp' / 'models.toml'
-                mock_resolver.resolve_output_path.return_value = output_file
+                mock_resolver_instance.resolve_output_path.return_value = output_file
+                mock_resolver_class.return_value = mock_resolver_instance
                 
                 # Capture stdout
                 out = StringIO()
@@ -338,11 +344,13 @@ class TestErExportOutputPath(TestCase):
                 
                 cmd.handle(**options)
                 
-                # Verify that PathResolver was called with resolved absolute path
-                mock_resolver.resolve_output_path.assert_called_once()
-                call_args = mock_resolver.resolve_output_path.call_args
+                # Verify that PathResolver instance method was called with resolved absolute path
+                mock_resolver_instance.resolve_output_path.assert_called_once()
+                # Check the PathConfiguration that was passed to PathResolver constructor
+                resolver_init_call = mock_resolver_class.call_args
+                path_config = resolver_init_call[0][0]  # First positional argument
                 expected_path = str(Path(temp_dir).resolve() / 'erexport')
-                actual_path = str(Path(call_args[1]['base_dir']).resolve())
+                actual_path = str(path_config.output_path.resolve())
                 assert actual_path == expected_path, "Should resolve relative path to absolute"
                 
         finally:
@@ -374,7 +382,7 @@ class TestErExportOutputPath(TestCase):
             with patch('x007007007.er_django.management.commands.er_export.apps.get_app_configs') as mock_apps, \
                  patch('x007007007.er_django.management.commands.er_export.apps.get_app_config') as mock_app_config, \
                  patch('x007007007.er_django.management.commands.er_export.DjangoModelParser') as mock_parser, \
-                 patch('x007007007.er_django.management.commands.er_export.PathResolver') as mock_resolver:
+                 patch('x007007007.er_django.management.commands.er_export.PathResolver') as mock_resolver_class:
                 
                 # Setup mock app config
                 mock_app = Mock()
@@ -391,9 +399,11 @@ class TestErExportOutputPath(TestCase):
                 mock_parser_instance.parse.return_value = er_model
                 mock_parser.return_value = mock_parser_instance
                 
-                # Setup mock resolver
+                # Setup mock resolver instance
+                mock_resolver_instance = Mock()
                 output_file = Path(absolute_output_dir) / 'testapp' / 'models.toml'
-                mock_resolver.resolve_output_path.return_value = output_file
+                mock_resolver_instance.resolve_output_path.return_value = output_file
+                mock_resolver_class.return_value = mock_resolver_instance
                 
                 # Capture stdout
                 out = StringIO()
@@ -413,10 +423,14 @@ class TestErExportOutputPath(TestCase):
                 
                 cmd.handle(**options)
                 
-                # Verify that PathResolver was called with the absolute path unchanged
-                mock_resolver.resolve_output_path.assert_called_once()
-                call_args = mock_resolver.resolve_output_path.call_args
-                assert call_args[1]['base_dir'] == absolute_output_dir, "Should use absolute path directly"
+                # Verify that PathResolver instance method was called
+                mock_resolver_instance.resolve_output_path.assert_called_once()
+                call_args = mock_resolver_instance.resolve_output_path.call_args
+                # The actual code now uses PathConfiguration, so we need to check the path_config
+                # that was passed to PathResolver constructor
+                resolver_init_call = mock_resolver_class.call_args
+                path_config = resolver_init_call[0][0]  # First positional argument
+                assert str(path_config.output_path) == absolute_output_dir, "Should use absolute path directly"
                 
         finally:
             # Clean up
@@ -449,7 +463,7 @@ class TestErExportMultipleApps(TestCase):
             with patch('x007007007.er_django.management.commands.er_export.apps.get_app_configs') as mock_apps, \
                  patch('x007007007.er_django.management.commands.er_export.apps.get_app_config') as mock_app_config, \
                  patch('x007007007.er_django.management.commands.er_export.DjangoModelParser') as mock_parser, \
-                 patch('x007007007.er_django.management.commands.er_export.PathResolver') as mock_resolver:
+                 patch('x007007007.er_django.management.commands.er_export.PathResolver') as mock_resolver_class:
                 
                 # Setup mock app configs for two apps
                 mock_app1 = Mock()
@@ -482,14 +496,16 @@ class TestErExportMultipleApps(TestCase):
                 
                 mock_parser.side_effect = parser_side_effect
                 
-                # Setup mock resolver to return different paths for each app
+                # Setup mock resolver instance to return different paths for each app
+                mock_resolver_instance = Mock()
                 output_files = []
-                def resolver_side_effect(app_config, base_dir, format):
-                    output_file = Path(base_dir) / app_config.label / f'models.{format}'
+                def resolver_side_effect(app_config, format, is_third_party):
+                    output_file = Path(temp_dir) / app_config.label / f'models.{format}'
                     output_files.append(output_file)
                     return output_file
                 
-                mock_resolver.resolve_output_path.side_effect = resolver_side_effect
+                mock_resolver_instance.resolve_output_path.side_effect = resolver_side_effect
+                mock_resolver_class.return_value = mock_resolver_instance
                 
                 # Capture stdout
                 out = StringIO()
@@ -545,7 +561,7 @@ class TestErExportMultipleApps(TestCase):
             with patch('x007007007.er_django.management.commands.er_export.apps.get_app_configs') as mock_apps, \
                  patch('x007007007.er_django.management.commands.er_export.apps.get_app_config') as mock_app_config, \
                  patch('x007007007.er_django.management.commands.er_export.DjangoModelParser') as mock_parser, \
-                 patch('x007007007.er_django.management.commands.er_export.PathResolver') as mock_resolver:
+                 patch('x007007007.er_django.management.commands.er_export.PathResolver') as mock_resolver_class:
                 
                 # Setup mock app config with nested path
                 mock_app = Mock()
@@ -562,9 +578,11 @@ class TestErExportMultipleApps(TestCase):
                 mock_parser_instance.parse.return_value = er_model
                 mock_parser.return_value = mock_parser_instance
                 
-                # Setup mock resolver to return nested path
+                # Setup mock resolver instance to return nested path
+                mock_resolver_instance = Mock()
                 output_file = Path(temp_dir) / 'src' / 'aaa' / 'bbb' / 'ccc' / 'models.toml'
-                mock_resolver.resolve_output_path.return_value = output_file
+                mock_resolver_instance.resolve_output_path.return_value = output_file
+                mock_resolver_class.return_value = mock_resolver_instance
                 
                 # Capture stdout
                 out = StringIO()
@@ -584,9 +602,9 @@ class TestErExportMultipleApps(TestCase):
                 
                 cmd.handle(**options)
                 
-                # Verify that PathResolver was called with correct app_config
-                mock_resolver.resolve_output_path.assert_called_once()
-                call_args = mock_resolver.resolve_output_path.call_args
+                # Verify that PathResolver instance method was called with correct app_config
+                mock_resolver_instance.resolve_output_path.assert_called_once()
+                call_args = mock_resolver_instance.resolve_output_path.call_args
                 assert call_args[1]['app_config'] == mock_app, "Should pass correct app_config"
                 
                 # Verify that the nested directory structure was created
@@ -626,7 +644,7 @@ class TestErExportDirectoryCreation(TestCase):
             with patch('x007007007.er_django.management.commands.er_export.apps.get_app_configs') as mock_apps, \
                  patch('x007007007.er_django.management.commands.er_export.apps.get_app_config') as mock_app_config, \
                  patch('x007007007.er_django.management.commands.er_export.DjangoModelParser') as mock_parser, \
-                 patch('x007007007.er_django.management.commands.er_export.PathResolver') as mock_resolver:
+                 patch('x007007007.er_django.management.commands.er_export.PathResolver') as mock_resolver_class:
                 
                 # Setup mock app config
                 mock_app = Mock()
@@ -643,9 +661,11 @@ class TestErExportDirectoryCreation(TestCase):
                 mock_parser_instance.parse.return_value = er_model
                 mock_parser.return_value = mock_parser_instance
                 
-                # Setup mock resolver to return nested path
+                # Setup mock resolver instance to return nested path
+                mock_resolver_instance = Mock()
                 output_file = nested_output_dir / 'models.toml'
-                mock_resolver.resolve_output_path.return_value = output_file
+                mock_resolver_instance.resolve_output_path.return_value = output_file
+                mock_resolver_class.return_value = mock_resolver_instance
                 
                 # Capture stdout
                 out = StringIO()
@@ -695,7 +715,7 @@ class TestErExportDirectoryCreation(TestCase):
             with patch('x007007007.er_django.management.commands.er_export.apps.get_app_configs') as mock_apps, \
                  patch('x007007007.er_django.management.commands.er_export.apps.get_app_config') as mock_app_config, \
                  patch('x007007007.er_django.management.commands.er_export.DjangoModelParser') as mock_parser, \
-                 patch('x007007007.er_django.management.commands.er_export.PathResolver') as mock_resolver, \
+                 patch('x007007007.er_django.management.commands.er_export.PathResolver') as mock_resolver_class, \
                  patch('x007007007.er_django.management.commands.er_export.ensure_directory_exists'):
                 
                 # Setup mock app config
@@ -713,7 +733,8 @@ class TestErExportDirectoryCreation(TestCase):
                 mock_parser_instance.parse.return_value = er_model
                 mock_parser.return_value = mock_parser_instance
                 
-                # Setup mock resolver to return a path with a parent that will fail to create
+                # Setup mock resolver instance to return a path with a parent that will fail to create
+                mock_resolver_instance = Mock()
                 output_file_mock = MagicMock(spec=Path)
                 output_file_mock.parent = MagicMock(spec=Path)
                 # Make mkdir raise PermissionError
@@ -721,7 +742,8 @@ class TestErExportDirectoryCreation(TestCase):
                 output_file_mock.__str__ = lambda self: '/forbidden/path/models.toml'
                 output_file_mock.parent.__str__ = lambda self: '/forbidden/path'
                 
-                mock_resolver.resolve_output_path.return_value = output_file_mock
+                mock_resolver_instance.resolve_output_path.return_value = output_file_mock
+                mock_resolver_class.return_value = mock_resolver_instance
                 
                 # Capture stdout
                 out = StringIO()
@@ -777,7 +799,7 @@ class TestErExportDirectoryCreation(TestCase):
             with patch('x007007007.er_django.management.commands.er_export.apps.get_app_configs') as mock_apps, \
                  patch('x007007007.er_django.management.commands.er_export.apps.get_app_config') as mock_app_config, \
                  patch('x007007007.er_django.management.commands.er_export.DjangoModelParser') as mock_parser, \
-                 patch('x007007007.er_django.management.commands.er_export.PathResolver') as mock_resolver:
+                 patch('x007007007.er_django.management.commands.er_export.PathResolver') as mock_resolver_class:
                 
                 # Setup mock app config
                 mock_app = Mock()
@@ -794,9 +816,11 @@ class TestErExportDirectoryCreation(TestCase):
                 mock_parser_instance.parse.return_value = er_model
                 mock_parser.return_value = mock_parser_instance
                 
-                # Setup mock resolver to return path in existing directory
+                # Setup mock resolver instance to return path in existing directory
+                mock_resolver_instance = Mock()
                 output_file = output_dir / 'models.toml'
-                mock_resolver.resolve_output_path.return_value = output_file
+                mock_resolver_instance.resolve_output_path.return_value = output_file
+                mock_resolver_class.return_value = mock_resolver_instance
                 
                 # Capture stdout
                 out = StringIO()

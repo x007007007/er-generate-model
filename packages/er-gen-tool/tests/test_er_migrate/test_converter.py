@@ -3,8 +3,8 @@
 """
 import pytest
 from x007007007.er.models import Entity, Column, Relationship, ERModel
-from x007007007.er_tool.migrate.converter import ERConverter
-from x007007007.er_tool.migrate.models import (
+from x007007007.er_tool.migration_core.converter import ERConverter
+from x007007007.er_tool.migration_core.models import (
     ColumnDefinition,
     IndexDefinition,
     ForeignKeyDefinition,
@@ -17,7 +17,7 @@ class TestERConverter:
     def test_convert_simple_column(self):
         """测试转换简单列"""
         # 创建原始Column
-        col = Column(name="id", type="uuid", is_pk=True, nullable=False)
+        col = Column(name="id", type="uuid", db_column="id", is_pk=True, nullable=False)
         
         # 转换
         converter = ERConverter()
@@ -32,7 +32,7 @@ class TestERConverter:
     
     def test_convert_column_with_max_length(self):
         """测试转换带长度的列"""
-        col = Column(name="username", type="string", max_length=255)
+        col = Column(name="username", type="string", db_column="username", max_length=255)
         
         converter = ERConverter()
         col_def = converter.convert_column(col)
@@ -41,7 +41,7 @@ class TestERConverter:
     
     def test_convert_column_with_unique(self):
         """测试转换唯一列"""
-        col = Column(name="email", type="string", unique=True)
+        col = Column(name="email", type="string", db_column="email", unique=True)
         
         converter = ERConverter()
         col_def = converter.convert_column(col)
@@ -52,9 +52,10 @@ class TestERConverter:
         """测试转换简单实体"""
         entity = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True, nullable=False),
-                Column(name="username", type="string", max_length=255)
+                Column(name="id", type="uuid", db_column="id", is_pk=True, nullable=False),
+                Column(name="username", type="string", db_column="username", max_length=255)
             ]
         )
         
@@ -67,7 +68,7 @@ class TestERConverter:
     
     def test_convert_entity_name_to_snake_case(self):
         """测试实体名转换为snake_case"""
-        entity = Entity(name="UserProfile", columns=[])
+        entity = Entity(name="UserProfile", table_name="user_profile", columns=[])
         
         converter = ERConverter()
         table_name, _ = converter.convert_entity(entity)
@@ -78,10 +79,11 @@ class TestERConverter:
         """测试从实体提取索引"""
         entity = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="email", type="string", unique=True),
-                Column(name="username", type="string", indexed=True)
+                Column(name="id", type="uuid", db_column="id", is_pk=True),
+                Column(name="email", type="string", db_column="email", unique=True),
+                Column(name="username", type="string", db_column="username", indexed=True)
             ]
         )
         
@@ -125,19 +127,21 @@ class TestERConverter:
         
         user = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True, nullable=False),
-                Column(name="username", type="string", max_length=255, unique=True)
+                Column(name="id", type="uuid", db_column="id", is_pk=True, nullable=False),
+                Column(name="username", type="string", db_column="username", max_length=255, unique=True)
             ]
         )
         er_model.add_entity(user)
         
         post = Entity(
             name="Post",
+            table_name="post",
             columns=[
-                Column(name="id", type="uuid", is_pk=True, nullable=False),
-                Column(name="author_id", type="uuid", is_fk=True),
-                Column(name="title", type="string", max_length=255)
+                Column(name="id", type="uuid", db_column="id", is_pk=True, nullable=False),
+                Column(name="author_id", type="uuid", db_column="author_id", is_fk=True),
+                Column(name="title", type="string", db_column="title", max_length=255)
             ]
         )
         er_model.add_entity(post)

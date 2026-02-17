@@ -3,8 +3,8 @@
 """
 import pytest
 from x007007007.er.models import Entity, Column, ERModel
-from x007007007.er_tool.migrate.differ import ERDiffer
-from x007007007.er_tool.migrate.models import (
+from x007007007.er_tool.migration_core.differ import ERDiffer
+from x007007007.er_tool.migration_core.models import (
     CreateTable,
     DropTable,
     AddColumn,
@@ -25,9 +25,10 @@ class TestTableOperations:
         new_model = ERModel()
         user = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True, nullable=False),
-                Column(name="username", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True, nullable=False),
+                Column(name="username", db_column="username", type="string")
             ]
         )
         new_model.add_entity(user)
@@ -44,13 +45,13 @@ class TestTableOperations:
     def test_detect_dropped_table(self):
         """T-002: 检测删除表"""
         old_model = ERModel()
-        user = Entity(name="User", columns=[Column(name="id", type="uuid", is_pk=True)])
-        temp = Entity(name="TempData", columns=[Column(name="id", type="uuid", is_pk=True)])
+        user = Entity(name="User", table_name="user", columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)])
+        temp = Entity(name="TempData", table_name="temp_data", columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)])
         old_model.add_entity(user)
         old_model.add_entity(temp)
         
         new_model = ERModel()
-        user_new = Entity(name="User", columns=[Column(name="id", type="uuid", is_pk=True)])
+        user_new = Entity(name="User", table_name="user", columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)])
         new_model.add_entity(user_new)
         
         differ = ERDiffer()
@@ -66,9 +67,10 @@ class TestTableOperations:
         model = ERModel()
         user = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string")
             ]
         )
         model.add_entity(user)
@@ -77,9 +79,10 @@ class TestTableOperations:
         model2 = ERModel()
         user2 = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string")
             ]
         )
         model2.add_entity(user2)
@@ -99,9 +102,10 @@ class TestColumnOperations:
         old_model = ERModel()
         user = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string")
             ]
         )
         old_model.add_entity(user)
@@ -109,10 +113,11 @@ class TestColumnOperations:
         new_model = ERModel()
         user_new = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string"),
-                Column(name="email", type="string", nullable=True)
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string"),
+                Column(name="email", db_column="email", type="string", nullable=True)
             ]
         )
         new_model.add_entity(user_new)
@@ -132,10 +137,11 @@ class TestColumnOperations:
         old_model = ERModel()
         user = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string"),
-                Column(name="deprecated_field", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string"),
+                Column(name="deprecated_field", db_column="deprecated_field", type="string")
             ]
         )
         old_model.add_entity(user)
@@ -143,9 +149,10 @@ class TestColumnOperations:
         new_model = ERModel()
         user_new = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string")
             ]
         )
         new_model.add_entity(user_new)
@@ -164,9 +171,10 @@ class TestColumnOperations:
         old_model = ERModel()
         product = Entity(
             name="Product",
+            table_name="product",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="price", type="int")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="price", db_column="price", type="int")
             ]
         )
         old_model.add_entity(product)
@@ -174,9 +182,10 @@ class TestColumnOperations:
         new_model = ERModel()
         product_new = Entity(
             name="Product",
+            table_name="product",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="price", type="decimal")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="price", db_column="price", type="decimal")
             ]
         )
         new_model.add_entity(product_new)
@@ -196,9 +205,10 @@ class TestColumnOperations:
         old_model = ERModel()
         user = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string", max_length=100)
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string", max_length=100)
             ]
         )
         old_model.add_entity(user)
@@ -206,9 +216,10 @@ class TestColumnOperations:
         new_model = ERModel()
         user_new = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string", max_length=200)
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string", max_length=200)
             ]
         )
         new_model.add_entity(user_new)
@@ -227,9 +238,10 @@ class TestColumnOperations:
         old_model = ERModel()
         user = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="email", type="string", nullable=True)
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="email", db_column="email", type="string", nullable=True)
             ]
         )
         old_model.add_entity(user)
@@ -237,9 +249,10 @@ class TestColumnOperations:
         new_model = ERModel()
         user_new = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="email", type="string", nullable=False)
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="email", db_column="email", type="string", nullable=False)
             ]
         )
         new_model.add_entity(user_new)
@@ -261,9 +274,10 @@ class TestIndexOperations:
         old_model = ERModel()
         user = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="email", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="email", db_column="email", type="string")
             ]
         )
         old_model.add_entity(user)
@@ -271,9 +285,10 @@ class TestIndexOperations:
         new_model = ERModel()
         user_new = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="email", type="string", indexed=True)
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="email", db_column="email", type="string", indexed=True)
             ]
         )
         new_model.add_entity(user_new)
@@ -292,9 +307,10 @@ class TestIndexOperations:
         old_model = ERModel()
         user = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="email", type="string", indexed=True)
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="email", db_column="email", type="string", indexed=True)
             ]
         )
         old_model.add_entity(user)
@@ -302,9 +318,10 @@ class TestIndexOperations:
         new_model = ERModel()
         user_new = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="email", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="email", db_column="email", type="string")
             ]
         )
         new_model.add_entity(user_new)
@@ -322,9 +339,10 @@ class TestIndexOperations:
         old_model = ERModel()
         user = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string")
             ]
         )
         old_model.add_entity(user)
@@ -332,9 +350,10 @@ class TestIndexOperations:
         new_model = ERModel()
         user_new = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string", unique=True)
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string", unique=True)
             ]
         )
         new_model.add_entity(user_new)

@@ -8,7 +8,7 @@ import tempfile
 from pathlib import Path
 from click.testing import CliRunner
 from x007007007.er_tool.cli import main
-from x007007007.er_tool.convert import convert, get_default_app_label, get_default_table_prefix
+from x007007007.er_tool.convert import convert_cmd, get_default_app_label, get_default_table_prefix
 
 
 def test_get_default_app_label_from_file(tmp_path):
@@ -46,7 +46,7 @@ def test_cli_db_input_type():
     runner = CliRunner()
     # This will fail because sqlite:///:memory: might not work in this context
     # but we're testing the code path
-    result = runner.invoke(convert, [
+    result = runner.invoke(convert_cmd, [
         "sqlite:///:memory:",
         "--input-type", "db",
         "--format", "django"
@@ -58,7 +58,7 @@ def test_cli_db_input_type():
 def test_cli_file_not_found():
     """Test CLI with non-existent file."""
     runner = CliRunner()
-    result = runner.invoke(convert, [
+    result = runner.invoke(convert_cmd, [
         "nonexistent_file.mermaid",
         "--input-type", "mermaid",
         "--format", "django"
@@ -77,7 +77,7 @@ def test_cli_io_error(tmp_path):
     # Don't create the file, but try to read it as if it exists
     # Actually, let's create it and then make it unreadable if possible
     # For simplicity, we'll test with a file that doesn't exist
-    result = runner.invoke(convert, [
+    result = runner.invoke(convert_cmd, [
         invalid_path,
         "--input-type", "mermaid",
         "--format", "django"
@@ -94,7 +94,7 @@ def test_cli_unknown_input_type():
         temp_file = f.name
     
     try:
-        result = runner.invoke(convert, [
+        result = runner.invoke(convert_cmd, [
             temp_file,
             "--input-type", "invalid_type",
             "--format", "django"
@@ -113,7 +113,7 @@ def test_cli_unknown_format():
         temp_file = f.name
     
     try:
-        result = runner.invoke(convert, [
+        result = runner.invoke(convert_cmd, [
             temp_file,
             "--input-type", "mermaid",
             "--format", "invalid_format"
@@ -132,7 +132,7 @@ def test_cli_output_to_file(tmp_path):
     
     input_file.write_text("erDiagram\n    USER {\n        int id PK\n        string name\n    }")
     
-    result = runner.invoke(convert, [
+    result = runner.invoke(convert_cmd, [
         str(input_file),
         "--input-type", "mermaid",
         "--format", "django",

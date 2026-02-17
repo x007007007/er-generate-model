@@ -17,7 +17,7 @@ class TestColumnModelBasicFunctionality:
         """Test that db_column is a required field."""
         # db_column must be provided when creating a Column
         with pytest.raises(TypeError, match="missing 1 required positional argument: 'db_column'"):
-            Column(name="username", type="CharField")
+            Column(name="username", db_column="username", type="CharField")
     
     def test_database_column_name_returns_db_column(self):
         """Test that database_column_name property returns db_column value."""

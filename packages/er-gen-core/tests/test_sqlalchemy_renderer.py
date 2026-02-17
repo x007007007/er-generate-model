@@ -55,9 +55,12 @@ class TestSQLAlchemyRenderer:
         """Test rendering a simple entity."""
         entity = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="int", is_pk=True, nullable=False),
-                Column(name="name", type="varchar", max_length=100, nullable=False)
+                Column(name="id",
+            table_name="user", db_column="id", type="int", is_pk=True, nullable=False),
+                Column(name="name",
+            table_name="user", db_column="name", type="varchar", max_length=100, nullable=False)
             ],
             comment="User model"
         )
@@ -74,10 +77,14 @@ class TestSQLAlchemyRenderer:
         """Test rendering entity with default values."""
         entity = Entity(
             name="Post",
+            table_name="post",
             columns=[
-                Column(name="id", type="int", is_pk=True, nullable=False),
-                Column(name="title", type="varchar", max_length=200, nullable=False, default="Untitled"),
-                Column(name="published", type="boolean", nullable=False, default=False)
+                Column(name="id",
+            table_name="post", db_column="id", type="int", is_pk=True, nullable=False),
+                Column(name="title",
+            table_name="post", db_column="title", type="varchar", max_length=200, nullable=False, default="Untitled"),
+                Column(name="published",
+            table_name="post", db_column="published", type="boolean", nullable=False, default=False)
             ]
         )
         model = ERModel(entities={"Post": entity}, relationships=[], templates={})
@@ -92,9 +99,12 @@ class TestSQLAlchemyRenderer:
         """Test rendering entity with comments."""
         entity = Entity(
             name="Article",
+            table_name="article",
             columns=[
-                Column(name="id", type="int", is_pk=True, nullable=False),
-                Column(name="content", type="text", nullable=False, comment="Article content")
+                Column(name="id",
+            table_name="article", db_column="id", type="int", is_pk=True, nullable=False),
+                Column(name="content",
+            table_name="article", db_column="content", type="text", nullable=False, comment="Article content")
             ]
         )
         model = ERModel(entities={"Article": entity}, relationships=[], templates={})
@@ -108,9 +118,12 @@ class TestSQLAlchemyRenderer:
         """Test rendering entity with quotes in comments."""
         entity = Entity(
             name="Product",
+            table_name="product",
             columns=[
-                Column(name="id", type="int", is_pk=True, nullable=False),
-                Column(name="name", type="varchar", max_length=100, nullable=False, comment='Product "name"')
+                Column(name="id",
+            table_name="product", db_column="id", type="int", is_pk=True, nullable=False),
+                Column(name="name",
+            table_name="product", db_column="name", type="varchar", max_length=100, nullable=False, comment='Product "name"')
             ]
         )
         model = ERModel(entities={"Product": entity}, relationships=[], templates={})
@@ -126,11 +139,15 @@ class TestSQLAlchemyRenderer:
         """Test rendering multiple entities."""
         user = Entity(
             name="User",
-            columns=[Column(name="id", type="int", is_pk=True, nullable=False)]
+            table_name="user",
+            columns=[Column(name="id",
+            table_name="user", db_column="id", type="int", is_pk=True, nullable=False)]
         )
         post = Entity(
             name="Post",
-            columns=[Column(name="id", type="int", is_pk=True, nullable=False)]
+            table_name="post",
+            columns=[Column(name="id",
+            table_name="post", db_column="id", type="int", is_pk=True, nullable=False)]
         )
         model = ERModel(
             entities={"User": user, "Post": post},
@@ -147,7 +164,9 @@ class TestSQLAlchemyRenderer:
         renderer = SQLAlchemyRenderer(table_prefix='myapp')
         entity = Entity(
             name="User",
-            columns=[Column(name="id", type="int", is_pk=True, nullable=False)]
+            table_name="user",
+            columns=[Column(name="id",
+            table_name="user", db_column="id", type="int", is_pk=True, nullable=False)]
         )
         model = ERModel(entities={"User": entity}, relationships=[], templates={})
         result = renderer.render(model)
@@ -164,10 +183,14 @@ class TestSQLAlchemyRenderer:
         """Test that generated code is syntactically valid."""
         entity = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="int", is_pk=True, nullable=False),
-                Column(name="name", type="varchar", max_length=100, nullable=False),
-                Column(name="email", type="varchar", max_length=255, nullable=False)
+                Column(name="id",
+            table_name="user", db_column="id", type="int", is_pk=True, nullable=False),
+                Column(name="name",
+            table_name="user", db_column="name", type="varchar", max_length=100, nullable=False),
+                Column(name="email",
+            table_name="user", db_column="email", type="varchar", max_length=255, nullable=False)
             ]
         )
         model = ERModel(entities={"User": entity}, relationships=[], templates={})
@@ -183,9 +206,12 @@ class TestSQLAlchemyRenderer:
         """Test rendering with default value of 0."""
         entity = Entity(
             name="Counter",
+            table_name="counter",
             columns=[
-                Column(name="id", type="int", is_pk=True, nullable=False),
-                Column(name="count", type="int", nullable=False, default=0)
+                Column(name="id",
+            table_name="counter", db_column="id", type="int", is_pk=True, nullable=False),
+                Column(name="count",
+            table_name="counter", db_column="count", type="int", nullable=False, default=0)
             ]
         )
         model = ERModel(entities={"Counter": entity}, relationships=[], templates={})
@@ -200,9 +226,12 @@ class TestSQLAlchemyRenderer:
         """Test rendering with default value of False."""
         entity = Entity(
             name="Flag",
+            table_name="flag",
             columns=[
-                Column(name="id", type="int", is_pk=True, nullable=False),
-                Column(name="active", type="boolean", nullable=False, default=False)
+                Column(name="id",
+            table_name="flag", db_column="id", type="int", is_pk=True, nullable=False),
+                Column(name="active",
+            table_name="flag", db_column="active", type="boolean", nullable=False, default=False)
             ]
         )
         model = ERModel(entities={"Flag": entity}, relationships=[], templates={})
@@ -217,9 +246,12 @@ class TestSQLAlchemyRenderer:
         """Test rendering with default value of empty string."""
         entity = Entity(
             name="Text",
+            table_name="text",
             columns=[
-                Column(name="id", type="int", is_pk=True, nullable=False),
-                Column(name="content", type="varchar", max_length=100, nullable=False, default="")
+                Column(name="id",
+            table_name="text", db_column="id", type="int", is_pk=True, nullable=False),
+                Column(name="content",
+            table_name="text", db_column="content", type="varchar", max_length=100, nullable=False, default="")
             ]
         )
         model = ERModel(entities={"Text": entity}, relationships=[], templates={})

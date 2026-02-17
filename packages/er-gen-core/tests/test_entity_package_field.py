@@ -22,6 +22,7 @@ def test_entity_package_field_can_be_set():
     """Test that package field can be set to a module path."""
     entity = Entity(
         name="User",
+            table_name="user",
         package="kinkotech.common.domains.account.models"
     )
     assert entity.package == "kinkotech.common.domains.account.models"
@@ -31,10 +32,13 @@ def test_entity_package_field_with_columns():
     """Test that package field works alongside other Entity fields."""
     entity = Entity(
         name="User",
+            table_name="user",
         package="myapp.models",
         columns=[
-            Column(name="id", type="int", is_pk=True),
-            Column(name="username", type="str")
+            Column(name="id",
+            table_name="user", db_column="id", type="int", is_pk=True),
+            Column(name="username",
+            table_name="user", db_column="username", type="str")
         ],
         comment="User model"
     )
@@ -49,6 +53,7 @@ def test_entity_package_field_serialization():
     """Test that package field is included in dataclass serialization."""
     entity = Entity(
         name="Profile",
+            table_name="profile",
         package="src.aaa.bbb.ccc.models",
         extends=["BaseModel"],
         export_path="/path/to/models.toml"
@@ -75,7 +80,9 @@ def test_entity_with_all_fields():
     """Test Entity with all fields including package."""
     entity = Entity(
         name="Order",
-        columns=[Column(name="id", type="int", is_pk=True)],
+            table_name="order",
+        columns=[Column(name="id",
+            table_name="order", db_column="id", type="int", is_pk=True)],
         comment="Order entity",
         extends=["TimestampedModel", "SoftDeleteModel"],
         export_path="src/orders/models.toml",

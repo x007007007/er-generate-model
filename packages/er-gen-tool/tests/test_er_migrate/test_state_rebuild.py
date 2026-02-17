@@ -14,8 +14,8 @@
 """
 import pytest
 from x007007007.er.models import ERModel, Entity, Column, Relationship
-from x007007007.er_tool.migrate.generator import MigrationGenerator
-from x007007007.er_tool.migrate.file_manager import FileManager
+from x007007007.er_tool.migration_core.generator import MigrationGenerator
+from x007007007.er_tool.migration_core.file_manager import FileManager
 
 
 class TestStateRebuildTableOperations:
@@ -30,9 +30,10 @@ class TestStateRebuildTableOperations:
         model = ERModel()
         model.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string")
             ]
         ))
         
@@ -57,15 +58,15 @@ class TestStateRebuildTableOperations:
         
         # 创建两个表
         model1 = ERModel()
-        model1.add_entity(Entity(name="User", columns=[Column(name="id", type="uuid", is_pk=True)]))
-        model1.add_entity(Entity(name="Post", columns=[Column(name="id", type="uuid", is_pk=True)]))
+        model1.add_entity(Entity(name="User", table_name="user", columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)]))
+        model1.add_entity(Entity(name="Post", table_name="post", columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)]))
         
         migration1 = generator.generate("test", model1)
         fm.save_migration(migration1)
         
         # 删除Post表
         model2 = ERModel()
-        model2.add_entity(Entity(name="User", columns=[Column(name="id", type="uuid", is_pk=True)]))
+        model2.add_entity(Entity(name="User", table_name="user", columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)]))
         
         migration2 = generator.generate("test", model2)
         assert migration2 is not None
@@ -90,14 +91,15 @@ class TestStateRebuildTableOperations:
         # 创建3个表
         model1 = ERModel()
         for name in ["User", "Post", "Comment"]:
-            model1.add_entity(Entity(name=name, columns=[Column(name="id", type="uuid", is_pk=True)]))
+            table_name = name.lower()
+            model1.add_entity(Entity(name=name, table_name=table_name, columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)]))
         
         migration1 = generator.generate("test", model1)
         fm.save_migration(migration1)
         
         # 只保留User表
         model2 = ERModel()
-        model2.add_entity(Entity(name="User", columns=[Column(name="id", type="uuid", is_pk=True)]))
+        model2.add_entity(Entity(name="User", table_name="user", columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)]))
         
         migration2 = generator.generate("test", model2)
         assert migration2 is not None
@@ -125,7 +127,8 @@ class TestStateRebuildColumnOperations:
         model1 = ERModel()
         model1.add_entity(Entity(
             name="User",
-            columns=[Column(name="id", type="uuid", is_pk=True)]
+            table_name="user",
+            columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)]
         ))
         
         migration1 = generator.generate("test", model1)
@@ -135,9 +138,10 @@ class TestStateRebuildColumnOperations:
         model2 = ERModel()
         model2.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="email", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="email", db_column="email", type="string")
             ]
         ))
         
@@ -163,10 +167,11 @@ class TestStateRebuildColumnOperations:
         model1 = ERModel()
         model1.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string"),
-                Column(name="email", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string"),
+                Column(name="email", db_column="email", type="string")
             ]
         ))
         
@@ -177,9 +182,10 @@ class TestStateRebuildColumnOperations:
         model2 = ERModel()
         model2.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string")
             ]
         ))
         
@@ -207,11 +213,12 @@ class TestStateRebuildColumnOperations:
         model1 = ERModel()
         model1.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string"),
-                Column(name="email", type="string"),
-                Column(name="phone", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string"),
+                Column(name="email", db_column="email", type="string"),
+                Column(name="phone", db_column="phone", type="string")
             ]
         ))
         
@@ -222,9 +229,10 @@ class TestStateRebuildColumnOperations:
         model2 = ERModel()
         model2.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string")
             ]
         ))
         
@@ -253,9 +261,10 @@ class TestStateRebuildColumnOperations:
         model1 = ERModel()
         model1.add_entity(Entity(
             name="Product",
+            table_name="product",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="price", type="int")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="price", db_column="price", type="int")
             ]
         ))
         
@@ -266,9 +275,10 @@ class TestStateRebuildColumnOperations:
         model2 = ERModel()
         model2.add_entity(Entity(
             name="Product",
+            table_name="product",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="price", type="decimal")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="price", db_column="price", type="decimal")
             ]
         ))
         
@@ -296,9 +306,10 @@ class TestStateRebuildColumnOperations:
         model1 = ERModel()
         model1.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string")
             ]
         ))
         
@@ -309,9 +320,10 @@ class TestStateRebuildColumnOperations:
         model2 = ERModel()
         model2.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string", max_length=100)
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string", max_length=100)
             ]
         ))
         
@@ -339,9 +351,10 @@ class TestStateRebuildColumnOperations:
         model1 = ERModel()
         model1.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="email", type="string", nullable=True)
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="email", db_column="email", type="string", nullable=True)
             ]
         ))
         
@@ -352,9 +365,10 @@ class TestStateRebuildColumnOperations:
         model2 = ERModel()
         model2.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="email", type="string", nullable=False)
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="email", db_column="email", type="string", nullable=False)
             ]
         ))
         
@@ -380,9 +394,10 @@ class TestStateRebuildColumnOperations:
         model1 = ERModel()
         model1.add_entity(Entity(
             name="Product",
+            table_name="product",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="price", type="decimal")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="price", db_column="price", type="decimal")
             ]
         ))
         
@@ -393,9 +408,10 @@ class TestStateRebuildColumnOperations:
         model2 = ERModel()
         model2.add_entity(Entity(
             name="Product",
+            table_name="product",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="price", type="decimal", precision=10, scale=2)
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="price", db_column="price", type="decimal", precision=10, scale=2)
             ]
         ))
         
@@ -422,10 +438,11 @@ class TestStateRebuildColumnOperations:
         model1 = ERModel()
         model1.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string"),
-                Column(name="age", type="int")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string"),
+                Column(name="age", db_column="age", type="int")
             ]
         ))
         
@@ -436,10 +453,11 @@ class TestStateRebuildColumnOperations:
         model2 = ERModel()
         model2.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string", max_length=50),
-                Column(name="age", type="int")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string", max_length=50),
+                Column(name="age", db_column="age", type="int")
             ]
         ))
         
@@ -450,10 +468,11 @@ class TestStateRebuildColumnOperations:
         model3 = ERModel()
         model3.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string", max_length=50),
-                Column(name="age", type="smallint")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string", max_length=50),
+                Column(name="age", db_column="age", type="smallint")
             ]
         ))
         
@@ -486,13 +505,15 @@ class TestStateRebuildForeignKeyOperations:
         model = ERModel()
         model.add_entity(Entity(
             name="User",
-            columns=[Column(name="id", type="uuid", is_pk=True)]
+            table_name="user",
+            columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)]
         ))
         model.add_entity(Entity(
             name="Post",
+            table_name="post",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="author_id", type="uuid", is_fk=True)
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="author_id", db_column="author_id", type="uuid", is_fk=True)
             ]
         ))
         model.add_relationship(Relationship(
@@ -524,13 +545,15 @@ class TestStateRebuildForeignKeyOperations:
         model = ERModel()
         model.add_entity(Entity(
             name="User",
-            columns=[Column(name="id", type="uuid", is_pk=True)]
+            table_name="user",
+            columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)]
         ))
         model.add_entity(Entity(
             name="Post",
+            table_name="post",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="author_id", type="uuid", is_fk=True)
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="author_id", db_column="author_id", type="uuid", is_fk=True)
             ]
         ))
         model.add_relationship(Relationship(
@@ -566,9 +589,10 @@ class TestStateRebuildComplexScenarios:
         model1 = ERModel()
         model1.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string")
             ]
         ))
         
@@ -579,10 +603,11 @@ class TestStateRebuildComplexScenarios:
         model2 = ERModel()
         model2.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string"),
-                Column(name="email", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string"),
+                Column(name="email", db_column="email", type="string")
             ]
         ))
         
@@ -593,16 +618,18 @@ class TestStateRebuildComplexScenarios:
         model3 = ERModel()
         model3.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string", max_length=100)
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string", max_length=100)
             ]
         ))
         model3.add_entity(Entity(
             name="Post",
+            table_name="post",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="title", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="title", db_column="title", type="string")
             ]
         ))
         
@@ -633,9 +660,10 @@ class TestStateRebuildComplexScenarios:
         model1 = ERModel()
         model1.add_entity(Entity(
             name="Post",
+            table_name="post",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="title", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="title", db_column="title", type="string")
             ]
         ))
         
@@ -654,9 +682,10 @@ class TestStateRebuildComplexScenarios:
         model3 = ERModel()
         model3.add_entity(Entity(
             name="Post",
+            table_name="post",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="content", type="text")  # 不同的列
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="content", db_column="content", type="text")  # 不同的列
             ]
         ))
         
@@ -686,7 +715,8 @@ class TestStateRebuildComplexScenarios:
         model1 = ERModel()
         model1.add_entity(Entity(
             name="User",
-            columns=[Column(name="id", type="uuid", is_pk=True)]
+            table_name="user",
+            columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)]
         ))
         
         migration1 = generator.generate("test", model1)
@@ -696,9 +726,10 @@ class TestStateRebuildComplexScenarios:
         model2 = ERModel()
         model2.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="email", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="email", db_column="email", type="string")
             ]
         ))
         
@@ -709,7 +740,8 @@ class TestStateRebuildComplexScenarios:
         model3 = ERModel()
         model3.add_entity(Entity(
             name="User",
-            columns=[Column(name="id", type="uuid", is_pk=True)]
+            table_name="user",
+            columns=[Column(name="id", db_column="id", type="uuid", is_pk=True)]
         ))
         
         migration3 = generator.generate("test", model3)
@@ -719,9 +751,10 @@ class TestStateRebuildComplexScenarios:
         model4 = ERModel()
         model4.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="email", type="text")  # 不同类型
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="email", db_column="email", type="text")  # 不同类型
             ]
         ))
         
@@ -749,9 +782,10 @@ class TestStateRebuildComplexScenarios:
         model1 = ERModel()
         model1.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string")
             ]
         ))
         
@@ -762,9 +796,10 @@ class TestStateRebuildComplexScenarios:
         model2 = ERModel()
         model2.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string", max_length=50)
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string", max_length=50)
             ]
         ))
         
@@ -775,9 +810,10 @@ class TestStateRebuildComplexScenarios:
         model3 = ERModel()
         model3.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string", max_length=100)
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string", max_length=100)
             ]
         ))
         
@@ -788,9 +824,10 @@ class TestStateRebuildComplexScenarios:
         model4 = ERModel()
         model4.add_entity(Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string", max_length=100, nullable=False)
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="username", db_column="username", type="string", max_length=100, nullable=False)
             ]
         ))
         
@@ -817,9 +854,10 @@ class TestStateRebuildComplexScenarios:
         model1 = ERModel()
         model1.add_entity(Entity(
             name="Post",
+            table_name="post",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="title", type="string")
+                Column(name="id", db_column="id", type="uuid", is_pk=True),
+                Column(name="title", db_column="title", type="string")
             ]
         ))
         
@@ -827,7 +865,7 @@ class TestStateRebuildComplexScenarios:
         fm.save_migration(migration1)
         
         # 重命名为Article（需要手动创建RenameTable操作，因为differ可能检测为Drop+Create）
-        from x007007007.er_tool.migrate.models import Migration, RenameTable
+        from x007007007.er_tool.migration_core.models import Migration, RenameTable
         migration2 = Migration(
             version="1.0",
             name="rename_post_to_article",

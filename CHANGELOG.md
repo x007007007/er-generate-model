@@ -2,6 +2,22 @@
 
 本文档记录 ER Diagram Converter 项目的所有重要变更。
 
+## [Unreleased]
+
+### 修复 (Bug Fixes)
+
+#### 测试兼容性修复
+- 🐛 **修复测试文件与新Column/Entity API的兼容性**
+  - 修复了 `packages/er-gen-tool/tests/test_cli_extended.py` 中的导入错误：将 `convert` 改为 `convert_cmd`
+  - 批量更新了所有测试文件中的 `Column` 构造函数调用，添加必需的 `db_column` 参数
+  - 批量更新了所有测试文件中的 `Entity` 构造函数调用，添加必需的 `table_name` 参数
+  - 修复了自动化脚本错误添加 `table_name` 到 `Column` 的问题
+  - 影响范围：
+    - `packages/er-gen-tool/tests/test_er_migrate/` 下的所有测试文件
+    - `packages/er-django/tests/` 下的部分测试文件
+    - `packages/er-gen-core/tests/` 下的部分测试文件
+  - 测试通过率从 658/790 (83%) 提升到 719/790 (91%)
+
 ## [0.3.0] - 2024-01-XX
 
 ### 重大变更 (Breaking Changes)

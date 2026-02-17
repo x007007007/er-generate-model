@@ -58,25 +58,31 @@ class TestTask14_2ErConvertMultiFile(TestCase):
         # Create a TOML string with multiple entities
         toml_content = """
 [entities.User]
+table_name = "user"
 [[entities.User.columns]]
 name = "id"
 type = "Integer"
+db_column = "id"
 primary_key = true
 
 [[entities.User.columns]]
 name = "username"
 type = "String"
+db_column = "username"
 max_length = 50
 
 [entities.Profile]
+table_name = "profile"
 [[entities.Profile.columns]]
 name = "id"
 type = "Integer"
+db_column = "id"
 primary_key = true
 
 [[entities.Profile.columns]]
 name = "bio"
 type = "Text"
+db_column = "bio"
 """
         
         # Parse TOML to ERModel
@@ -134,9 +140,11 @@ type = "Text"
         
         toml_content = """
 [entities.User]
+table_name = "user"
 [[entities.User.columns]]
 name = "id"
 type = "Integer"
+db_column = "id"
 primary_key = true
 """
         

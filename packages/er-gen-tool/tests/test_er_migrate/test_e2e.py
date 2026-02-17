@@ -4,7 +4,7 @@
 import pytest
 from pathlib import Path
 from click.testing import CliRunner
-from x007007007.er_tool.migrate.cli import cli
+from x007007007.er_tool import migrate as cli_module
 
 
 class TestEndToEnd:
@@ -27,7 +27,7 @@ erDiagram
 """)
         
         # 2. 生成初始迁移
-        result1 = runner.invoke(cli, [
+        result1 = runner.invoke(cli_module.makemigration_cmd, [
             'makemigrations',
             '-n', 'blog',
             '-e', str(er_file_v1),
@@ -42,8 +42,7 @@ erDiagram
         assert migration1.exists()
         
         # 3. 显示迁移状态
-        result2 = runner.invoke(cli, [
-            'showmigrations',
+        result2 = runner.invoke(cli_module.showmigrations_cmd, [
             '-n', 'blog',
             '-d', str(migrations_dir)
         ])
@@ -65,8 +64,7 @@ erDiagram
 """)
         
         # 5. 生成第二个迁移
-        result3 = runner.invoke(cli, [
-            'makemigrations',
+        result3 = runner.invoke(cli_module.makemigration_cmd, [
             '-n', 'blog',
             '-e', str(er_file_v2),
             '-d', str(migrations_dir)
@@ -80,8 +78,7 @@ erDiagram
         assert len(migration_files) == 2
         
         # 6. 再次显示迁移状态
-        result4 = runner.invoke(cli, [
-            'showmigrations',
+        result4 = runner.invoke(cli_module.showmigrations_cmd, [
             '-n', 'blog',
             '-d', str(migrations_dir)
         ])
@@ -116,8 +113,7 @@ erDiagram
 """)
         
         # 生成auth迁移
-        result1 = runner.invoke(cli, [
-            'makemigrations',
+        result1 = runner.invoke(cli_module.makemigration_cmd, [
             '-n', 'auth',
             '-e', str(auth_er),
             '-d', str(migrations_dir)
@@ -125,8 +121,7 @@ erDiagram
         assert result1.exit_code == 0
         
         # 生成blog迁移
-        result2 = runner.invoke(cli, [
-            'makemigrations',
+        result2 = runner.invoke(cli_module.makemigration_cmd, [
             '-n', 'blog',
             '-e', str(blog_er),
             '-d', str(migrations_dir)
@@ -134,8 +129,7 @@ erDiagram
         assert result2.exit_code == 0
         
         # 显示所有命名空间
-        result3 = runner.invoke(cli, [
-            'showmigrations',
+        result3 = runner.invoke(cli_module.showmigrations_cmd, [
             '-d', str(migrations_dir)
         ])
         
@@ -158,8 +152,7 @@ erDiagram
 """)
         
         # 第一次生成迁移
-        result1 = runner.invoke(cli, [
-            'makemigrations',
+        result1 = runner.invoke(cli_module.makemigration_cmd, [
             '-n', 'blog',
             '-e', str(er_file),
             '-d', str(migrations_dir)
@@ -167,8 +160,7 @@ erDiagram
         assert result1.exit_code == 0
         
         # 第二次生成（无变更）
-        result2 = runner.invoke(cli, [
-            'makemigrations',
+        result2 = runner.invoke(cli_module.makemigration_cmd, [
             '-n', 'blog',
             '-e', str(er_file),
             '-d', str(migrations_dir)
@@ -208,8 +200,7 @@ erDiagram
 """)
         
         # 生成迁移
-        result = runner.invoke(cli, [
-            'makemigrations',
+        result = runner.invoke(cli_module.makemigration_cmd, [
             '-n', 'blog',
             '-e', str(er_file),
             '-d', str(migrations_dir)
@@ -235,8 +226,8 @@ erDiagram
 
     def test_multiple_migrations_from_mmd_files(self, tmp_path):
         """测试从不同版本的mmd文件生成多个migration记录"""
-        from x007007007.er_tool.migrate.generator import MigrationGenerator
-        from x007007007.er_tool.migrate.file_manager import FileManager
+        from x007007007.er_tool.migration_core.generator import MigrationGenerator
+        from x007007007.er_tool.migration_core.file_manager import FileManager
         from x007007007.er.parser.antlr.mermaid_antlr_parser import MermaidAntlrParser
         
         migrations_dir = tmp_path / ".migrations"
@@ -354,8 +345,8 @@ erDiagram
 
     def test_no_duplicate_migrations_on_repeated_runs(self, tmp_path):
         """测试重复运行相同的mmd文件不会创建重复的migration"""
-        from x007007007.er_tool.migrate.generator import MigrationGenerator
-        from x007007007.er_tool.migrate.file_manager import FileManager
+        from x007007007.er_tool.migration_core.generator import MigrationGenerator
+        from x007007007.er_tool.migration_core.file_manager import FileManager
         from x007007007.er.models import ERModel, Entity, Column, Relationship
         
         migrations_dir = tmp_path / ".migrations"
@@ -367,19 +358,21 @@ erDiagram
             model = ERModel()
             model.add_entity(Entity(
                 name="User",
+            table_name="user",
                 columns=[
-                    Column(name="id", type="uuid", is_pk=True),
-                    Column(name="username", type="string", unique=True),
-                    Column(name="email", type="string")
+                    Column(name="id", db_column="id", type="uuid", is_pk=True),
+                    Column(name="username", db_column="username", type="string", unique=True),
+                    Column(name="email", db_column="email", type="string")
                 ]
             ))
             model.add_entity(Entity(
                 name="Post",
+            table_name="post",
                 columns=[
-                    Column(name="id", type="uuid", is_pk=True),
-                    Column(name="author_id", type="uuid", is_fk=True),
-                    Column(name="title", type="string"),
-                    Column(name="content", type="text")
+                    Column(name="id", db_column="id", type="uuid", is_pk=True),
+                    Column(name="author_id", db_column="author_id", type="uuid", is_fk=True),
+                    Column(name="title", db_column="title", type="string"),
+                    Column(name="content", db_column="content", type="text")
                 ]
             ))
             model.add_relationship(Relationship(
@@ -430,8 +423,8 @@ erDiagram
     
     def test_repeated_runs_with_complex_model(self, tmp_path):
         """测试复杂模型的重复运行不会产生错误的migration"""
-        from x007007007.er_tool.migrate.generator import MigrationGenerator
-        from x007007007.er_tool.migrate.file_manager import FileManager
+        from x007007007.er_tool.migration_core.generator import MigrationGenerator
+        from x007007007.er_tool.migration_core.file_manager import FileManager
         from x007007007.er.parser.antlr.mermaid_antlr_parser import MermaidAntlrParser
         
         migrations_dir = tmp_path / ".migrations"
@@ -494,8 +487,8 @@ erDiagram
     
     def test_alternating_versions_no_duplicate_operations(self, tmp_path):
         """测试在两个版本之间来回切换不会产生重复操作"""
-        from x007007007.er_tool.migrate.generator import MigrationGenerator
-        from x007007007.er_tool.migrate.file_manager import FileManager
+        from x007007007.er_tool.migration_core.generator import MigrationGenerator
+        from x007007007.er_tool.migration_core.file_manager import FileManager
         from x007007007.er.models import ERModel, Entity, Column
         
         migrations_dir = tmp_path / ".migrations"
@@ -507,9 +500,10 @@ erDiagram
             model = ERModel()
             model.add_entity(Entity(
                 name="User",
+            table_name="user",
                 columns=[
-                    Column(name="id", type="uuid", is_pk=True),
-                    Column(name="username", type="string")
+                    Column(name="id", db_column="id", type="uuid", is_pk=True),
+                    Column(name="username", db_column="username", type="string")
                 ]
             ))
             return model
@@ -519,10 +513,11 @@ erDiagram
             model = ERModel()
             model.add_entity(Entity(
                 name="User",
+            table_name="user",
                 columns=[
-                    Column(name="id", type="uuid", is_pk=True),
-                    Column(name="username", type="string"),
-                    Column(name="email", type="string")
+                    Column(name="id", db_column="id", type="uuid", is_pk=True),
+                    Column(name="username", db_column="username", type="string"),
+                    Column(name="email", db_column="email", type="string")
                 ]
             ))
             return model
@@ -561,8 +556,8 @@ erDiagram
 
     def test_migrations_only_generated_when_model_changes(self, tmp_path):
         """核心测试：只有当model变化时才生成migration，model不变时不生成"""
-        from x007007007.er_tool.migrate.generator import MigrationGenerator
-        from x007007007.er_tool.migrate.file_manager import FileManager
+        from x007007007.er_tool.migration_core.generator import MigrationGenerator
+        from x007007007.er_tool.migration_core.file_manager import FileManager
         from x007007007.er.models import ERModel, Entity, Column, Relationship
         
         migrations_dir = tmp_path / ".migrations"
@@ -574,9 +569,10 @@ erDiagram
             model = ERModel()
             model.add_entity(Entity(
                 name="User",
+            table_name="user",
                 columns=[
-                    Column(name="id", type="uuid", is_pk=True),
-                    Column(name="username", type="string")
+                    Column(name="id", db_column="id", type="uuid", is_pk=True),
+                    Column(name="username", db_column="username", type="string")
                 ]
             ))
             return model
@@ -601,10 +597,11 @@ erDiagram
             model = ERModel()
             model.add_entity(Entity(
                 name="User",
+            table_name="user",
                 columns=[
-                    Column(name="id", type="uuid", is_pk=True),
-                    Column(name="username", type="string"),
-                    Column(name="email", type="string")  # 新增
+                    Column(name="id", db_column="id", type="uuid", is_pk=True),
+                    Column(name="username", db_column="username", type="string"),
+                    Column(name="email", db_column="email", type="string")  # 新增
                 ]
             ))
             return model
@@ -625,9 +622,10 @@ erDiagram
             model = ERModel()
             model.add_entity(Entity(
                 name="User",
+            table_name="user",
                 columns=[
-                    Column(name="id", type="uuid", is_pk=True),
-                    Column(name="username", type="string")
+                    Column(name="id", db_column="id", type="uuid", is_pk=True),
+                    Column(name="username", db_column="username", type="string")
                     # email被删除
                 ]
             ))
@@ -649,17 +647,19 @@ erDiagram
             model = ERModel()
             model.add_entity(Entity(
                 name="User",
+            table_name="user",
                 columns=[
-                    Column(name="id", type="uuid", is_pk=True),
-                    Column(name="username", type="string")
+                    Column(name="id", db_column="id", type="uuid", is_pk=True),
+                    Column(name="username", db_column="username", type="string")
                 ]
             ))
             model.add_entity(Entity(
                 name="Post",
+            table_name="post",
                 columns=[
-                    Column(name="id", type="uuid", is_pk=True),
-                    Column(name="author_id", type="uuid", is_fk=True),
-                    Column(name="title", type="string")
+                    Column(name="id", db_column="id", type="uuid", is_pk=True),
+                    Column(name="author_id", db_column="author_id", type="uuid", is_fk=True),
+                    Column(name="title", db_column="title", type="string")
                 ]
             ))
             model.add_relationship(Relationship(
@@ -688,17 +688,19 @@ erDiagram
             model = ERModel()
             model.add_entity(Entity(
                 name="User",
+            table_name="user",
                 columns=[
-                    Column(name="id", type="uuid", is_pk=True),
-                    Column(name="username", type="string", max_length=100)  # 添加长度限制
+                    Column(name="id", db_column="id", type="uuid", is_pk=True),
+                    Column(name="username", db_column="username", type="string", max_length=100)  # 添加长度限制
                 ]
             ))
             model.add_entity(Entity(
                 name="Post",
+            table_name="post",
                 columns=[
-                    Column(name="id", type="uuid", is_pk=True),
-                    Column(name="author_id", type="uuid", is_fk=True),
-                    Column(name="title", type="string")
+                    Column(name="id", db_column="id", type="uuid", is_pk=True),
+                    Column(name="author_id", db_column="author_id", type="uuid", is_fk=True),
+                    Column(name="title", db_column="title", type="string")
                 ]
             ))
             model.add_relationship(Relationship(
@@ -742,8 +744,8 @@ erDiagram
     
     def test_blog_evolution_8_versions(self, tmp_path):
         """测试博客系统的完整演进（8个版本）"""
-        from x007007007.er_tool.migrate.generator import MigrationGenerator
-        from x007007007.er_tool.migrate.file_manager import FileManager
+        from x007007007.er_tool.migration_core.generator import MigrationGenerator
+        from x007007007.er_tool.migration_core.file_manager import FileManager
         from x007007007.er.parser.antlr.mermaid_antlr_parser import MermaidAntlrParser
         
         migrations_dir = tmp_path / ".migrations"

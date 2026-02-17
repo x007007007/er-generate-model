@@ -21,40 +21,50 @@ def test_task_7_2_complete_example():
     # Create a model with package information
     user_entity = Entity(
         name="User",
+            table_name="user",
         extends=["django.contrib.auth.models.AbstractUser"],
         package="kinkotech.common.domains.account.models",
         columns=[
-            Column(name="phone", type="CharField", max_length=20, nullable=True, unique=True),
-            Column(name="avatar", type="ImageField", nullable=True)
+            Column(name="phone",
+            table_name="user", db_column="phone", type="CharField", max_length=20, nullable=True, unique=True),
+            Column(name="avatar",
+            table_name="user", db_column="avatar", type="ImageField", nullable=True)
         ]
     )
     
     # Create a model with different package
     profile_entity = Entity(
         name="Profile",
+            table_name="profile",
         extends=["kinkotech.common.base.TimeStampedModel"],
         package="kinkotech.common.domains.account.models",
         columns=[
-            Column(name="user", type="OneToOneField", is_fk=True, nullable=False),
-            Column(name="bio", type="TextField", nullable=True)
+            Column(name="user",
+            table_name="profile", db_column="user", type="OneToOneField", is_fk=True, nullable=False),
+            Column(name="bio",
+            table_name="profile", db_column="bio", type="TextField", nullable=True)
         ]
     )
     
     # Create a model without package (should not output package field)
     tag_entity = Entity(
         name="Tag",
+            table_name="tag",
         package=None,  # None - should not be output
         columns=[
-            Column(name="name", type="CharField", max_length=50, unique=True)
+            Column(name="name",
+            table_name="tag", db_column="name", type="CharField", max_length=50, unique=True)
         ]
     )
     
     # Create a model with empty string package (should not output package field)
     category_entity = Entity(
         name="Category",
+            table_name="category",
         package="",  # Empty string - should not be output
         columns=[
-            Column(name="title", type="CharField", max_length=100)
+            Column(name="title",
+            table_name="category", db_column="title", type="CharField", max_length=100)
         ]
     )
     
@@ -155,8 +165,10 @@ def test_package_field_with_various_module_paths():
     for package_path in test_cases:
         entity = Entity(
             name="TestModel",
+            table_name="test_model",
             package=package_path,
-            columns=[Column(name="id", type="IntegerField", is_pk=True)]
+            columns=[Column(name="id",
+            table_name="test_model", db_column="id", type="IntegerField", is_pk=True)]
         )
         
         er_model = ERModel()

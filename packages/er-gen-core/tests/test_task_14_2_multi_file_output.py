@@ -25,12 +25,12 @@ class TestTask14_2MultiFileOutput:
         model = ERModel()
         
         user_entity = Entity(name="User")
-        user_entity.columns.append(Column(name="id", type="Integer", is_pk=True))
-        user_entity.columns.append(Column(name="username", type="String", max_length=50))
+        user_entity.columns.append(Column(name="id", db_column="id", type="Integer", is_pk=True))
+        user_entity.columns.append(Column(name="username", db_column="username", type="String", max_length=50))
         
         profile_entity = Entity(name="Profile")
-        profile_entity.columns.append(Column(name="id", type="Integer", is_pk=True))
-        profile_entity.columns.append(Column(name="bio", type="Text"))
+        profile_entity.columns.append(Column(name="id", db_column="id", type="Integer", is_pk=True))
+        profile_entity.columns.append(Column(name="bio", db_column="bio", type="Text"))
         
         model.entities["User"] = user_entity
         model.entities["Profile"] = profile_entity
@@ -62,8 +62,8 @@ class TestTask14_2MultiFileOutput:
         model = ERModel()
         
         user_entity = Entity(name="User")
-        user_entity.columns.append(Column(name="id", type="Integer", is_pk=True))
-        user_entity.columns.append(Column(name="name", type="String", max_length=100))
+        user_entity.columns.append(Column(name="id", db_column="id", type="Integer", is_pk=True))
+        user_entity.columns.append(Column(name="name", db_column="name", type="String", max_length=100))
         
         model.entities["User"] = user_entity
         
@@ -88,10 +88,10 @@ class TestTask14_2MultiFileOutput:
         # Create two entities that would map to the same filename
         # For example: "User" and "USER" both map to "user.py"
         user1 = Entity(name="User")
-        user1.columns.append(Column(name="id", type="Integer", is_pk=True))
+        user1.columns.append(Column(name="id", db_column="id", type="Integer", is_pk=True))
         
         user2 = Entity(name="USER")
-        user2.columns.append(Column(name="id", type="Integer", is_pk=True))
+        user2.columns.append(Column(name="id", db_column="id", type="Integer", is_pk=True))
         
         model.entities["User"] = user1
         model.entities["USER"] = user2
@@ -114,13 +114,13 @@ class TestTask14_2MultiFileOutput:
         model = ERModel()
         
         user_entity = Entity(name="User")
-        user_entity.columns.append(Column(name="id", type="Integer", is_pk=True))
+        user_entity.columns.append(Column(name="id", db_column="id", type="Integer", is_pk=True))
         
         profile_entity = Entity(name="Profile")
-        profile_entity.columns.append(Column(name="id", type="Integer", is_pk=True))
+        profile_entity.columns.append(Column(name="id", db_column="id", type="Integer", is_pk=True))
         
         post_entity = Entity(name="Post")
-        post_entity.columns.append(Column(name="id", type="Integer", is_pk=True))
+        post_entity.columns.append(Column(name="id", db_column="id", type="Integer", is_pk=True))
         
         model.entities["User"] = user_entity
         model.entities["Profile"] = profile_entity
@@ -151,7 +151,7 @@ class TestTask14_2MultiFileOutput:
         model = ERModel()
         
         user_entity = Entity(name="User")
-        user_entity.columns.append(Column(name="id", type="Integer", is_pk=True))
+        user_entity.columns.append(Column(name="id", db_column="id", type="Integer", is_pk=True))
         
         model.entities["User"] = user_entity
         
@@ -183,7 +183,7 @@ class TestTask14_2MultiFileOutput:
         
         for entity_name, expected_filename in entities:
             entity = Entity(name=entity_name)
-            entity.columns.append(Column(name="id", type="Integer", is_pk=True))
+            entity.columns.append(Column(name="id", db_column="id", type="Integer", is_pk=True))
             model.entities[entity_name] = entity
         
         renderer = SQLAlchemyRenderer()
@@ -205,11 +205,11 @@ class TestTask14_2MultiFileOutput:
         model = ERModel()
         
         user_entity = Entity(name="User")
-        user_entity.columns.append(Column(name="id", type="Integer", is_pk=True))
+        user_entity.columns.append(Column(name="id", db_column="id", type="Integer", is_pk=True))
         
         profile_entity = Entity(name="Profile")
-        profile_entity.columns.append(Column(name="id", type="Integer", is_pk=True))
-        profile_entity.columns.append(Column(name="user_id", type="Integer", is_fk=True))
+        profile_entity.columns.append(Column(name="id", db_column="id", type="Integer", is_pk=True))
+        profile_entity.columns.append(Column(name="user_id", db_column="user_id", type="Integer", is_fk=True))
         
         model.entities["User"] = user_entity
         model.entities["Profile"] = profile_entity

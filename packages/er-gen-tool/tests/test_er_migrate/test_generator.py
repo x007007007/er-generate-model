@@ -4,9 +4,9 @@
 import pytest
 from pathlib import Path
 from x007007007.er.models import Entity, Column, Relationship, ERModel
-from x007007007.er_tool.migrate.generator import MigrationGenerator
-from x007007007.er_tool.migrate.file_manager import FileManager
-from x007007007.er_tool.migrate.models import (
+from x007007007.er_tool.migration_core.generator import MigrationGenerator
+from x007007007.er_tool.migration_core.file_manager import FileManager
+from x007007007.er_tool.migration_core.models import (
     CreateTable,
     AddColumn,
     AddForeignKey,
@@ -23,9 +23,10 @@ class TestMigrationGenerator:
         er_model = ERModel()
         user = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True, nullable=False),
-                Column(name="username", type="string", max_length=255)
+                Column(name="id", type="uuid", db_column="id", is_pk=True, nullable=False),
+                Column(name="username", type="string", db_column="username", max_length=255)
             ]
         )
         er_model.add_entity(user)
@@ -51,9 +52,10 @@ class TestMigrationGenerator:
         initial_model = ERModel()
         user = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True, nullable=False),
-                Column(name="username", type="string")
+                Column(name="id", type="uuid", db_column="id", is_pk=True, nullable=False),
+                Column(name="username", type="string", db_column="username")
             ]
         )
         initial_model.add_entity(user)
@@ -70,10 +72,11 @@ class TestMigrationGenerator:
         updated_model = ERModel()
         user_updated = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True, nullable=False),
-                Column(name="username", type="string"),
-                Column(name="email", type="string", nullable=True)
+                Column(name="id", type="uuid", db_column="id", is_pk=True, nullable=False),
+                Column(name="username", type="string", db_column="username"),
+                Column(name="email", type="string", db_column="email", nullable=True)
             ]
         )
         updated_model.add_entity(user_updated)
@@ -98,8 +101,9 @@ class TestMigrationGenerator:
         er_model = ERModel()
         user = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True, nullable=False)
+                Column(name="id", type="uuid", db_column="id", is_pk=True, nullable=False)
             ]
         )
         er_model.add_entity(user)
@@ -125,19 +129,21 @@ class TestMigrationGenerator:
         
         user = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True, nullable=False),
-                Column(name="username", type="string")
+                Column(name="id", type="uuid", db_column="id", is_pk=True, nullable=False),
+                Column(name="username", type="string", db_column="username")
             ]
         )
         er_model.add_entity(user)
         
         post = Entity(
             name="Post",
+            table_name="post",
             columns=[
-                Column(name="id", type="uuid", is_pk=True, nullable=False),
-                Column(name="author_id", type="uuid", is_fk=True),
-                Column(name="title", type="string")
+                Column(name="id", type="uuid", db_column="id", is_pk=True, nullable=False),
+                Column(name="author_id", type="uuid", db_column="author_id", is_fk=True),
+                Column(name="title", type="string", db_column="title")
             ]
         )
         er_model.add_entity(post)
@@ -172,10 +178,11 @@ class TestMigrationGenerator:
         er_model = ERModel()
         user = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True, nullable=False),
-                Column(name="email", type="string", unique=True),
-                Column(name="username", type="string", indexed=True)
+                Column(name="id", type="uuid", db_column="id", is_pk=True, nullable=False),
+                Column(name="email", type="string", db_column="email", unique=True),
+                Column(name="username", type="string", db_column="username", indexed=True)
             ]
         )
         er_model.add_entity(user)
@@ -208,9 +215,10 @@ class TestMigrationGenerator:
         er_model = ERModel()
         user = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="email", type="string")
+                Column(name="id", type="uuid", db_column="id", is_pk=True),
+                Column(name="email", type="string", db_column="email")
             ]
         )
         er_model.add_entity(user)
@@ -226,7 +234,7 @@ class TestMigrationGenerator:
         """测试计算依赖关系"""
         # 创建初始迁移
         initial_model = ERModel()
-        user = Entity(name="User", columns=[Column(name="id", type="uuid", is_pk=True)])
+        user = Entity(name="User", table_name="user", columns=[Column(name="id", type="uuid", db_column="id", is_pk=True)])
         initial_model.add_entity(user)
         
         generator = MigrationGenerator(str(tmp_path))
@@ -239,9 +247,10 @@ class TestMigrationGenerator:
         updated_model = ERModel()
         user_updated = Entity(
             name="User",
+            table_name="user",
             columns=[
-                Column(name="id", type="uuid", is_pk=True),
-                Column(name="username", type="string")
+                Column(name="id", type="uuid", db_column="id", is_pk=True),
+                Column(name="username", type="string", db_column="username")
             ]
         )
         updated_model.add_entity(user_updated)
@@ -256,7 +265,7 @@ class TestMigrationGenerator:
         """测试多个命名空间"""
         # 创建auth命名空间的迁移
         auth_model = ERModel()
-        user = Entity(name="User", columns=[Column(name="id", type="uuid", is_pk=True)])
+        user = Entity(name="User", table_name="user", columns=[Column(name="id", type="uuid", db_column="id", is_pk=True)])
         auth_model.add_entity(user)
         
         generator = MigrationGenerator(str(tmp_path))
@@ -267,7 +276,7 @@ class TestMigrationGenerator:
         
         # 创建blog命名空间的迁移
         blog_model = ERModel()
-        post = Entity(name="Post", columns=[Column(name="id", type="uuid", is_pk=True)])
+        post = Entity(name="Post", table_name="post", columns=[Column(name="id", type="uuid", db_column="id", is_pk=True)])
         blog_model.add_entity(post)
         
         blog_migration = generator.generate("blog", blog_model)

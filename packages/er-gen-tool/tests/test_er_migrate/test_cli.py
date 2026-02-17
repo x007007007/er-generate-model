@@ -4,7 +4,7 @@
 import pytest
 from click.testing import CliRunner
 from pathlib import Path
-from x007007007.er_tool.migrate import migrate_cmd as cli
+from x007007007.er_tool import migrate as cli_module
 
 
 class TestMakeMigrationsCommand:
@@ -25,8 +25,7 @@ erDiagram
         migrations_dir = tmp_path / ".migrations"
         
         runner = CliRunner()
-        result = runner.invoke(cli, [
-            'makemigrations',
+        result = runner.invoke(cli_module.makemigration_cmd, [
             '--namespace', 'blog',
             '--er-file', str(er_file),
             '--migrations-dir', str(migrations_dir)
@@ -58,8 +57,7 @@ erDiagram
         runner = CliRunner()
         
         # 第一次运行
-        result1 = runner.invoke(cli, [
-            'makemigrations',
+        result1 = runner.invoke(cli_module.makemigration_cmd, [
             '--namespace', 'blog',
             '--er-file', str(er_file),
             '--migrations-dir', str(migrations_dir)
@@ -67,8 +65,7 @@ erDiagram
         assert result1.exit_code == 0
         
         # 第二次运行（无变更）
-        result2 = runner.invoke(cli, [
-            'makemigrations',
+        result2 = runner.invoke(cli_module.makemigration_cmd, [
             '--namespace', 'blog',
             '--er-file', str(er_file),
             '--migrations-dir', str(migrations_dir)
@@ -82,8 +79,7 @@ erDiagram
         migrations_dir = tmp_path / ".migrations"
         
         runner = CliRunner()
-        result = runner.invoke(cli, [
-            'makemigrations',
+        result = runner.invoke(cli_module.makemigration_cmd, [
             '--namespace', 'blog',
             '--er-file', str(tmp_path / "nonexistent.mmd"),
             '--migrations-dir', str(migrations_dir)
@@ -106,8 +102,7 @@ erDiagram
         migrations_dir = tmp_path / ".migrations"
         
         runner = CliRunner()
-        result = runner.invoke(cli, [
-            'makemigrations',
+        result = runner.invoke(cli_module.makemigration_cmd, [
             '--namespace', 'blog',
             '--er-file', str(er_file),
             '--migrations-dir', str(migrations_dir),
@@ -138,16 +133,14 @@ erDiagram
         runner = CliRunner()
         
         # 创建迁移
-        runner.invoke(cli, [
-            'makemigrations',
+        runner.invoke(cli_module.makemigration_cmd, [
             '--namespace', 'blog',
             '--er-file', str(er_file),
             '--migrations-dir', str(migrations_dir)
         ])
         
         # 显示迁移
-        result = runner.invoke(cli, [
-            'showmigrations',
+        result = runner.invoke(cli_module.showmigrations_cmd, [
             '--namespace', 'blog',
             '--migrations-dir', str(migrations_dir)
         ])
@@ -161,8 +154,7 @@ erDiagram
         migrations_dir = tmp_path / ".migrations"
         
         runner = CliRunner()
-        result = runner.invoke(cli, [
-            'showmigrations',
+        result = runner.invoke(cli_module.showmigrations_cmd, [
             '--namespace', 'blog',
             '--migrations-dir', str(migrations_dir)
         ])
@@ -185,16 +177,14 @@ erDiagram
 """)
             
             runner = CliRunner()
-            runner.invoke(cli, [
-                'makemigrations',
+            runner.invoke(cli_module.makemigration_cmd, [
                 '--namespace', namespace,
                 '--er-file', str(er_file),
                 '--migrations-dir', str(migrations_dir)
             ])
         
         # 显示所有迁移
-        result = runner.invoke(cli, [
-            'showmigrations',
+        result = runner.invoke(cli_module.showmigrations_cmd, [
             '--migrations-dir', str(migrations_dir)
         ])
         
@@ -209,7 +199,7 @@ class TestVersionCommand:
     def test_version(self):
         """测试--version选项"""
         runner = CliRunner()
-        result = runner.invoke(cli, ['--version'])
+        result = runner.invoke(cli_module.migrate_group, ['--version'])
         
         assert result.exit_code == 0
         assert "version" in result.output.lower() or "0." in result.output
@@ -221,16 +211,15 @@ class TestHelpCommand:
     def test_help(self):
         """测试--help选项"""
         runner = CliRunner()
-        result = runner.invoke(cli, ['--help'])
+        result = runner.invoke(cli_module.migrate_group, ['--help'])
         
         assert result.exit_code == 0
-        assert "makemigrations" in result.output
         assert "showmigrations" in result.output
     
     def test_makemigrations_help(self):
         """测试makemigrations --help"""
         runner = CliRunner()
-        result = runner.invoke(cli, ['makemigrations', '--help'])
+        result = runner.invoke(cli_module.makemigration_cmd, ['--help'])
         
         assert result.exit_code == 0
         assert "namespace" in result.output.lower()

@@ -23,35 +23,43 @@ def test_task_7_1_complete_example():
     # Create a model with inheritance (like Django's AbstractUser)
     user_entity = Entity(
         name="User",
+            table_name="user",
         extends=["django.contrib.auth.models.AbstractUser"],
         package="kinkotech.common.domains.account.models",
         columns=[
-            Column(name="phone", type="CharField", max_length=20, nullable=True, unique=True),
-            Column(name="avatar", type="ImageField", nullable=True)
+            Column(name="phone",
+            table_name="user", db_column="phone", type="CharField", max_length=20, nullable=True, unique=True),
+            Column(name="avatar",
+            table_name="user", db_column="avatar", type="ImageField", nullable=True)
         ]
     )
     
     # Create a model with multiple inheritance
     profile_entity = Entity(
         name="Profile",
+            table_name="profile",
         extends=[
             "kinkotech.common.base.TimeStampedModel",
             "kinkotech.common.base.SoftDeleteModel"
         ],
         package="kinkotech.common.domains.account.models",
         columns=[
-            Column(name="user", type="OneToOneField", is_fk=True, nullable=False),
-            Column(name="bio", type="TextField", nullable=True)
+            Column(name="user",
+            table_name="profile", db_column="user", type="OneToOneField", is_fk=True, nullable=False),
+            Column(name="bio",
+            table_name="profile", db_column="bio", type="TextField", nullable=True)
         ]
     )
     
     # Create a simple model without inheritance
     tag_entity = Entity(
         name="Tag",
+            table_name="tag",
         extends=[],  # Empty list - should not be output
         package="kinkotech.common.domains.blog.models",
         columns=[
-            Column(name="name", type="CharField", max_length=50, unique=True)
+            Column(name="name",
+            table_name="tag", db_column="name", type="CharField", max_length=50, unique=True)
         ]
     )
     

@@ -100,6 +100,7 @@ class MigrationGenerator:
                     for col_def in op.columns:
                         col = Column(
                             name=col_def.name,
+                            db_column=col_def.name,  # 使用name作为db_column
                             type=col_def.type,
                             is_pk=col_def.primary_key,
                             nullable=col_def.nullable,
@@ -114,7 +115,7 @@ class MigrationGenerator:
                     
                     # 转换表名为实体名（snake_case -> PascalCase）
                     entity_name = self._to_pascal_case(op.table_name)
-                    entity = Entity(name=entity_name, columns=columns)
+                    entity = Entity(name=entity_name, table_name=op.table_name, columns=columns)
                     
                     # 避免重复添加
                     if entity_name not in rebuilt_model.entities:
@@ -127,6 +128,7 @@ class MigrationGenerator:
                         entity = rebuilt_model.entities[entity_name]
                         col = Column(
                             name=op.column.name,
+                            db_column=op.column.name,  # 使用name作为db_column
                             type=op.column.type,
                             is_pk=op.column.primary_key,
                             nullable=op.column.nullable,
