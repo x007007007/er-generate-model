@@ -240,3 +240,119 @@ class TestSQLAlchemyRenderer:
         assert 'default=""' in result
         # Should be valid Python
         ast.parse(result)
+
+    def test_render_with_unique_attribute(self):
+        """Test rendering with unique=True attribute."""
+        entity = Entity(
+            name="User",
+            table_name="user",
+            columns=[
+                Column(name="id", db_column="id", type="int", is_pk=True, nullable=False),
+                Column(name="email", db_column="email", type="varchar", max_length=255, nullable=False, unique=True)
+            ]
+        )
+        model = ERModel(entities={"User": entity}, relationships=[], templates={})
+        result = self.renderer.render(model)
+        
+        # Should include unique=True
+        assert "unique=True" in result
+        # Should be valid Python
+        ast.parse(result)
+    
+    def test_render_with_index_attribute(self):
+        """Test rendering with indexed=True attribute."""
+        entity = Entity(
+            name="Post",
+            table_name="post",
+            columns=[
+                Column(name="id", db_column="id", type="int", is_pk=True, nullable=False),
+                Column(name="slug", db_column="slug", type="varchar", max_length=200, nullable=False, indexed=True)
+            ]
+        )
+        model = ERModel(entities={"Post": entity}, relationships=[], templates={})
+        result = self.renderer.render(model)
+        
+        # Should include index=True
+        assert "index=True" in result
+        # Should be valid Python
+        ast.parse(result)
+    
+    def test_render_with_multiple_attributes(self):
+        """Test rendering with multiple attributes (unique, indexed, nullable, default, comment)."""
+        entity = Entity(
+            name="Product",
+            table_name="product",
+            columns=[
+                Column(name="id", db_column="id", type="int", is_pk=True, nullable=False),
+                Column(
+                    name="sku",
+                    db_column="sku",
+                    type="varchar",
+                    max_length=50,
+                    nullable=False,
+                    unique=True,
+                    indexed=True,
+                    default="SKU-000",
+                    comment="Product SKU"
+                )
+            ]
+        )
+        model = ERModel(entities={"Product": entity}, relationships=[], templates={})
+        result = self.renderer.render(model)
+        
+        # Should include all attributes
+        assert "nullable=False" in result
+        assert "unique=True" in result
+        assert "index=True" in result
+        assert "default=" in result
+        assert "SKU-000" in result
+        assert "comment=" in result
+        assert "Product SKU" in result
+        # Should be valid Python
+        ast.parse(result)
+    
+    def test_parameter_order(self):
+        """Test that parameters are in correct order: primary_key, nullable, unique, index, default, comment."""
+        entity = Entity(
+            name="Item",
+            table_name="item",
+            columns=[
+                Column(
+                    name="code",
+                    db_column="code",
+                    type="varchar",
+                    max_length=20,
+                    nullable=False,
+                    unique=True,
+                    indexed=True,
+                    default="CODE",
+                    comment="Item code"
+                )
+            ]
+        )
+        model = ERModel(entities={"Item": entity}, relationships=[], templates={})
+        result = self.renderer.render(model)
+        
+        # Find the column definition line
+        lines = result.split('\n')
+        code_line = [line for line in lines if 'code = Column' in line or 'code=Column' in line][0]
+        
+        # Check parameter order
+        nullable_pos = code_line.find('nullable=')
+        unique_pos = code_line.find('unique=')
+        index_pos = code_line.find('index=')
+        default_pos = code_line.find('default=')
+        comment_pos = code_line.find('comment=')
+        
+        # All should be present
+        assert nullable_pos > 0
+        assert unique_pos > 0
+        assert index_pos > 0
+        assert default_pos > 0
+        assert comment_pos > 0
+        
+        # Order should be: nullable < unique < index < default < comment
+        assert nullable_pos < unique_pos
+        assert unique_pos < index_pos
+        assert index_pos < default_pos
+        assert default_pos < comment_pos

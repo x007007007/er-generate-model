@@ -65,7 +65,23 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- if table_prefix %}
 {%- set fk_table_name = table_prefix + '_' + fk_table_name %}
 {%- endif %}
-    {{ col.name }} = Column(Integer, ForeignKey('{{ fk_table_name }}.id'){% if not col.nullable %}, nullable={{ col.nullable }}{% endif %}{% if col.comment %}, comment={{ col.comment | code_value }}{% endif %})
+{%- set param_list = [] %}
+{%- if not col.nullable %}
+{%- set _ = param_list.append('nullable=' + col.nullable|string) %}
+{%- endif %}
+{%- if col.unique %}
+{%- set _ = param_list.append('unique=True') %}
+{%- endif %}
+{%- if col.indexed %}
+{%- set _ = param_list.append('index=True') %}
+{%- endif %}
+{%- if col.default is not none %}
+{%- set _ = param_list.append('default=' + (col.default | code_value)) %}
+{%- endif %}
+{%- if col.comment %}
+{%- set _ = param_list.append('comment=' + (col.comment | code_value)) %}
+{%- endif %}
+    {{ col.name }} = Column(Integer, ForeignKey('{{ fk_table_name }}.id'){% if param_list %}, {{ param_list|join(', ') }}{% endif %})
 {%- else %}
 {%- set column_type, params = col | sqlalchemy_column_type %}
 {%- set param_list = [] %}
@@ -74,6 +90,15 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- endif %}
 {%- if not col.nullable %}
 {%- set _ = param_list.append('nullable=' + col.nullable|string) %}
+{%- endif %}
+{%- if col.unique %}
+{%- set _ = param_list.append('unique=True') %}
+{%- endif %}
+{%- if col.indexed %}
+{%- set _ = param_list.append('index=True') %}
+{%- endif %}
+{%- if col.default is not none %}
+{%- set _ = param_list.append('default=' + (col.default | code_value)) %}
 {%- endif %}
 {%- if col.comment %}
 {%- set _ = param_list.append('comment=' + (col.comment | code_value)) %}
@@ -88,6 +113,12 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- endif %}
 {%- if not col.nullable %}
 {%- set _ = param_list.append('nullable=' + col.nullable|string) %}
+{%- endif %}
+{%- if col.unique %}
+{%- set _ = param_list.append('unique=True') %}
+{%- endif %}
+{%- if col.indexed %}
+{%- set _ = param_list.append('index=True') %}
 {%- endif %}
 {%- if col.default is not none %}
 {%- set _ = param_list.append('default=' + (col.default | code_value)) %}
