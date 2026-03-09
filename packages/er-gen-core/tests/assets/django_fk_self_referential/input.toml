@@ -1,0 +1,31 @@
+# Self-referential foreign key
+# Category entity with parent-child relationship to itself
+
+[[relationships]]
+left = "Category"
+right = "Category"
+type = "one-to-many"
+left_column = "id"
+right_column = "parent_id"
+
+[entities.Category]
+table_name = "category"
+
+[[entities.Category.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+
+[[entities.Category.columns]]
+name = "name"
+type = "string"
+max_length = 255
+nullable = false
+
+[[entities.Category.columns]]
+name = "parent"
+db_column = "parent_id"
+type = "bigint"
+nullable = true
+comment = "Parent category ID"

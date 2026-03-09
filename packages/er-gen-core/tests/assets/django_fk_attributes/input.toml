@@ -1,0 +1,74 @@
+# Foreign keys with various column attributes
+# Tests nullable, unique, indexed, default, and comment attributes
+
+[[relationships]]
+left = "Company"
+right = "Employee"
+type = "one-to-many"
+left_column = "id"
+right_column = "company_id"
+
+[[relationships]]
+left = "Department"
+right = "Employee"
+type = "one-to-many"
+left_column = "id"
+right_column = "department_id"
+
+[entities.Company]
+table_name = "company"
+
+[[entities.Company.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+
+[[entities.Company.columns]]
+name = "name"
+type = "string"
+max_length = 255
+
+[entities.Department]
+table_name = "department"
+
+[[entities.Department.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+
+[[entities.Department.columns]]
+name = "name"
+type = "string"
+max_length = 255
+
+[entities.Employee]
+table_name = "employee"
+
+[[entities.Employee.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+
+[[entities.Employee.columns]]
+name = "company"
+db_column = "company_id"
+type = "bigint"
+nullable = false
+indexed = true
+comment = "Company the employee works for"
+
+[[entities.Employee.columns]]
+name = "department"
+db_column = "department_id"
+type = "bigint"
+nullable = true
+comment = "Optional department assignment"
+
+[[entities.Employee.columns]]
+name = "name"
+type = "string"
+max_length = 255
+nullable = false

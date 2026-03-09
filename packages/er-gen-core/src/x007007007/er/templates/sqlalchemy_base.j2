@@ -1,6 +1,5 @@
 {# SQLAlchemy基类模板 - 用于生成可继承的基类 #}
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, Date, DateTime, Time, Text, Float, Numeric, JSON
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import BigInteger, Column, Integer, String, ForeignKey, Boolean, Date, DateTime, Time, Text, Float, Numeric, JSONfrom sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 {%- for template_name, template_info in model.templates.items() %}

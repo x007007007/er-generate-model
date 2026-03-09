@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, Date, DateTime, Time, Text, Float, Numeric, JSON
+from sqlalchemy import BigInteger, Column, Integer, String, ForeignKey, Boolean, Date, DateTime, Time, Text, Float, Numeric, JSON
 from sqlalchemy.orm import relationship
 
 {%- if base_model_import %}
@@ -54,23 +54,56 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- for col in entity.columns %}
 {%- if col.name not in inherited_column_names %}
 {%- if col.is_fk %}
-{%- set rel = none %}
+{%- set ns = namespace(rel=none) %}
 {%- for r in entity_relationships %}
-{%- if r.right_column == col.name and r.right_entity == entity.name %}
-{%- set rel = r %}
+{%- if (r.right_column == col.name or r.right_column == col.db_column) and r.right_entity == entity.name %}
+{%- set ns.rel = r %}
 {%- endif %}
 {%- endfor %}
-{%- if rel %}
-{%- set fk_table_name = rel.left_entity|lower %}
+{%- if ns.rel %}
+{# Get the referenced entity's table name #}
+{%- if ns.rel.left_entity in model.entities %}
+{%- set ref_entity = model.entities[ns.rel.left_entity] %}
+{%- if ref_entity.table_name %}
+{%- set fk_table_name = ref_entity.table_name %}
+{%- else %}
+{%- set fk_table_name = ns.rel.left_entity|lower %}
 {%- if table_prefix %}
 {%- set fk_table_name = table_prefix + '_' + fk_table_name %}
 {%- endif %}
+{%- endif %}
+{# Get the type from the referenced column #}
+{%- set ref_col = none %}
+{%- for c in ref_entity.columns %}
+{%- if c.name == ns.rel.left_column or c.db_column == ns.rel.left_column %}
+{%- set ref_col = c %}
+{%- endif %}
+{%- endfor %}
+{%- if ref_col %}
+{%- set column_type, params = ref_col | sqlalchemy_column_type %}
+{%- else %}
+{%- set column_type, params = col | sqlalchemy_column_type %}
+{%- endif %}
+{%- else %}
+{%- set fk_table_name = ns.rel.left_entity|lower %}
+{%- if table_prefix %}
+{%- set fk_table_name = table_prefix + '_' + fk_table_name %}
+{%- endif %}
+{%- set column_type, params = col | sqlalchemy_column_type %}
+{%- endif %}
 {%- set param_list = [] %}
-{%- if not col.nullable %}
-{%- set _ = param_list.append('nullable=' + col.nullable|string) %}
+{%- if col.is_pk %}
+{%- set _ = param_list.append('primary_key=True') %}
+{%- set _ = param_list.append('autoincrement=True') %}
+{%- else %}
+{%- if col.nullable %}
+{%- set _ = param_list.append('nullable=True') %}
+{%- elif not col.nullable %}
+{%- set _ = param_list.append('nullable=False') %}
 {%- endif %}
 {%- if col.unique %}
 {%- set _ = param_list.append('unique=True') %}
+{%- endif %}
 {%- endif %}
 {%- if col.indexed %}
 {%- set _ = param_list.append('index=True') %}
@@ -81,18 +114,20 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- if col.comment %}
 {%- set _ = param_list.append('comment=' + (col.comment | code_value)) %}
 {%- endif %}
-    {{ col.name }} = Column(Integer, ForeignKey('{{ fk_table_name }}.id'){% if param_list %}, {{ param_list|join(', ') }}{% endif %})
+    {{ col.db_column if col.db_column else col.name }} = Column({{ column_type }}, ForeignKey('{{ fk_table_name }}.{{ ns.rel.left_column }}'){% if param_list %}, {{ param_list|join(', ') }}{% endif %})
 {%- else %}
 {%- set column_type, params = col | sqlalchemy_column_type %}
 {%- set param_list = [] %}
 {%- if col.is_pk %}
 {%- set _ = param_list.append('primary_key=True') %}
-{%- endif %}
+{%- set _ = param_list.append('autoincrement=True') %}
+{%- else %}
 {%- if not col.nullable %}
 {%- set _ = param_list.append('nullable=' + col.nullable|string) %}
 {%- endif %}
 {%- if col.unique %}
 {%- set _ = param_list.append('unique=True') %}
+{%- endif %}
 {%- endif %}
 {%- if col.indexed %}
 {%- set _ = param_list.append('index=True') %}
@@ -110,12 +145,14 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- set param_list = [] %}
 {%- if col.is_pk %}
 {%- set _ = param_list.append('primary_key=True') %}
-{%- endif %}
+{%- set _ = param_list.append('autoincrement=True') %}
+{%- else %}
 {%- if not col.nullable %}
 {%- set _ = param_list.append('nullable=' + col.nullable|string) %}
 {%- endif %}
 {%- if col.unique %}
 {%- set _ = param_list.append('unique=True') %}
+{%- endif %}
 {%- endif %}
 {%- if col.indexed %}
 {%- set _ = param_list.append('index=True') %}
@@ -136,10 +173,21 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- endfor %}
 {%- for rel in entity_relationships %}
 {%- if rel.right_entity == entity.name %}
+{%- set fk_column = rel.right_column %}
+{# Find the column object to get the db_column name and logical name for Django-style naming #}
+{%- set ns = namespace(db_col_name=none, logical_name=none) %}
+{%- for col in entity.columns %}
+{%- if col.name == rel.right_column or col.db_column == rel.right_column %}
+{%- set ns.db_col_name = col.db_column if col.db_column else col.name %}
+{%- set ns.logical_name = col.name %}
+{%- endif %}
+{%- endfor %}
+{# Use logical name for relationship (Django-style), fallback to old pattern if not found #}
+{%- set relationship_name = ns.logical_name if ns.logical_name else (rel.left_entity|lower + '_rel') %}
 {%- if rel.relation_type == 'one-to-one' %}
-    {{ rel.left_entity|lower }}_rel = relationship("{{ rel.left_entity }}", uselist=False, back_populates="{{ entity.name|lower }}_rel")
+    {{ relationship_name }} = relationship("{{ rel.left_entity }}", uselist=False, back_populates="{{ entity.name|lower }}_rel", foreign_keys=[{{ ns.db_col_name if ns.db_col_name else fk_column }}])
 {%- elif rel.relation_type == 'one-to-many' %}
-    {{ rel.left_entity|lower }}_rel = relationship("{{ rel.left_entity }}", back_populates="{{ entity.name|lower }}_set")
+    {{ relationship_name }} = relationship("{{ rel.left_entity }}", back_populates="{{ entity.name|lower }}_set", foreign_keys=[{{ ns.db_col_name if ns.db_col_name else fk_column }}])
 {%- elif rel.relation_type == 'many-to-many' %}
 {%- set assoc_table = [rel.left_entity|lower, rel.right_entity|lower] | sort | join('_') + '_association' %}
 {%- if table_prefix %}
@@ -148,10 +196,21 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
     {{ rel.left_entity|lower }}_set = relationship("{{ rel.left_entity }}", secondary="{{ assoc_table }}", back_populates="{{ entity.name|lower }}_set")
 {%- endif %}
 {%- elif rel.left_entity == entity.name %}
+{# Find the logical name used on the "many" side for back_populates #}
+{%- set ns = namespace(right_logical_name=none) %}
+{%- if rel.right_entity in all_entities %}
+{%- set right_entity = all_entities[rel.right_entity] %}
+{%- for col in right_entity.columns %}
+{%- if col.name == rel.right_column or col.db_column == rel.right_column %}
+{%- set ns.right_logical_name = col.name %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- set back_populates_name = ns.right_logical_name if ns.right_logical_name else (entity.name|lower + '_rel') %}
 {%- if rel.relation_type == 'one-to-one' %}
-    {{ rel.right_entity|lower }}_rel = relationship("{{ rel.right_entity }}", uselist=False, back_populates="{{ entity.name|lower }}_rel")
+    {{ rel.right_entity|lower }}_rel = relationship("{{ rel.right_entity }}", uselist=False, back_populates="{{ back_populates_name }}")
 {%- elif rel.relation_type == 'one-to-many' %}
-    {{ rel.right_entity|lower }}_set = relationship("{{ rel.right_entity }}", back_populates="{{ entity.name|lower }}_rel")
+    {{ rel.right_entity|lower }}_set = relationship("{{ rel.right_entity }}", back_populates="{{ back_populates_name }}")
 {%- elif rel.relation_type == 'many-to-many' %}
 {%- set assoc_table = [rel.left_entity|lower, rel.right_entity|lower] | sort | join('_') + '_association' %}
 {%- if table_prefix %}

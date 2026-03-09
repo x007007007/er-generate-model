@@ -1,0 +1,139 @@
+# Complex scenario combining multiple features
+# Multiple FKs, table prefix, various attributes, and self-referential FK
+
+table_prefix = "blog"
+
+[[relationships]]
+left = "User"
+right = "Post"
+type = "one-to-many"
+left_column = "id"
+right_column = "author_id"
+
+[[relationships]]
+left = "Category"
+right = "Post"
+type = "one-to-many"
+left_column = "id"
+right_column = "category_id"
+
+[[relationships]]
+left = "Post"
+right = "Comment"
+type = "one-to-many"
+left_column = "id"
+right_column = "post_id"
+
+[[relationships]]
+left = "User"
+right = "Comment"
+type = "one-to-many"
+left_column = "id"
+right_column = "user_id"
+
+[[relationships]]
+left = "Comment"
+right = "Comment"
+type = "one-to-many"
+left_column = "id"
+right_column = "parent_id"
+
+[entities.User]
+table_name = "user"
+
+[[entities.User.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+
+[[entities.User.columns]]
+name = "username"
+type = "string"
+max_length = 100
+nullable = false
+unique = true
+
+[entities.Category]
+table_name = "category"
+
+[[entities.Category.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+
+[[entities.Category.columns]]
+name = "name"
+type = "string"
+max_length = 100
+nullable = false
+
+[entities.Post]
+table_name = "post"
+
+[[entities.Post.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+
+[[entities.Post.columns]]
+name = "author"
+db_column = "author_id"
+type = "bigint"
+nullable = false
+indexed = true
+comment = "Post author"
+
+[[entities.Post.columns]]
+name = "category"
+db_column = "category_id"
+type = "bigint"
+nullable = true
+comment = "Optional category"
+
+[[entities.Post.columns]]
+name = "title"
+type = "string"
+max_length = 255
+nullable = false
+
+[[entities.Post.columns]]
+name = "content"
+type = "text"
+
+[entities.Comment]
+table_name = "comment"
+
+[[entities.Comment.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+
+[[entities.Comment.columns]]
+name = "post"
+db_column = "post_id"
+type = "bigint"
+nullable = false
+indexed = true
+
+[[entities.Comment.columns]]
+name = "user"
+db_column = "user_id"
+type = "bigint"
+nullable = false
+indexed = true
+
+[[entities.Comment.columns]]
+name = "parent"
+db_column = "parent_id"
+type = "bigint"
+nullable = true
+comment = "Parent comment for nested replies"
+
+[[entities.Comment.columns]]
+name = "text"
+type = "text"
+nullable = false

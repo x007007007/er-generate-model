@@ -1,0 +1,46 @@
+# Foreign keys with table prefix
+# Tests that ForeignKey constraints respect table prefixes
+
+table_prefix = "app"
+
+[[relationships]]
+left = "User"
+right = "Post"
+type = "one-to-many"
+left_column = "id"
+right_column = "author_id"
+
+[entities.User]
+table_name = "user"
+
+[[entities.User.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+
+[[entities.User.columns]]
+name = "username"
+type = "string"
+max_length = 100
+nullable = false
+
+[entities.Post]
+table_name = "post"
+
+[[entities.Post.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+
+[[entities.Post.columns]]
+name = "author"
+db_column = "author_id"
+type = "bigint"
+nullable = false
+
+[[entities.Post.columns]]
+name = "title"
+type = "string"
+max_length = 255

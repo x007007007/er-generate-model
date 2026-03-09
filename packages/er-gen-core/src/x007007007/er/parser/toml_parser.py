@@ -48,13 +48,18 @@ class TomlERParser(Parser):
         # 保存模板信息到模型（供渲染器使用）
         model.templates = templates
         
+        # 解析关系
+        relationships = self._parse_relationships(data.get('relationships', []))
+        
         # 解析实体（支持继承）
         entities = self._parse_entities(data.get('entities', {}), templates)
+        
+        # Mark columns as foreign keys based on relationships
+        self._mark_foreign_keys(entities, relationships)
+        
         for entity in entities.values():
             model.add_entity(entity)
         
-        # 解析关系
-        relationships = self._parse_relationships(data.get('relationships', []))
         for rel in relationships:
             model.add_relationship(rel)
         
@@ -192,7 +197,7 @@ class TomlERParser(Parser):
             name=str(col_data['name']),
             type=str(col_data['type']),
             db_column=str(db_column),
-            is_pk=col_data.get('is_pk', False),
+            is_pk=col_data.get('primary_key', col_data.get('is_pk', False)),
             is_fk=col_data.get('is_fk', False),
             nullable=col_data.get('nullable', True),
             comment=col_data.get('comment'),
@@ -253,4 +258,55 @@ class TomlERParser(Parser):
             relationships.append(relationship)
         
         return relationships
+    
+    def _mark_foreign_keys(
+            self, 
+            entities: Dict[str, Entity], 
+            relationships: List[Relationship]
+        ) -> None:
+            """
+            Mark columns as foreign keys based on relationships and set their types.
+            Also infers db_column for FK columns if not explicitly specified.
+            
+            This method implements Django-style foreign key naming conventions:
+            - Matches relationship's right_column against both col.name and col.db_column
+            - Infers db_column as {name}_id if not explicitly specified for FK columns
+            - Ensures all foreign key columns have is_fk=True flag set correctly
+
+            Args:
+                entities: Entity dictionary
+                relationships: List of relationships
+            """
+            for rel in relationships:
+                # For one-to-many and one-to-one relationships, mark the right entity's column as FK
+                if rel.relation_type in ['one-to-many', 'one-to-one', 'many-to-one']:
+                    if rel.right_entity in entities and rel.right_column:
+                        entity = entities[rel.right_entity]
+                        # Find the referenced column to get its type
+                        ref_type = None
+                        if rel.left_entity in entities and rel.left_column:
+                            ref_entity = entities[rel.left_entity]
+                            for ref_col in ref_entity.columns:
+                                if ref_col.name == rel.left_column or ref_col.db_column == rel.left_column:
+                                    ref_type = ref_col.type
+                                    break
+
+                        for col in entity.columns:
+                            # Match by BOTH name and db_column against relationship's right_column
+                            # This handles cases where:
+                            # 1. right_column matches col.name (e.g., "code" matches name="code")
+                            # 2. right_column matches col.db_column (e.g., "code_id" matches db_column="code_id")
+                            if col.name == rel.right_column or col.db_column == rel.right_column:
+                                col.is_fk = True
+
+                                # Infer db_column if it matches name (wasn't explicitly set for FK)
+                                # Django-style: if name doesn't end with _id but it's a FK, db_column should be name_id
+                                if col.db_column == col.name and not col.name.endswith('_id'):
+                                    col.db_column = f"{col.name}_id"
+
+                                # Set the FK column type to match the referenced column type
+                                if ref_type:
+                                    col.type = ref_type
+                                break
+
 

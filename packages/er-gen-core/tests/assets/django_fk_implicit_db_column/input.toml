@@ -1,0 +1,42 @@
+# Foreign key without explicit db_column
+# Tests implicit inference of db_column from name + "_id"
+
+[[relationships]]
+left = "Author"
+right = "Book"
+type = "one-to-many"
+left_column = "id"
+right_column = "author_id"
+
+[entities.Author]
+table_name = "author"
+
+[[entities.Author.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+
+[[entities.Author.columns]]
+name = "name"
+type = "string"
+max_length = 255
+
+[entities.Book]
+table_name = "book"
+
+[[entities.Book.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+
+[[entities.Book.columns]]
+name = "author"
+type = "bigint"
+# Note: db_column is NOT specified, should be inferred as "author_id"
+
+[[entities.Book.columns]]
+name = "title"
+type = "string"
+max_length = 255

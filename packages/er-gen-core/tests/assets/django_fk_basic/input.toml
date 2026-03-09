@@ -1,0 +1,44 @@
+# Basic Django-style foreign key naming
+# Translation entity with foreign key to I18nCode
+# This is the primary example from the requirements
+
+[[relationships]]
+left = "I18nCode"
+right = "Translation"
+type = "one-to-many"
+left_column = "id"
+right_column = "code_id"
+
+[entities.I18nCode]
+table_name = "i18n_code"
+
+[[entities.I18nCode.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+
+[[entities.I18nCode.columns]]
+name = "name"
+type = "string"
+max_length = 255
+comment = "ISO 639-1 language code"
+
+[entities.Translation]
+table_name = "translation"
+
+[[entities.Translation.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+
+[[entities.Translation.columns]]
+name = "code"
+db_column = "code_id"
+type = "bigint"
+
+[[entities.Translation.columns]]
+name = "text"
+type = "text"
+nullable = true

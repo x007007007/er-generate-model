@@ -11,10 +11,15 @@ class TypeMapper:
     
     # Type patterns and their mappings
     TYPE_PATTERNS = {
+        'bigint': {
+            'django': 'BigIntegerField',
+            'sqlalchemy': 'BigInteger',
+            'patterns': [r'^bigint$']
+        },
         'int': {
             'django': 'IntegerField',
             'sqlalchemy': 'Integer',
-            'patterns': [r'int', r'integer', r'bigint', r'smallint', r'tinyint']
+            'patterns': [r'int', r'integer', r'smallint', r'tinyint']
         },
         'float': {
             'django': 'FloatField',
