@@ -46,17 +46,25 @@ def get_default_table_prefix(input_source: str) -> str:
 @click.argument('input_source')
 @click.option('--input-type', '-t', type=click.Choice(['mermaid', 'plantuml', 'db', 'toml']), default='mermaid', help='Input type')
 @click.option('--format', '-f', type=click.Choice(['django', 'sqlalchemy', 'mermaid', 'plantuml']), default='django', help='Output format')
+@click.option('--framework', type=click.Choice(['django', 'sqlalchemy']), default=None, help='Target framework (alias for --format)')
 @click.option('--output', '-o', type=click.Path(), default=None, help='Output file path (default: stdout, UTF-8 encoded)')
 @click.option('--output-dir', '-d', type=click.Path(), default=None, help='Output directory for multi-file output (Django package mode)')
 @click.option('--app-label', '-a', type=str, default=None, help='Django app label (default: filename without extension)')
 @click.option('--table-prefix', '-p', type=str, default=None, help='Table name prefix (default: filename without extension)')
 @click.option('--split-models', is_flag=True, help='Split Django models into separate files (one per model)')
-def convert_cmd(input_source, input_type, format, output, output_dir, app_label, table_prefix, split_models):
+@click.option('--inheritance-mode', '-i', type=click.Choice(['reference', 'flatten'], case_sensitive=False), default='reference', help='Inheritance handling mode: reference (generate mixin files, use Python inheritance) or flatten (expand all inherited fields directly into entity classes)')
+@click.option('--base-model-import', type=str, default=None, help='Custom base model import path for SQLAlchemy (e.g., kinkotech.base_sqlalchemy)')
+@click.option('--toml-files', multiple=True, type=click.Path(exists=True), help='Additional TOML files for cross-file template references (can be specified multiple times)')
+def convert_cmd(input_source, input_type, format, framework, output, output_dir, app_label, table_prefix, split_models, inheritance_mode, base_model_import, toml_files):
     """Convert ER diagram file to code."""
     assert isinstance(input_source, str), "input_source must be a string"
     assert len(input_source) > 0, "input_source cannot be empty"
     assert input_type in ['mermaid', 'plantuml', 'db', 'toml'], "Invalid input_type"
     assert format in ['django', 'sqlalchemy', 'mermaid', 'plantuml'], "Invalid format"
+    
+    # Handle --framework as alias for --format
+    if framework:
+        format = framework
     
     # Determine app_label and table_prefix
     if app_label is None:
@@ -87,11 +95,46 @@ def convert_cmd(input_source, input_type, format, output, output_dir, app_label,
         elif input_type == 'plantuml':
             parser = PlantUMLAntlrParser()
         elif input_type == 'toml':
-            parser = TomlERParser()
+            parser = TomlERParser(inheritance_mode=inheritance_mode)
         else:
             raise ValueError(f"Unknown input type: {input_type}")
         
         model = parser.parse(content)
+    
+    # Process templates if TOML input with templates and output directory specified
+    # The MixinOrchestrator will generate mixin files and update export_paths
+    # Check if we have additional TOML files or if the main file has templates
+    if input_type == 'toml' and output_dir and inheritance_mode == 'reference' and (model.templates or toml_files):
+        from x007007007.er.mixin_orchestrator import MixinOrchestrator
+        from x007007007.er.renderers.python.utils import to_snake_case
+        
+        # Build list of TOML files (main input + additional files)
+        all_toml_files = [input_source]
+        if toml_files:
+            all_toml_files.extend(toml_files)
+        
+        # Use MixinOrchestrator to process templates
+        orchestrator = MixinOrchestrator()
+        try:
+            templates = orchestrator.process_templates(
+                toml_files=all_toml_files,
+                output_dir=output_dir,
+                inheritance_mode=inheritance_mode
+            )
+            # Convert TemplateInfo objects back to dictionary format for renderer compatibility
+            # Update export_path to include the module name for correct imports
+            model.templates = {
+                name: {
+                    'columns': [],  # Empty columns so renderer skips mixin generation
+                    'export_path': f"{info.export_path}.{to_snake_case(name)}",  # Add module name
+                    'package': info.package
+                }
+                for name, info in templates.items()
+            }
+            logger.info(f"Processed {len(templates)} template(s) from {len(all_toml_files)} TOML file(s)")
+        except Exception as e:
+            logger.error(f"Failed to process templates: {e}")
+            sys.exit(1)
     
     # Render or convert output
     if format == 'django':
@@ -100,17 +143,46 @@ def convert_cmd(input_source, input_type, format, output, output_dir, app_label,
             if not output_dir:
                 logger.error("--output-dir is required when using --split-models")
                 sys.exit(1)
-            renderer = DjangoPackageRenderer(app_label=app_label, table_prefix=table_prefix)
+            renderer = DjangoPackageRenderer(app_label=app_label, table_prefix=table_prefix, inheritance_mode=inheritance_mode)
             renderer.write_to_directory(model, output_dir)
             logger.info(f"Successfully generated Django models package in {output_dir}")
             return
         else:
             # Single file mode
-            renderer = DjangoRenderer(app_label=app_label, table_prefix=table_prefix)
+            renderer = DjangoRenderer(app_label=app_label, table_prefix=table_prefix, inheritance_mode=inheritance_mode)
             result = renderer.render(model)
     elif format == 'sqlalchemy':
-        renderer = SQLAlchemyRenderer(table_prefix=table_prefix)
-        result = renderer.render(model)
+        if output_dir:
+            # Multi-file mode for SQLAlchemy
+            renderer = SQLAlchemyRenderer(
+                table_prefix=table_prefix, 
+                base_model_import=base_model_import,
+                inheritance_mode=inheritance_mode
+            )
+            files = renderer.render_multi_file(model)
+            
+            # Write files to output directory
+            output_path = Path(output_dir)
+            output_path.mkdir(parents=True, exist_ok=True)
+            
+            for filename, content in files.items():
+                file_path = output_path / filename
+                # Create parent directories if needed (for mixin files)
+                file_path.parent.mkdir(parents=True, exist_ok=True)
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write(content)
+                logger.info(f"Generated: {file_path}")
+            
+            logger.info(f"Successfully generated SQLAlchemy models in {output_dir}")
+            return
+        else:
+            # Single file mode
+            renderer = SQLAlchemyRenderer(
+                table_prefix=table_prefix,
+                base_model_import=base_model_import,
+                inheritance_mode=inheritance_mode
+            )
+            result = renderer.render(model)
     elif format == 'mermaid':
         converter = MermaidConverter()
         result = converter.convert(model)

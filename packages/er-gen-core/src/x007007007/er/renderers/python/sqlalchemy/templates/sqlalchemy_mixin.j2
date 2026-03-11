@@ -1,0 +1,38 @@
+from sqlalchemy import Column{% if column_types %}, {{ column_types|join(', ') }}{% endif %}
+from sqlalchemy.orm import declarative_base
+
+Base = declarative_base()
+
+
+class {{ mixin_name }}(Base):
+    __abstract__ = True
+    
+{%- for col in columns %}
+{%- set column_type, params = col | sqlalchemy_column_type %}
+{%- set param_list = [] %}
+{%- if col.is_pk %}
+{%- set _ = param_list.append('primary_key=True') %}
+{%- set _ = param_list.append('autoincrement=True') %}
+{%- else %}
+{%- if not col.nullable %}
+{%- set _ = param_list.append('nullable=' + col.nullable|string) %}
+{%- endif %}
+{%- if col.unique %}
+{%- set _ = param_list.append('unique=True') %}
+{%- endif %}
+{%- endif %}
+{%- if col.indexed %}
+{%- set _ = param_list.append('index=True') %}
+{%- endif %}
+{%- if col.default is not none %}
+{%- set _ = param_list.append('default=' + (col.default | code_value)) %}
+{%- endif %}
+{%- if col.comment %}
+{%- set _ = param_list.append('comment=' + (col.comment | code_value)) %}
+{%- endif %}
+{%- if 'max_length' in params %}
+    {{ col.name }} = Column({{ column_type }}({{ params.max_length }}){% if param_list %}, {{ param_list|join(', ') }}{% endif %})
+{%- else %}
+    {{ col.name }} = Column({{ column_type }}{% if param_list %}, {{ param_list|join(', ') }}{% endif %})
+{%- endif %}
+{%- endfor %}

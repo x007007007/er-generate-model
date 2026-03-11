@@ -78,7 +78,7 @@ class TestFullModelGeneration:
             "Issue 5 NOT FIXED: Nullable foreign key 'block_id' missing 'nullable=True'"
         
         # Verify the Translation class structure matches expected output
-        assert 'class Translation(Base):' in generated_code, \
+        assert 'class Translation(' in generated_code, \
             "Translation class not found in generated code"
         assert "__tablename__ = 'kkt_i18n_translations_translationmodel'" in generated_code, \
             "Table name not correct in generated code"

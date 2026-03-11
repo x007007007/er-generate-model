@@ -19,62 +19,62 @@ class TypeMapper:
         'int': {
             'django': 'IntegerField',
             'sqlalchemy': 'Integer',
-            'patterns': [r'int', r'integer', r'smallint', r'tinyint']
+            'patterns': [r'^int$', r'^integer$', r'^smallint$', r'^tinyint$']
         },
         'float': {
             'django': 'FloatField',
             'sqlalchemy': 'Float',
-            'patterns': [r'float', r'real', r'double']
+            'patterns': [r'^float$', r'^real$', r'^double$']
         },
         'decimal': {
             'django': 'DecimalField',
             'sqlalchemy': 'Numeric',
-            'patterns': [r'decimal', r'numeric']
+            'patterns': [r'^decimal$', r'^numeric$']
         },
         'boolean': {
             'django': 'BooleanField',
             'sqlalchemy': 'Boolean',
-            'patterns': [r'bool', r'boolean']
-        },
-        'date': {
-            'django': 'DateField',
-            'sqlalchemy': 'Date',
-            'patterns': [r'date']
-        },
-        'time': {
-            'django': 'TimeField',
-            'sqlalchemy': 'Time',
-            'patterns': [r'time']
+            'patterns': [r'^bool$', r'^boolean$']
         },
         'datetime': {
             'django': 'DateTimeField',
             'sqlalchemy': 'DateTime',
-            'patterns': [r'datetime', r'timestamp']
+            'patterns': [r'^datetime$', r'^timestamp$']
+        },
+        'date': {
+            'django': 'DateField',
+            'sqlalchemy': 'Date',
+            'patterns': [r'^date$']
+        },
+        'time': {
+            'django': 'TimeField',
+            'sqlalchemy': 'Time',
+            'patterns': [r'^time$']
         },
         'text': {
             'django': 'TextField',
             'sqlalchemy': 'Text',
-            'patterns': [r'text', r'longtext', r'clob']
+            'patterns': [r'^text$', r'^longtext$', r'^clob$']
         },
         'string': {
             'django': 'CharField',
             'sqlalchemy': 'String',
-            'patterns': [r'string', r'varchar', r'char', r'nvarchar']
+            'patterns': [r'^string$', r'^varchar$', r'^char$', r'^nvarchar$']
         },
         'json': {
             'django': 'JSONField',
             'sqlalchemy': 'JSON',
-            'patterns': [r'json', r'jsonb']
+            'patterns': [r'^json$', r'^jsonb$']
         },
         'uuid': {
             'django': 'UUIDField',
             'sqlalchemy': 'UUID',
-            'patterns': [r'uuid', r'guid']
+            'patterns': [r'^uuid$', r'^guid$']
         },
         'file': {
             'django': 'FileField',
             'sqlalchemy': 'String',
-            'patterns': [r'file', r'upload']
+            'patterns': [r'^file$', r'^upload$']
         },
     }
     

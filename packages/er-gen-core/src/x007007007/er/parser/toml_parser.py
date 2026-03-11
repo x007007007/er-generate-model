@@ -18,7 +18,21 @@ class TomlERParser(Parser):
     - 字段覆盖：继承的字段可以被覆盖，后面的模板覆盖前面的
     - 导出路径：模板和实体可以配置export_path，用于生成继承代码
     - 格式验证：使用断言进行数据验证
+    - 继承模式：支持reference和flatten两种模式
     """
+    
+    def __init__(self, inheritance_mode: str = 'reference'):
+        """
+        初始化解析器。
+        
+        Args:
+            inheritance_mode: 继承处理模式，'reference' 或 'flatten'
+                - reference: 为没有export_path的模板生成默认路径，通过Python继承引用
+                - flatten: 展开所有模板字段到实体中（除了外部类）
+        """
+        if inheritance_mode not in ('reference', 'flatten'):
+            raise ValueError(f"Invalid inheritance_mode: {inheritance_mode}. Must be 'reference' or 'flatten'")
+        self.inheritance_mode = inheritance_mode
     
     def parse(self, content: str) -> ERModel:
         """
@@ -73,7 +87,7 @@ class TomlERParser(Parser):
             templates_data: 模板数据字典
             
         Returns:
-            Dict[str, Dict]: 模板名称到模板信息的映射，包含columns和export_path
+            Dict[str, Dict]: 模板名称到模板信息的映射，包含columns、export_path和package
         """
         templates = {}
         for template_name, template_data in templates_data.items():
@@ -89,7 +103,8 @@ class TomlERParser(Parser):
             
             templates[template_name] = {
                 'columns': columns,
-                'export_path': template_data.get('export_path')
+                'export_path': template_data.get('export_path'),
+                'package': template_data.get('package')
             }
         
         return templates
@@ -101,6 +116,10 @@ class TomlERParser(Parser):
     ) -> Dict[str, Entity]:
         """
         解析实体定义，支持继承多个模板（仅支持数组）。
+        
+        根据inheritance_mode处理继承：
+        - reference模式：为没有export_path的模板生成默认路径，展开其字段
+        - flatten模式：展开所有模板字段（除了外部类），添加_source_template元数据
         
         Args:
             entities_data: 实体数据字典
@@ -129,12 +148,33 @@ class TomlERParser(Parser):
                 # 按顺序合并所有模板的字段
                 for template_name in extends_list:
                     assert isinstance(template_name, str), f"Template name in extends must be a string"
-                    # 如果模板存在于templates中，则展开其字段
-                    # 如果不存在（如Django内置类或第三方库类），则跳过字段展开，仅保留继承关系
+                    
+                    # 如果模板存在于templates中，根据继承模式处理
                     if template_name in templates:
-                        # 复制模板字段（深拷贝），按顺序添加
-                        for col in templates[template_name]['columns']:
-                            base_columns.append(Column(**col.__dict__))
+                        template = templates[template_name]
+                        should_expand = False
+                        
+                        if self.inheritance_mode == 'flatten':
+                            # Flatten模式：展开所有有字段定义的模板
+                            # 只有没有字段定义的模板（外部类标记）才不展开
+                            if template.get('columns'):
+                                should_expand = True
+                        else:
+                            # Reference模式：只展开没有export_path的模板
+                            if not template.get('export_path'):
+                                # 为没有export_path的模板生成默认路径
+                                # 使用小写的模板名作为模块名
+                                template['export_path'] = f'mixins.{template_name.lower()}'
+                                should_expand = True
+                        
+                        if should_expand:
+                            # 复制模板字段（深拷贝），按顺序添加
+                            for col in template['columns']:
+                                col_copy = Column(**col.__dict__)
+                                # 在flatten模式下添加来源元数据
+                                if self.inheritance_mode == 'flatten':
+                                    col_copy._source_template = template_name
+                                base_columns.append(col_copy)
                     # 如果template_name不在templates中，说明是外部类（如AbstractUser）
                     # 这种情况下，我们不展开字段，但保留extends关系供代码生成器使用
             

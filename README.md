@@ -15,6 +15,7 @@
   - Mermaid ER图
   - PlantUML ER图
 - ✅ **格式互转**：Mermaid ↔ PlantUML 双向转换
+- ✅ **模板系统**：支持跨文件模板引用和自动命名空间转换
 - ✅ 自动识别关系类型（一对一、一对多、多对多）
 - ✅ 支持外键关系生成
 - ✅ 智能类型映射（int, string, datetime, boolean等）
@@ -22,6 +23,12 @@
 - ✅ 支持实体注释和关系标签
 - ✅ **MCP 服务器支持**：可在 Cursor 等编辑器中直接使用
 - ✅ **AI 建模工具**：使用自然语言生成 ER 图
+
+## 文档
+
+- [模板系统文档](docs/TEMPLATES.md) - 详细的模板和继承系统文档
+- [示例](examples/README.md) - 完整的使用示例
+- [开发文档](DEVELOPMENT.md) - 开发者指南
 
 ## 项目结构
 
@@ -182,6 +189,8 @@ er-gen-tool convert convert diagram.mermaid -o models.py
 - `--output, -o`: 输出文件（默认为标准输出）
 - `--app-label, -a`: Django app 标签（默认：文件名不含扩展名）
 - `--table-prefix, -p`: 表名前缀（默认：文件名不含扩展名）
+- `--inheritance-mode, -i`: 继承模式 (`reference`, `flatten`)，默认为 `reference`
+- `--toml-files`: 额外的TOML文件用于跨文件模板引用（可多次指定）
 
 ## 支持的语法
 
@@ -232,15 +241,23 @@ TOML格式支持模板和继承，可以显著减少重复字段定义：
 
 ```toml
 # 定义模板
-[templates.create_update_time]
-columns = [
-    {name = "created_at", type = "datetime", comment = "Creation timestamp"},
-    {name = "updated_at", type = "datetime", comment = "Update timestamp"},
-]
+[templates.TimestampMixin]
+package = "myapp.models.base"
+# export_path 自动推导为: myapp.models.base_sqlalchemy
+
+[[templates.TimestampMixin.columns]]
+name = "created_at"
+type = "datetime"
+comment = "Creation timestamp"
+
+[[templates.TimestampMixin.columns]]
+name = "updated_at"
+type = "datetime"
+comment = "Update timestamp"
 
 # 实体继承模板
 [entities.USER]
-extends = ["create_update_time"]
+extends = ["TimestampMixin"]
 columns = [
     {name = "id", type = "int", is_pk = true},
     {name = "username", type = "string", unique = true},
@@ -260,6 +277,33 @@ left_label = "writes"
 - ✅ 支持多模板继承
 - ✅ 支持字段覆盖
 - ✅ 类型明确，语法简单
+- ✅ 自动命名空间转换（Django → SQLAlchemy）
+- ✅ 跨文件模板引用
+- ✅ 两种继承模式：reference（生成mixin类）和flatten（内联展开）
+
+### 模板和继承模式
+
+**Reference模式（默认）**：生成独立的mixin类文件，实体通过Python继承使用
+
+```bash
+er-gen-tool convert convert models.toml -f sqlalchemy --inheritance-mode reference
+```
+
+**Flatten模式**：将模板字段直接展开到实体中，不生成mixin文件
+
+```bash
+er-gen-tool convert convert models.toml -f sqlalchemy --inheritance-mode flatten
+```
+
+**跨文件模板引用**：在多个TOML文件间共享模板
+
+```bash
+er-gen-tool convert convert entities.toml -f sqlalchemy \
+  --toml-files base_templates.toml \
+  --toml-files common_mixins.toml
+```
+
+更多示例请参考 [examples/toml-to-output/sqlalchemy/](examples/toml-to-output/sqlalchemy/) 目录。
 
 ## 支持的数据类型
 

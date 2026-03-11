@@ -32,9 +32,10 @@ def field_name_from_entity(entity_name: str) -> str:
 class DjangoRenderer(PythonRenderer):
     """Django model code renderer (single file output)."""
     
-    def __init__(self, app_label: str = 'app', table_prefix: str = ''):
+    def __init__(self, app_label: str = 'app', table_prefix: str = '', inheritance_mode: str = 'reference'):
         self.app_label = app_label
         self.table_prefix = table_prefix
+        self.inheritance_mode = inheritance_mode
         
         # Set up Jinja2 environment WITHOUT whitespace control for backward compatibility
         loader = PackageLoader("x007007007.er.renderers.python.django", "templates")
@@ -57,7 +58,8 @@ class DjangoRenderer(PythonRenderer):
         return self.template.render(
             model=model,
             app_label=self.app_label,
-            table_prefix=self.table_prefix
+            table_prefix=self.table_prefix,
+            inheritance_mode=self.inheritance_mode
         )
 
 
@@ -67,9 +69,10 @@ class DjangoPackageRenderer(PythonRenderer):
     Django 模型代码渲染器（包输出，每个实体三个文件）。
     """
     
-    def __init__(self, app_label: str = 'app', table_prefix: str = ''):
+    def __init__(self, app_label: str = 'app', table_prefix: str = '', inheritance_mode: str = 'reference'):
         self.app_label = app_label
         self.table_prefix = table_prefix
+        self.inheritance_mode = inheritance_mode
         
         # Set up Jinja2 environment WITHOUT whitespace control for backward compatibility
         loader = PackageLoader("x007007007.er.renderers.python.django", "templates")
@@ -139,7 +142,8 @@ class DjangoPackageRenderer(PythonRenderer):
                 model=model,
                 app_label=self.app_label,
                 table_prefix=self.table_prefix,
-                base_filename=base_filename
+                base_filename=base_filename,
+                inheritance_mode=self.inheritance_mode
             )
         
         return files

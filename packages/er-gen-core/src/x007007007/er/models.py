@@ -35,6 +35,19 @@ class Relationship:
     right_cardinality: Optional[str] = None
 
 @dataclass
+class TemplateInfo:
+    """Information about a template for mixin generation.
+    
+    Templates define reusable column sets that can be inherited by entities.
+    Either package or export_path must be specified.
+    """
+    name: str
+    package: Optional[str]  # Django package path
+    export_path: Optional[str]  # SQLAlchemy export path (auto-derived or explicit)
+    columns: List[Column]
+    source_file: str  # TOML file where template is defined
+
+@dataclass
 class Entity:
     name: str
     table_name: str  # Database table name (required)
