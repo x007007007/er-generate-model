@@ -32,7 +32,30 @@ SQLAlchemy 是 Python 最流行的 ORM 框架之一，特点包括：
 - 字段选项（nullable, default, unique 等）
 - 复杂字段类型（JSON, UUID 等）
 
+### [04-templates-single-file](04-templates-single-file/) ⭐ 新功能
+单文件模板示例，包含：
+- 模板定义和使用
+- 自动命名空间转换
+- 多模板继承
+- Reference和Flatten两种模式
+
+### [05-templates-cross-file](05-templates-cross-file/) ⭐ 新功能
+跨文件模板引用示例，包含：
+- 在多个TOML文件间共享模板
+- 统一的模板注册表
+- 正确的导入路径生成
+- 企业级模板库组织
+
+### [06-templates-explicit-export](06-templates-explicit-export/) ⭐ 新功能
+显式导出路径示例，包含：
+- 自动推导 vs 显式指定
+- 三种路径策略对比
+- 命名空间转换规则
+- 最佳实践指南
+
 ## 转换命令
+
+### 基本转换
 
 ```bash
 # 基本转换
@@ -40,6 +63,21 @@ uv run er-gen-tool convert convert input.toml -f sqlalchemy -d output/
 
 # 指定表前缀
 uv run er-gen-tool convert convert input.toml -f sqlalchemy -d output/ -p prefix_
+```
+
+### 模板和继承模式
+
+```bash
+# Reference模式（默认）- 生成mixin类文件
+uv run er-gen-tool convert convert input.toml -f sqlalchemy -d output/ --inheritance-mode reference
+
+# Flatten模式 - 内联展开所有字段
+uv run er-gen-tool convert convert input.toml -f sqlalchemy -d output/ --inheritance-mode flatten
+
+# 跨文件模板引用
+uv run er-gen-tool convert convert entities.toml -f sqlalchemy -d output/ \
+  --toml-files base_templates.toml \
+  --toml-files common_mixins.toml
 ```
 
 ## 输出结构

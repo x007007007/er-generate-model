@@ -31,10 +31,13 @@ examples/
 - **[SQLAlchemy ORM](toml-to-output/sqlalchemy/)** - 转换为 SQLAlchemy models.py
 - **[Mermaid ER 图](toml-to-output/mermaid/)** - 转换为 Mermaid ER 图
 
-每个平台包含三个示例：
+每个平台包含多个示例：
 - `01-simple-model` - 简单的单表模型
 - `02-relationships` - 包含关系的多表模型
 - `03-all-data-types` - 展示所有支持的数据类型
+- `04-templates-single-file` ⭐ - 单文件模板和继承（SQLAlchemy）
+- `05-templates-cross-file` ⭐ - 跨文件模板引用（SQLAlchemy）
+- `06-templates-explicit-export` ⭐ - 显式导出路径（SQLAlchemy）
 
 ### 2. 其他格式转换为 TOML
 
@@ -74,6 +77,19 @@ uv run er-gen-tool convert convert examples/toml-to-output/django/02-relationshi
 uv run er-gen-tool convert convert examples/toml-to-output/sqlalchemy/01-simple-model/input.toml \
   -f sqlalchemy \
   -d examples/toml-to-output/sqlalchemy/01-simple-model/output/
+
+# 模板示例（Reference模式）
+uv run er-gen-tool convert convert examples/toml-to-output/sqlalchemy/04-templates-single-file/input.toml \
+  -f sqlalchemy \
+  -d examples/toml-to-output/sqlalchemy/04-templates-single-file/output/ \
+  --inheritance-mode reference
+
+# 跨文件模板引用
+uv run er-gen-tool convert convert examples/toml-to-output/sqlalchemy/05-templates-cross-file/entities.toml \
+  -f sqlalchemy \
+  -d examples/toml-to-output/sqlalchemy/05-templates-cross-file/output/ \
+  --inheritance-mode reference \
+  --toml-files examples/toml-to-output/sqlalchemy/05-templates-cross-file/base_templates.toml
 ```
 
 ### TOML 转 Mermaid
@@ -101,9 +117,11 @@ uv run er-gen-tool convert convert examples/input-to-toml/mermaid-to-toml/01-sim
 1. **入门** - 从 `toml-to-output/django/01-simple-model` 开始
 2. **关系** - 学习 `02-relationships` 示例
 3. **完整功能** - 查看 `03-all-data-types` 了解所有数据类型
-4. **反向转换** - 学习 `input-to-toml` 目录下的示例
-5. **演进** - 查看 `migration-evolution` 了解数据库迁移
-6. **实战** - 研究 `full-projects/django-blog` 完整项目
+4. **模板和继承** ⭐ - 学习 `04-templates-single-file` 了解模板系统
+5. **跨文件引用** ⭐ - 学习 `05-templates-cross-file` 了解跨文件模板
+6. **反向转换** - 学习 `input-to-toml` 目录下的示例
+7. **演进** - 查看 `migration-evolution` 了解数据库迁移
+8. **实战** - 研究 `full-projects/django-blog` 完整项目
 
 ## 文件命名规范
 
