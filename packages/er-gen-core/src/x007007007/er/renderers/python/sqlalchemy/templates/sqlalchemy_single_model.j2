@@ -1,34 +1,34 @@
 from sqlalchemy import BigInteger, Column, Integer, String, ForeignKey, Boolean, Date, DateTime, Time, Text, Float, Numeric, JSON
 from sqlalchemy.orm import relationship
-
 {%- if base_model_import %}
+
 from {{ base_model_import }} import Base
 {%- else %}
+
 from sqlalchemy.orm import declarative_base
 Base = declarative_base()
-{%- endif %}
-
+{%- endif -%}
 {%- if entity.extends %}
-{# 收集需要导入的外部类和内部mixin #}
+{#- 收集需要导入的外部类和内部mixin -#}
 {%- set external_imports = {} %}
 {%- set mixin_imports = [] %}
 {%- for template_name in entity.extends %}
 {%- if template_name in model.templates %}
-{# 内部模板 #}
+{#- 内部模板 -#}
 {%- if inheritance_mode == 'reference' and model.templates[template_name].export_path %}
 {%- set base_class_name = template_name %}
 {%- set export_path = model.templates[template_name].export_path %}
 {%- set _ = mixin_imports.append((export_path, base_class_name)) %}
 {%- endif %}
 {%- else %}
-{# 外部类：从完整路径中提取模块和类名 #}
-{# 只在 reference 模式下导入外部类 #}
+{#- 外部类：从完整路径中提取模块和类名 -#}
+{#- 只在 reference 模式下导入外部类 -#}
 {%- if inheritance_mode == 'reference' %}
 {%- set parts = template_name.rsplit('.', 1) %}
 {%- if parts | length == 2 %}
 {%- set module_path = parts[0] %}
 {%- set class_name = parts[1] %}
-{# 应用 SQLAlchemy 命名空间转换 #}
+{#- 应用 SQLAlchemy 命名空间转换 -#}
 {%- set transformed_module = module_path | transform_namespace_for_sqlalchemy %}
 {%- if transformed_module not in external_imports %}
 {%- set _ = external_imports.update({transformed_module: []}) %}
@@ -39,31 +39,36 @@ Base = declarative_base()
 {%- endif %}
 {%- endif %}
 {%- endif %}
-{%- endfor %}
-{# 生成外部类导入 #}
+{%- endfor -%}
+{#- 生成外部类导入 #}
+{%- if external_imports %}
+
 {%- for module_path, class_names in external_imports.items() %}
 from {{ module_path }} import {{ class_names | join(', ') }}
-{%- endfor %}
-{# 生成mixin导入 #}
+{%- endfor -%}
+{%- endif -%}
+{#- 生成mixin导入 -#}
+{%- if mixin_imports %}
+
 {%- for export_path, base_class_name in mixin_imports %}
 from {{ export_path }} import {{ base_class_name }}
-{%- endfor %}
-{%- endif %}
-
+{%- endfor -%}
+{%- endif -%}
+{%- endif -%}
 {%- set base_classes = [] %}
 {%- if entity.extends %}
-{# 处理继承 #}
+{#- 处理继承 -#}
 {%- for template_name in entity.extends %}
 {%- if template_name in model.templates %}
-{# 模板在templates中定义 #}
+{#- 模板在templates中定义 -#}
 {%- if inheritance_mode == 'reference' and model.templates[template_name].export_path %}
-{# Reference mode: 添加到基类列表 #}
+{#- Reference mode: 添加到基类列表 -#}
 {%- set base_class_name = template_name %}
 {%- set _ = base_classes.append(base_class_name) %}
 {%- endif %}
 {%- else %}
-{# 模板不在templates中，是外部类 #}
-{# 只在 reference 模式下添加外部类到继承列表 #}
+{#- 模板不在templates中，是外部类 -#}
+{#- 只在 reference 模式下添加外部类到继承列表 -#}
 {%- if inheritance_mode == 'reference' %}
 {%- set parts = template_name.rsplit('.', 1) %}
 {%- if parts | length == 2 %}
@@ -74,7 +79,8 @@ from {{ export_path }} import {{ base_class_name }}
 {%- endif %}
 {%- endif %}
 {%- endfor %}
-{%- endif %}
+{%- endif -%}
+
 
 class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% else %}Base{% endif %}):
 {%- if entity.table_name %}
@@ -87,12 +93,12 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
     __tablename__ = '{{ table_name }}'
 {%- endif %}
 {%- set inherited_column_names = [] %}
-{%- if inheritance_mode == 'reference' and entity.extends %}
-{# Reference mode: 排除继承的字段 #}
+{%- if inheritance_mode == 'reference' and entity.extends -%}
+{#- Reference mode: 排除继承的字段 -#}
 {%- for template_name in entity.extends %}
 {%- if template_name in model.templates %}
 {%- if model.templates[template_name].export_path %}
-{# 只有有export_path的模板字段才排除，没有export_path的会展开 #}
+{#- 只有有export_path的模板字段才排除，没有export_path的会展开 -#}
 {%- for col in model.templates[template_name].columns %}
 {%- set _ = inherited_column_names.append(col.name) %}
 {%- endfor %}
@@ -101,26 +107,28 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- endfor %}
 {%- endif %}
 {%- if inheritance_mode == 'flatten' %}
-{# Flatten mode: 添加字段来源注释 #}
+{#- Flatten mode: 添加字段来源注释 -#}
 {%- set ns = namespace(current_source=none) %}
-{%- endif %}
-{%- for col in entity.columns %}
+{%- endif -%}
+{%- for col in entity.columns -%}
 {%- if inheritance_mode == 'flatten' %}
-{# Flatten mode: 检查字段来源并添加注释 #}
+{#- Flatten mode: 检查字段来源并添加注释 -#}
 {%- if col._source_template is defined and col._source_template %}
 {%- if col._source_template != ns.current_source %}
 {%- set ns.current_source = col._source_template %}
+
     # Fields from {{ ns.current_source }}
 {%- endif %}
 {%- elif ns.current_source %}
 {%- set ns.current_source = none %}
+
     # Own fields
 {%- endif %}
-{%- endif %}
+{%- endif -%}
 {%- if inheritance_mode == 'reference' and col.name in inherited_column_names %}
-{# Reference mode: 跳过继承的字段 #}
+{#- Reference mode: 跳过继承的字段 -#}
 {%- else %}
-{# 渲染字段 #}
+{#- 渲染字段 -#}
 {%- if col.is_fk %}
 {%- set ns = namespace(rel=none) %}
 {%- for r in entity_relationships %}
@@ -129,7 +137,7 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- endif %}
 {%- endfor %}
 {%- if ns.rel %}
-{# Get the referenced entity's table name #}
+{#- Get the referenced entity's table name -#}
 {%- if ns.rel.left_entity in model.entities %}
 {%- set ref_entity = model.entities[ns.rel.left_entity] %}
 {%- if ref_entity.table_name %}
@@ -140,11 +148,11 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- set fk_table_name = table_prefix + '_' + fk_table_name %}
 {%- endif %}
 {%- endif %}
-{# Apply table prefix if configured and not already in table name #}
+{#- Apply table prefix if configured and not already in table name -#}
 {%- if table_prefix and not fk_table_name.startswith(table_prefix + '_') %}
 {%- set fk_table_name = table_prefix + '_' + fk_table_name %}
 {%- endif %}
-{# Get the type from the referenced column #}
+{#- Get the type from the referenced column -#}
 {%- set ref_col = none %}
 {%- for c in ref_entity.columns %}
 {%- if c.name == ns.rel.left_column or c.db_column == ns.rel.left_column %}
@@ -242,11 +250,14 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- endif %}
 {%- endif %}
 {%- endif %}
-{%- endfor %}
-{%- for rel in entity_relationships %}
+{%- endfor -%}
+{% if entity_relationships %}
+
+{% endif -%}
+{%- for rel in entity_relationships -%}
 {%- if rel.right_entity == entity.name %}
 {%- set fk_column = rel.right_column %}
-{# Find the column object to get the db_column name and logical name for Django-style naming #}
+{#- Find the column object to get the db_column name and logical name for Django-style naming -#}
 {%- set ns = namespace(db_col_name=none, logical_name=none) %}
 {%- for col in entity.columns %}
 {%- if col.name == rel.right_column or col.db_column == rel.right_column %}
@@ -254,9 +265,9 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- set ns.logical_name = col.name %}
 {%- endif %}
 {%- endfor %}
-{# Use logical name for relationship (Django-style), fallback to old pattern if not found #}
+{#- Use logical name for relationship (Django-style), fallback to old pattern if not found -#}
 {%- set relationship_name = ns.logical_name if ns.logical_name else (rel.left_entity|lower + '_rel') %}
-{# Calculate back_populates name on the "one" side #}
+{#- Calculate back_populates name on the "one" side -#}
 {%- if rel.relation_type == 'one-to-one' %}
 {%- set back_populates_name = entity.name|lower + '_rel' %}
 {%- elif rel.relation_type == 'one-to-many' %}
@@ -276,7 +287,7 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
     {{ rel.left_entity|lower }}_set = relationship("{{ rel.left_entity }}", secondary="{{ assoc_table }}", back_populates="{{ entity.name|lower }}_set")
 {%- endif %}
 {%- elif rel.left_entity == entity.name %}
-{# Find the logical name used on the "many" side for back_populates #}
+{#- Find the logical name used on the "many" side for back_populates -#}
 {%- set ns = namespace(right_logical_name=none) %}
 {%- if rel.right_entity in model.entities %}
 {%- set right_entity = model.entities[rel.right_entity] %}
@@ -287,7 +298,7 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- endfor %}
 {%- endif %}
 {%- set back_populates_name = ns.right_logical_name if ns.right_logical_name else (entity.name|lower + '_rel') %}
-{# Use the right entity name to create unique relationship names and set uselist based on relation type #}
+{#- Use the right entity name to create unique relationship names and set uselist based on relation type -#}
 {%- if rel.relation_type == 'one-to-one' %}
     {{ rel.right_entity|lower }}_rel = relationship("{{ rel.right_entity }}", uselist=False, back_populates="{{ back_populates_name }}")
 {%- elif rel.relation_type == 'one-to-many' %}
