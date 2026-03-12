@@ -45,16 +45,16 @@ Base = declarative_base()
 
 {%- for module_path, class_names in external_imports.items() %}
 from {{ module_path }} import {{ class_names | join(', ') }}
-{%- endfor -%}
+{%- endfor %}
 {%- endif -%}
 {#- 生成mixin导入 -#}
 {%- if mixin_imports %}
 
 {%- for export_path, base_class_name in mixin_imports %}
 from {{ export_path }} import {{ base_class_name }}
-{%- endfor -%}
-{%- endif -%}
-{%- endif -%}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
 {%- set base_classes = [] %}
 {%- if entity.extends %}
 {#- 处理继承 -#}
@@ -79,7 +79,7 @@ from {{ export_path }} import {{ base_class_name }}
 {%- endif %}
 {%- endif %}
 {%- endfor %}
-{%- endif -%}
+{%- endif %}
 
 
 class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% else %}Base{% endif %}):
@@ -109,7 +109,8 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- if inheritance_mode == 'flatten' %}
 {#- Flatten mode: 添加字段来源注释 -#}
 {%- set ns = namespace(current_source=none) %}
-{%- endif -%}
+{%- endif %}
+
 {%- for col in entity.columns -%}
 {%- if inheritance_mode == 'flatten' %}
 {#- Flatten mode: 检查字段来源并添加注释 -#}
@@ -124,7 +125,7 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 
     # Own fields
 {%- endif %}
-{%- endif -%}
+{%- endif %}
 {%- if inheritance_mode == 'reference' and col.name in inherited_column_names %}
 {#- Reference mode: 跳过继承的字段 -#}
 {%- else %}
@@ -250,11 +251,10 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- endif %}
 {%- endif %}
 {%- endif %}
-{%- endfor -%}
-{% if entity_relationships %}
+{%- endfor %}
+{%- if entity_relationships %}
 
-{% endif -%}
-{%- for rel in entity_relationships -%}
+{%- for rel in entity_relationships %}
 {%- if rel.right_entity == entity.name %}
 {%- set fk_column = rel.right_column %}
 {#- Find the column object to get the db_column name and logical name for Django-style naming -#}
@@ -312,3 +312,4 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- endif %}
 {%- endif %}
 {%- endfor %}
+{%- endif %}
