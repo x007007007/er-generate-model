@@ -115,8 +115,21 @@ class SQLAlchemyRenderer(PythonRenderer):
         files = {}
         filenames_seen = set()
         
-        # In reference mode, generate mixin files for templates without external export_path
-        if self.inheritance_mode == 'reference' and model.templates:
+        # In reference mode, generate mixin files for templates
+        # Also check if there are external classes (not in model.templates but in entity.extends)
+        has_external_classes = False
+        if self.inheritance_mode == 'reference':
+            for entity_name, entity in model.entities.items():
+                for template_name in entity.extends:
+                    if template_name not in model.templates:
+                        namespace_parts = template_name.split('.')
+                        if len(namespace_parts) >= 3:
+                            has_external_classes = True
+                            break
+                if has_external_classes:
+                    break
+        
+        if self.inheritance_mode == 'reference' and (model.templates or has_external_classes):
             mixin_files = self._generate_mixin_files(model)
             files.update(mixin_files)
         
@@ -176,23 +189,82 @@ class SQLAlchemyRenderer(PythonRenderer):
         """
         mixin_files = {}
         
-        for template_name, template_info in model.templates.items():
+        # Step 1: Detect external classes from entity extends fields
+        # External classes are those that:
+        # 1. Are NOT in model.templates (not defined in TOML)
+        # 2. Have 3+ namespace parts (third-party libraries)
+        external_classes = set()
+        
+        for entity_name, entity in model.entities.items():
+            for template_name in entity.extends:
+                # Check if this is an external class
+                if template_name not in model.templates:
+                    # Count namespace parts
+                    namespace_parts = template_name.split('.')
+                    if len(namespace_parts) >= 3:
+                        # This is an external third-party class
+                        external_classes.add(template_name)
+        
+        # Step 2: Create temporary template_info for external classes
+        # External classes need template_info structure for file generation
+        external_templates = {}
+        
+        for external_class in external_classes:
+            # Parse the full namespace (e.g., oauth2_provider.models.AbstractAccessToken)
+            namespace_parts = external_class.split('.')
+            
+            # Extract package (all parts except the last one)
+            # e.g., oauth2_provider.models.AbstractAccessToken -> oauth2_provider.models
+            package = '.'.join(namespace_parts[:-1])
+            
+            # Extract class name (last part)
+            # e.g., oauth2_provider.models.AbstractAccessToken -> AbstractAccessToken
+            class_name = namespace_parts[-1]
+            
+            # Create temporary template_info structure
+            external_templates[external_class] = {
+                'package': package,
+                'export_path': f'third.{package}_sqlalchemy',
+                'columns': [],  # External classes don't need field definitions
+                '_is_external': True  # Flag to distinguish external classes from internal templates
+            }
+        
+        # Step 3: Merge external templates with existing templates for processing
+        # Combine model.templates and external_templates into a single dictionary
+        all_templates = {**model.templates, **external_templates}
+        
+        # Also update model.templates to include external templates
+        # This ensures that the export_path is available during template rendering
+        for template_name, template_info in external_templates.items():
+            model.templates[template_name] = template_info
+        
+        # Step 4: Process all templates (both existing and external)
+        for template_name, template_info in all_templates.items():
             export_path = template_info.get('export_path')
             package = template_info.get('package')
             columns = template_info.get('columns', [])
             
-            # Skip templates without columns (they're just markers for external classes)
-            if not columns:
+            # Check if this is an external class (from external_templates)
+            is_external_class = template_name in external_templates
+            
+            # Skip templates without columns UNLESS they are external classes
+            # External classes have empty columns but still need to be generated
+            if not columns and not is_external_class:
                 continue
             
             # Determine if we should generate this template
             # We generate templates that:
             # 1. Have export_path starting with 'mixins.' (auto-generated by parser)
             # 2. Have export_path pointing to external packages (for stub generation)
+            # 3. Are external classes (always third-party)
             should_generate = False
             is_third_party = False
             
-            if export_path:
+            if is_external_class:
+                # External classes are always third-party and should be generated
+                should_generate = True
+                is_third_party = True
+            elif export_path:
                 if export_path.startswith('mixins.'):
                     # Auto-generated internal mixin
                     should_generate = True
@@ -210,13 +282,22 @@ class SQLAlchemyRenderer(PythonRenderer):
             
             # Generate filename and update export_path based on package and third-party status
             if is_third_party and package:
-                # Third-party templates: third/{package_path}.py
-                # Convert package to path: kinkotech.common.infrastructure.models.base -> third/kinkotech/common/infrastructure/models/base.py
+                # Third-party templates: third/{package_path}_sqlalchemy.py
+                # Convert package to path: oauth2_provider.models -> third/oauth2_provider/models_sqlalchemy.py
                 package_path = package.replace('.', '/')
-                filename = f'third/{package_path}.py'
-                # Update export_path to reflect the generated location
-                new_export_path = f'third.{package}'
-                template_info['export_path'] = new_export_path
+                
+                # For external classes, the export_path already has _sqlalchemy suffix
+                # For existing third-party templates, we need to add it
+                if is_external_class:
+                    # External classes already have export_path set correctly
+                    filename = f'third/{package_path}_sqlalchemy.py'
+                    # export_path is already set in step 2: f'third.{package}_sqlalchemy'
+                else:
+                    # Existing third-party templates
+                    filename = f'third/{package_path}.py'
+                    # Update export_path to reflect the generated location
+                    new_export_path = f'third.{package}'
+                    template_info['export_path'] = new_export_path
             else:
                 # Current project templates: mixins/{module_name}.py
                 if export_path and export_path.startswith('mixins.'):
@@ -231,30 +312,72 @@ class SQLAlchemyRenderer(PythonRenderer):
             # Check if we already have content for this file (multiple templates in same module)
             if filename in mixin_files:
                 # Append to existing file
-                # Collect column types needed for imports
-                column_types = set()
-                for col in columns:
-                    col_type, _ = TypeMapper.get_sqlalchemy_type(col.type, col.max_length)
-                    column_types.add(col_type)
+                if is_external_class:
+                    # For external classes, generate a minimal stub class
+                    # Extract class name from template_name (last part)
+                    class_name = template_name.split('.')[-1]
+                    
+                    # Generate minimal stub class content (without imports)
+                    class_content = f"""
+
+class {class_name}(Base):
+    \"\"\"
+    SQLAlchemy stub for {template_name}
+    
+    This is a placeholder class that allows other models to inherit from it.
+    The actual implementation should be provided by the third-party library.
+    \"\"\"
+    __abstract__ = True"""
+                else:
+                    # Collect column types needed for imports
+                    column_types = set()
+                    for col in columns:
+                        col_type, _ = TypeMapper.get_sqlalchemy_type(col.type, col.max_length)
+                        column_types.add(col_type)
+                    
+                    # Render just the class definition (without imports)
+                    class_content = self._render_mixin_class(template_name, columns, sorted(column_types))
                 
-                # Render just the class definition (without imports)
-                class_content = self._render_mixin_class(template_name, columns, sorted(column_types))
                 mixin_files[filename] += '\n\n' + class_content
             else:
                 # Create new file
-                # Collect column types needed for imports
-                column_types = set()
-                for col in columns:
-                    col_type, _ = TypeMapper.get_sqlalchemy_type(col.type, col.max_length)
-                    column_types.add(col_type)
-                
-                # Render the full mixin template
-                content = self.mixin_template.render(
-                    mixin_name=template_name,
-                    columns=columns,
-                    column_types=sorted(column_types),
-                    package=package
-                )
+                if is_external_class:
+                    # For external classes, generate a minimal stub file
+                    # Extract class name from template_name (last part)
+                    class_name = template_name.split('.')[-1]
+                    
+                    # Generate minimal stub content
+                    content = f"""# Auto-generated stub for external class: {template_name}
+# This file provides a SQLAlchemy-compatible interface for the external class
+
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
+
+
+class {class_name}(Base):
+    \"\"\"
+    SQLAlchemy stub for {template_name}
+    
+    This is a placeholder class that allows other models to inherit from it.
+    The actual implementation should be provided by the third-party library.
+    \"\"\"
+    __abstract__ = True
+"""
+                else:
+                    # Collect column types needed for imports
+                    column_types = set()
+                    for col in columns:
+                        col_type, _ = TypeMapper.get_sqlalchemy_type(col.type, col.max_length)
+                        column_types.add(col_type)
+                    
+                    # Render the full mixin template
+                    content = self.mixin_template.render(
+                        mixin_name=template_name,
+                        columns=columns,
+                        column_types=sorted(column_types),
+                        package=package
+                    )
                 
                 mixin_files[filename] = content
         
