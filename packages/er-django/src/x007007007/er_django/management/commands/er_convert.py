@@ -440,9 +440,38 @@ class Command(BaseCommand):
             raise CommandError(f"Failed to generate SQLAlchemy code: {e}")
         
         # Write each file to the output directory
+        # IMPORTANT: third-party files should be written to global src/third/ directory
+        # while entity files should be written to the module-specific output_dir
         file_count = 0
         for filename, content in files.items():
-            output_file = output_dir / filename
+            if filename.startswith('third/'):
+                # Third-party files go to global src/third/ directory
+                # Find the src/ root by going up from output_dir
+                # output_dir might be like: src/kinkotech/rfc_backend/domains/rfc_login/sqlalchemy
+                # We need to find the 'src' part and use it as the base
+                current = output_dir
+                src_root = None
+                while current.parent != current:  # Stop at filesystem root
+                    if current.name == 'src':
+                        src_root = current
+                        break
+                    current = current.parent
+                
+                if src_root is None:
+                    # Fallback: assume output_dir is relative to current directory
+                    # and try to find src/ in the path
+                    if 'src' in output_dir.parts:
+                        src_index = output_dir.parts.index('src')
+                        src_root = Path(*output_dir.parts[:src_index+1])
+                    else:
+                        # Last resort: use output_dir's parent as src root
+                        src_root = output_dir.parent
+                
+                output_file = src_root / filename
+            else:
+                # Entity and mixin files go to module-specific output_dir
+                output_file = output_dir / filename
+            
             # Create parent directories if needed (for mixin files in subdirectories)
             output_file.parent.mkdir(parents=True, exist_ok=True)
             try:

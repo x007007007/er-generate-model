@@ -165,8 +165,35 @@ def convert_cmd(input_source, input_type, format, framework, output, output_dir,
             output_path = Path(output_dir)
             output_path.mkdir(parents=True, exist_ok=True)
             
+            # IMPORTANT: third-party files should be written to global src/third/ directory
+            # while entity files should be written to the module-specific output_dir
             for filename, content in files.items():
-                file_path = output_path / filename
+                if filename.startswith('third/'):
+                    # Third-party files go to global src/third/ directory
+                    # Find the src/ root by going up from output_path
+                    current = output_path
+                    src_root = None
+                    while current.parent != current:  # Stop at filesystem root
+                        if current.name == 'src':
+                            src_root = current
+                            break
+                        current = current.parent
+                    
+                    if src_root is None:
+                        # Fallback: assume output_path is relative to current directory
+                        # and try to find src/ in the path
+                        if 'src' in output_path.parts:
+                            src_index = output_path.parts.index('src')
+                            src_root = Path(*output_path.parts[:src_index+1])
+                        else:
+                            # Last resort: use output_path's parent as src root
+                            src_root = output_path.parent
+                    
+                    file_path = src_root / filename
+                else:
+                    # Entity and mixin files go to module-specific output_path
+                    file_path = output_path / filename
+                
                 # Create parent directories if needed (for mixin files)
                 file_path.parent.mkdir(parents=True, exist_ok=True)
                 with open(file_path, 'w', encoding='utf-8') as f:
