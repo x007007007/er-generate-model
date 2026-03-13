@@ -271,15 +271,17 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- if rel.right_entity == entity.name %}
 {%- set fk_column = rel.right_column %}
 {#- Find the column object to get the db_column name and logical name for Django-style naming -#}
-{%- set ns = namespace(db_col_name=none, logical_name=none) %}
+{%- set ns = namespace(db_col_name=none, logical_name=none, is_pk=false) %}
 {%- for col in entity.columns %}
 {%- if col.name == rel.right_column or col.db_column == rel.right_column %}
 {%- set ns.db_col_name = col.db_column if col.db_column else col.name %}
 {%- set ns.logical_name = col.name %}
+{%- set ns.is_pk = col.is_pk %}
 {%- endif %}
 {%- endfor %}
-{#- Use logical name for relationship (Django-style), fallback to old pattern if not found -#}
-{%- set relationship_name = ns.logical_name if ns.logical_name else (rel.left_entity|lower + '_rel') %}
+{#- Use logical name for relationship (Django-style), but NOT if it's a primary key -#}
+{#- Primary keys should not be used as relationship names to avoid conflicts -#}
+{%- set relationship_name = (ns.logical_name if ns.logical_name and not ns.is_pk else (rel.left_entity|lower + '_rel')) %}
 {#- Calculate back_populates name on the "one" side -#}
 {%- if rel.relation_type == 'one-to-one' %}
 {%- set back_populates_name = entity.name|lower + '_rel' %}
@@ -301,16 +303,19 @@ class {{ entity.name }}({% if base_classes %}{{ base_classes|join(', ') }}{% els
 {%- endif %}
 {%- elif rel.left_entity == entity.name %}
 {#- Find the logical name used on the "many" side for back_populates -#}
-{%- set ns = namespace(right_logical_name=none) %}
+{%- set ns = namespace(right_logical_name=none, right_is_pk=false) %}
 {%- if rel.right_entity in model.entities %}
 {%- set right_entity = model.entities[rel.right_entity] %}
 {%- for col in right_entity.columns %}
 {%- if col.name == rel.right_column or col.db_column == rel.right_column %}
 {%- set ns.right_logical_name = col.name %}
+{%- set ns.right_is_pk = col.is_pk %}
 {%- endif %}
 {%- endfor %}
 {%- endif %}
-{%- set back_populates_name = ns.right_logical_name if ns.right_logical_name else (entity.name|lower + '_rel') %}
+{#- Use the right logical name for back_populates, but NOT if it's a primary key -#}
+{#- Primary keys should not be used as relationship names to avoid conflicts -#}
+{%- set back_populates_name = (ns.right_logical_name if ns.right_logical_name and not ns.right_is_pk else (entity.name|lower + '_rel')) %}
 {#- Use the right entity name to create unique relationship names and set uselist based on relation type -#}
 {%- if rel.relation_type == 'one-to-one' %}
     {{ rel.right_entity|lower }}_rel = relationship("{{ rel.right_entity }}", uselist=False, back_populates="{{ back_populates_name }}")

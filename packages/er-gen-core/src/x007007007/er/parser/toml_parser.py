@@ -312,6 +312,8 @@ class TomlERParser(Parser):
             - Matches relationship's right_column against both col.name and col.db_column
             - Infers db_column as {name}_id if not explicitly specified for FK columns
             - Ensures all foreign key columns have is_fk=True flag set correctly
+            - IMPORTANT: Only marks right_column as FK if it's not a primary key
+              (primary keys can be referenced by FKs but are not themselves FKs)
 
             Args:
                 entities: Entity dictionary
@@ -337,6 +339,12 @@ class TomlERParser(Parser):
                             # 1. right_column matches col.name (e.g., "code" matches name="code")
                             # 2. right_column matches col.db_column (e.g., "code_id" matches db_column="code_id")
                             if col.name == rel.right_column or col.db_column == rel.right_column:
+                                # CRITICAL: Do not mark primary keys as foreign keys
+                                # Primary keys can be referenced by other tables' FKs, but they themselves are not FKs
+                                if col.is_pk:
+                                    # Skip marking this column as FK - it's a PK being referenced
+                                    break
+                                
                                 col.is_fk = True
 
                                 # Infer db_column if it matches name (wasn't explicitly set for FK)
