@@ -1,0 +1,91 @@
+# Implementation Plan
+
+- [x] 1. Write bug condition exploration test
+  - **Property 1: Fault Condition** - No External Inheritance in Flatten Mode
+  - **CRITICAL**: This test MUST FAIL on unfixed code - failure confirms the bug exists
+  - **DO NOT attempt to fix the test or the code when it fails**
+  - **NOTE**: This test encodes the expected behavior - it will validate the fix when it passes after implementation
+  - **GOAL**: Surface counterexamples that demonstrate the bug exists
+  - **Scoped PBT Approach**: Scope the property to concrete failing cases - entities with external classes in `extends` list using flatten mode
+  - Test that when `inheritance_mode == 'flatten'` and entity has external classes in `extends`, the generated SQLAlchemy model does NOT import external classes and does NOT inherit from them
+  - Test cases:
+    - Single external class: Entity extends `["kinkotech.common.infrastructure.models.base.KinkoTechModelBase"]` with flatten mode
+    - Multiple external classes: Entity extends multiple external Django classes with flatten mode
+    - Mixed internal and external: Entity extends both internal templates and external classes with flatten mode
+  - Assert that generated code does NOT contain imports like `from kinkotech.common.infrastructure.models.base import KinkoTechModelBase`
+  - Assert that generated class only inherits from `Base`, not from external classes
+  - Assert that fields from external classes are expanded into the entity
+  - Run test on UNFIXED code
+  - **EXPECTED OUTCOME**: Test FAILS (this is correct - it proves the bug exists)
+  - Document counterexamples found (e.g., "Generated code contains `class Order(KinkoTechModelBase, CreateModifyMixinModel):` instead of `class Order(Base):`")
+  - Mark task complete when test is written, run, and failure is documented
+  - _Requirements: 2.1, 2.2_
+
+- [x] 2. Write preservation property tests (BEFORE implementing fix)
+  - **Property 2: Preservation** - Reference Mode and Non-Buggy Cases
+  - **IMPORTANT**: Follow observation-first methodology
+  - Observe behavior on UNFIXED code for non-buggy inputs (reference mode, internal templates, no inheritance)
+  - Write property-based tests capturing observed behavior patterns:
+    - **Reference Mode Preservation**: When `inheritance_mode == 'reference'` and entity has external classes, verify external classes ARE imported and inherited
+    - **Internal Template Preservation**: When entity has internal templates (defined in `model.templates`), verify they are handled according to inheritance mode rules
+    - **No Inheritance Preservation**: When entity has no classes in `extends`, verify it only inherits from Base
+  - Property-based testing generates many test cases for stronger guarantees
+  - Run tests on UNFIXED code
+  - **EXPECTED OUTCOME**: Tests PASS (this confirms baseline behavior to preserve)
+  - Mark task complete when tests are written, run, and passing on unfixed code
+  - _Requirements: 3.1, 3.2, 3.3, 3.4_
+
+- [x] 3. Fix template logic to check inheritance_mode before importing/inheriting external classes
+
+  - [x] 3.1 Modify sqlalchemy_single_model.j2 template
+    - Add inheritance mode check to external import collection logic (lines 8-36)
+    - Wrap external class collection with condition: `{%- if inheritance_mode == 'reference' %}`
+    - Add inheritance mode check to base class list building logic (lines 38-58)
+    - Only add external classes to `base_classes` if `inheritance_mode == 'reference'`
+    - Ensure field expansion from external classes continues to work in flatten mode
+    - _Bug_Condition: isBugCondition(input) where input.inheritance_mode == 'flatten' AND entity has external classes in extends_
+    - _Expected_Behavior: External classes NOT imported, NOT inherited, only Base inherited, fields expanded_
+    - _Preservation: Reference mode continues to import/inherit external classes; internal templates handled as before; no-inheritance cases unchanged_
+    - _Requirements: 2.1, 2.2, 3.1, 3.2, 3.3, 3.4_
+
+  - [x] 3.2 Modify sqlalchemy_model.j2 template
+    - Apply same changes as sqlalchemy_single_model.j2
+    - Add inheritance mode check to external import collection logic
+    - Add inheritance mode check to base class list building logic
+    - Ensure both templates have identical inheritance handling logic
+    - _Bug_Condition: isBugCondition(input) where input.inheritance_mode == 'flatten' AND entity has external classes in extends_
+    - _Expected_Behavior: External classes NOT imported, NOT inherited, only Base inherited, fields expanded_
+    - _Preservation: Reference mode continues to import/inherit external classes; internal templates handled as before; no-inheritance cases unchanged_
+    - _Requirements: 2.1, 2.2, 3.1, 3.2, 3.3, 3.4_
+
+  - [x] 3.3 Verify bug condition exploration test now passes
+    - **Property 1: Expected Behavior** - No External Inheritance in Flatten Mode
+    - **IMPORTANT**: Re-run the SAME test from task 1 - do NOT write a new test
+    - The test from task 1 encodes the expected behavior
+    - When this test passes, it confirms the expected behavior is satisfied
+    - Run bug condition exploration test from step 1
+    - **EXPECTED OUTCOME**: Test PASSES (confirms bug is fixed)
+    - Verify all test cases pass:
+      - Single external class case
+      - Multiple external classes case
+      - Mixed internal and external case
+    - _Requirements: 2.1, 2.2_
+
+  - [x] 3.4 Verify preservation tests still pass
+    - **Property 2: Preservation** - Reference Mode and Non-Buggy Cases
+    - **IMPORTANT**: Re-run the SAME tests from task 2 - do NOT write new tests
+    - Run preservation property tests from step 2
+    - **EXPECTED OUTCOME**: Tests PASS (confirms no regressions)
+    - Verify all preservation test cases pass:
+      - Reference mode with external classes
+      - Internal template handling
+      - No inheritance cases
+    - Confirm all tests still pass after fix (no regressions)
+    - _Requirements: 3.1, 3.2, 3.3, 3.4_
+
+- [x] 4. Checkpoint - Ensure all tests pass
+  - Run all exploration tests and verify they pass
+  - Run all preservation tests and verify they pass
+  - Run existing test suite to ensure no regressions
+  - Verify generated SQLAlchemy models can be imported without errors
+  - Ask the user if questions arise

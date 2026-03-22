@@ -1,0 +1,60 @@
+# Template Example - Explicit Export Path
+# This example demonstrates using explicit export_path instead of auto-derived paths
+
+# Template with auto-derived export_path (from package)
+[templates.AutoDerivedMixin]
+package = "myapp.models.base"
+# export_path will be auto-derived as: myapp.models.base_sqlalchemy
+
+[[templates.AutoDerivedMixin.columns]]
+name = "id"
+type = "uuid"
+is_pk = true
+comment = "Primary key"
+
+# Template with explicit export_path (overrides auto-derivation)
+[templates.CustomLocationMixin]
+package = "myapp.models.base"
+export_path = "myapp.custom.mixins"  # Explicit path, not auto-derived
+
+[[templates.CustomLocationMixin.columns]]
+name = "status"
+type = "string"
+comment = "Record status"
+
+[[templates.CustomLocationMixin.columns]]
+name = "priority"
+type = "int"
+comment = "Priority level"
+
+# Template with only export_path (no package field)
+[templates.DirectExportMixin]
+export_path = "shared.common.base"  # Direct export path
+
+[[templates.DirectExportMixin.columns]]
+name = "created_at"
+type = "datetime"
+comment = "Creation timestamp"
+
+[[templates.DirectExportMixin.columns]]
+name = "updated_at"
+type = "datetime"
+comment = "Update timestamp"
+
+# Entity using all three template types
+[entities.TASK]
+extends = ["AutoDerivedMixin", "CustomLocationMixin", "DirectExportMixin"]
+comment = "Task entity demonstrating different template path strategies"
+columns = [
+    {name = "title", type = "string", comment = "Task title"},
+    {name = "description", type = "text", comment = "Task description"},
+    {name = "due_date", type = "datetime", nullable = true, comment = "Due date"},
+]
+
+[entities.PROJECT]
+extends = ["AutoDerivedMixin", "DirectExportMixin"]
+comment = "Project entity"
+columns = [
+    {name = "name", type = "string", comment = "Project name"},
+    {name = "budget", type = "decimal", comment = "Project budget"},
+]

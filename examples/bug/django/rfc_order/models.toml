@@ -1,0 +1,724 @@
+[[relationships]]
+left = "Order"
+right = "OrderItem"
+type = "one-to-many"
+left_column = "id"
+right_column = "order_id"
+
+[[relationships]]
+left = "SellItem"
+right = "OrderItem"
+type = "one-to-many"
+left_column = "id"
+right_column = "sell_item_id"
+
+[[relationships]]
+left = "PromotionCode"
+right = "PromotionCodeUsage"
+type = "one-to-many"
+left_column = "id"
+right_column = "promotion_code_id"
+
+[[relationships]]
+left = "Order"
+right = "PromotionCodeUsage"
+type = "one-to-many"
+left_column = "id"
+right_column = "order_id"
+
+[[relationships]]
+left = "SellItem"
+right = "Entitlement"
+type = "one-to-many"
+left_column = "id"
+right_column = "sell_item_id"
+
+[[relationships]]
+left = "Order"
+right = "Entitlement"
+type = "one-to-many"
+left_column = "id"
+right_column = "order_id"
+
+[[relationships]]
+left = "OrderItem"
+right = "Entitlement"
+type = "one-to-many"
+left_column = "id"
+right_column = "order_item_id"
+
+[[relationships]]
+left = "SellItem"
+right = "RedemptionLog"
+type = "one-to-many"
+left_column = "id"
+right_column = "sell_item_id"
+
+[[relationships]]
+left = "Entitlement"
+right = "RedemptionLog"
+type = "one-to-many"
+left_column = "id"
+right_column = "entitlement_id"
+
+[[relationships]]
+left = "Voucher"
+right = "RedemptionLog"
+type = "one-to-many"
+left_column = "id"
+right_column = "voucher_id"
+
+[[relationships]]
+left = "Entitlement"
+right = "Voucher"
+type = "one-to-many"
+left_column = "id"
+right_column = "entitlement_id"
+
+[[relationships]]
+left = "Order"
+right = "Voucher"
+type = "one-to-many"
+left_column = "id"
+right_column = "order_id"
+
+[[relationships]]
+left = "OrderItem"
+right = "Voucher"
+type = "one-to-many"
+left_column = "id"
+right_column = "order_item_id"
+
+[[relationships]]
+left = "SellItem"
+right = "Voucher"
+type = "one-to-many"
+left_column = "id"
+right_column = "sell_item_id"
+
+[[relationships]]
+left = "Voucher"
+right = "Entitlement"
+type = "one-to-one"
+left_column = "entitlement_id"
+right_column = "id"
+
+[[relationships]]
+left = "SellItem"
+right = "SellItemBundleItem"
+type = "one-to-many"
+left_column = "id"
+right_column = "bundle_sell_item_id"
+
+[[relationships]]
+left = "SellItem"
+right = "SellItemBundleItem"
+type = "one-to-many"
+left_column = "id"
+right_column = "component_sell_item_id"
+
+[entities.Order]
+extends = [ "kinkotech.common.infrastructure.models.base.KinkoTechModelBase", "kinkotech.common.infrastructure.models.base.CreateModifyMixinModel",]
+table_name = "kkt_rfc_order_order"
+package = "kinkotech.rfc_backend.domains.rfc_order.models.order"
+[[entities.Order.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+unique = true
+
+[[entities.Order.columns]]
+name = "category"
+type = "string"
+nullable = false
+max_length = 20
+comment = "订单类型：PACKAGE（套餐） / ADD_ON（加购）"
+
+[[entities.Order.columns]]
+name = "visitor"
+type = "string"
+db_column = "visitor_id"
+comment = "关联购买者（email-only 购买 Package 时也会创建 visitor）"
+
+[[entities.Order.columns]]
+name = "status"
+type = "string"
+nullable = false
+default = "PENDING"
+max_length = 20
+comment = "订单状态"
+
+[[entities.Order.columns]]
+name = "original_amount"
+type = "decimal"
+precision = 10
+scale = 2
+comment = "原价金额（优惠前）"
+
+[[entities.Order.columns]]
+name = "amount"
+type = "decimal"
+nullable = false
+precision = 10
+scale = 2
+comment = "实付金额"
+
+[[entities.Order.columns]]
+name = "currency"
+type = "string"
+nullable = false
+default = "CNY"
+max_length = 8
+comment = "币种"
+
+[[entities.Order.columns]]
+name = "sales_channel"
+type = "string"
+max_length = 20
+comment = "销售渠道"
+
+[[entities.Order.columns]]
+name = "poi"
+type = "string"
+db_column = "poi_id"
+comment = "销售发生的POI（线下点位下单可填；线上可空）"
+
+[[entities.Order.columns]]
+name = "payment_provider"
+type = "string"
+max_length = 20
+comment = "支付渠道"
+
+[[entities.Order.columns]]
+name = "payment_transaction_id"
+type = "string"
+max_length = 128
+comment = "第三方支付流水号（用于退款/对账）"
+
+[[entities.Order.columns]]
+name = "paid_at"
+type = "datetime"
+comment = "支付完成时间"
+
+[[entities.Order.columns]]
+name = "email"
+type = "string"
+max_length = 255
+comment = "收券/通知邮箱（当 visitor_id 为空（仅激活码订单）时必填；其余场景可选（用于发券通知/客服沟通））"
+
+[[entities.Order.columns]]
+name = "meta"
+type = "json"
+nullable = false
+
+[entities.OrderItem]
+extends = [ "kinkotech.common.infrastructure.models.base.KinkoTechModelBase", "kinkotech.common.infrastructure.models.base.CreateModifyMixinModel",]
+table_name = "kkt_rfc_order_order_item"
+package = "kinkotech.rfc_backend.domains.rfc_order.models.order_item"
+[[entities.OrderItem.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+unique = true
+
+[[entities.OrderItem.columns]]
+name = "order"
+type = "string"
+db_column = "order_id"
+nullable = false
+comment = "关联订单"
+
+[[entities.OrderItem.columns]]
+name = "sell_item"
+type = "string"
+db_column = "sell_item_id"
+comment = "该行对应的\"子售卖项\""
+
+[[entities.OrderItem.columns]]
+name = "qty"
+type = "int"
+nullable = false
+default = 1
+
+[[entities.OrderItem.columns]]
+name = "unit_amount"
+type = "decimal"
+precision = 10
+scale = 2
+comment = "行单价"
+
+[[entities.OrderItem.columns]]
+name = "amount"
+type = "decimal"
+precision = 10
+scale = 2
+comment = "行小计,等于 unit_amount*qty"
+
+[[entities.OrderItem.columns]]
+name = "meta"
+type = "json"
+nullable = false
+
+[entities.PromotionCode]
+extends = [ "kinkotech.common.infrastructure.models.base.KinkoTechModelBase", "kinkotech.common.infrastructure.models.base.CreateModifyMixinModel", "kinkotech.common.infrastructure.models.base.EnabledMixinModel",]
+table_name = "kkt_rfc_order_promotioncodemodel"
+package = "kinkotech.rfc_backend.domains.rfc_order.models.promotion_code"
+[[entities.PromotionCode.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+unique = true
+
+[[entities.PromotionCode.columns]]
+name = "code"
+type = "string"
+nullable = false
+unique = true
+max_length = 128
+comment = "促销码文本（如 HOLIDAY20）"
+
+[[entities.PromotionCode.columns]]
+name = "discount_type"
+type = "string"
+nullable = false
+max_length = 20
+comment = "折扣类型"
+
+[[entities.PromotionCode.columns]]
+name = "discount_value"
+type = "decimal"
+nullable = false
+precision = 10
+scale = 2
+comment = "PERCENT 时表示百分比（如 20=20%）；FIXED 时表示固定减免金额"
+
+[[entities.PromotionCode.columns]]
+name = "valid_from"
+type = "datetime"
+comment = "有效期开始"
+
+[[entities.PromotionCode.columns]]
+name = "valid_to"
+type = "datetime"
+comment = "有效期结束"
+
+[[entities.PromotionCode.columns]]
+name = "usage_limit_total"
+type = "int"
+comment = "全局使用次数上限"
+
+[[entities.PromotionCode.columns]]
+name = "usage_limit_per_identity"
+type = "int"
+comment = "每个游客主体（visitor）使用次数上限"
+
+[[entities.PromotionCode.columns]]
+name = "meta"
+type = "json"
+nullable = false
+comment = "扩展信息（适用商品范围、备注等）"
+
+[entities.PromotionCodeUsage]
+extends = [ "kinkotech.common.infrastructure.models.base.KinkoTechModelBase", "kinkotech.common.infrastructure.models.base.CreateModifyMixinModel",]
+table_name = "kkt_rfc_order_promotion_code_usage"
+package = "kinkotech.rfc_backend.domains.rfc_order.models.promotion_code_usage"
+[[entities.PromotionCodeUsage.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+unique = true
+
+[[entities.PromotionCodeUsage.columns]]
+name = "promotion_code"
+type = "string"
+db_column = "promotion_code_id"
+nullable = false
+comment = "关联促销码"
+
+[[entities.PromotionCodeUsage.columns]]
+name = "order"
+type = "string"
+db_column = "order_id"
+nullable = false
+comment = "关联订单"
+
+[[entities.PromotionCodeUsage.columns]]
+name = "visitor"
+type = "string"
+db_column = "visitor_id"
+comment = "关联使用者 visitor（为空场景：未登录但下单的文创购买）"
+
+[[entities.PromotionCodeUsage.columns]]
+name = "discount_amount"
+type = "decimal"
+precision = 10
+scale = 2
+comment = "本次抵扣金额（便于对账与审计）"
+
+[[entities.PromotionCodeUsage.columns]]
+name = "used_at"
+type = "datetime"
+nullable = false
+comment = "使用时间"
+
+[[entities.PromotionCodeUsage.columns]]
+name = "meta"
+type = "json"
+nullable = false
+comment = "扩展信息"
+
+[entities.Entitlement]
+extends = [ "kinkotech.common.infrastructure.models.base.KinkoTechModelBase", "kinkotech.common.infrastructure.models.base.CreateModifyMixinModel",]
+table_name = "kkt_rfc_order_entitlement"
+package = "kinkotech.rfc_backend.domains.rfc_order.models.entitlement"
+[[entities.Entitlement.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+unique = true
+
+[[entities.Entitlement.columns]]
+name = "visitor"
+type = "string"
+db_column = "visitor_id"
+nullable = false
+comment = "权益归属的游客主体"
+
+[[entities.Entitlement.columns]]
+name = "sell_item"
+type = "string"
+db_column = "sell_item_id"
+comment = "对应售卖项"
+
+[[entities.Entitlement.columns]]
+name = "status"
+type = "string"
+nullable = false
+default = "PENDING"
+max_length = 20
+comment = "权益状态"
+
+[[entities.Entitlement.columns]]
+name = "remaining_qty"
+type = "int"
+
+[[entities.Entitlement.columns]]
+name = "order"
+type = "string"
+db_column = "order_id"
+comment = "来源订单（奖励/管理员手动创建 可为空）"
+
+[[entities.Entitlement.columns]]
+name = "order_item"
+type = "string"
+db_column = "order_item_id"
+comment = "用于套餐/多行订单的精确追溯与对账；奖励/补发/管理员手动创建 可为空"
+
+[[entities.Entitlement.columns]]
+name = "challenge"
+type = "string"
+db_column = "challenge_id"
+comment = "来源挑战"
+
+[[entities.Entitlement.columns]]
+name = "created_by"
+type = "string"
+db_column = "created_by_id"
+comment = "管理员手动创建时的操作人（不为空 = 管理员操作，order/order_item 可为空）"
+
+[[entities.Entitlement.columns]]
+name = "start_at"
+type = "datetime"
+comment = "生效开始时间（用于有效期窗口）"
+
+[[entities.Entitlement.columns]]
+name = "end_at"
+type = "datetime"
+comment = "生效结束时间（过期时间）"
+
+[[entities.Entitlement.columns]]
+name = "meta"
+type = "json"
+nullable = false
+comment = "扩展信息（规则快照、核销限制、配额明细等）"
+
+[entities.RedemptionLog]
+extends = [ "kinkotech.common.infrastructure.models.base.KinkoTechModelBase", "kinkotech.common.infrastructure.models.base.CreateModifyMixinModel",]
+table_name = "kkt_rfc_order_redemption_log"
+package = "kinkotech.rfc_backend.domains.rfc_order.models.redemption_log"
+[[entities.RedemptionLog.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+unique = true
+
+[[entities.RedemptionLog.columns]]
+name = "event_type"
+type = "string"
+nullable = false
+max_length = 50
+comment = "事件类型"
+
+[[entities.RedemptionLog.columns]]
+name = "source"
+type = "string"
+nullable = false
+max_length = 30
+comment = "来源端"
+
+[[entities.RedemptionLog.columns]]
+name = "request_id"
+type = "string"
+nullable = false
+unique = true
+max_length = 128
+comment = "幂等键（终端/客户端生成；用于防重复扣减/重复兑换）"
+
+[[entities.RedemptionLog.columns]]
+name = "visitor"
+type = "string"
+db_column = "visitor_id"
+comment = "关联游客主体（可空场景：未登录的券兑换）"
+
+[[entities.RedemptionLog.columns]]
+name = "poi"
+type = "string"
+db_column = "poi_id"
+comment = "核销点"
+
+[[entities.RedemptionLog.columns]]
+name = "sell_item"
+type = "string"
+db_column = "sell_item_id"
+comment = "关联售卖项（权益核销/购买相关事件）"
+
+[[entities.RedemptionLog.columns]]
+name = "entitlement"
+type = "string"
+db_column = "entitlement_id"
+comment = "关联权益单据"
+
+[[entities.RedemptionLog.columns]]
+name = "voucher"
+type = "string"
+db_column = "voucher_id"
+comment = "关联券（兑换事件）"
+
+[[entities.RedemptionLog.columns]]
+name = "user"
+type = "string"
+db_column = "user_id"
+comment = "终端登录的商户账号（执行者）"
+
+[[entities.RedemptionLog.columns]]
+name = "pos"
+type = "string"
+db_column = "pos_id"
+comment = "执行核销的 POS 设备"
+
+[[entities.RedemptionLog.columns]]
+name = "result"
+type = "string"
+nullable = false
+max_length = 20
+comment = "结果"
+
+[[entities.RedemptionLog.columns]]
+name = "meta"
+type = "json"
+nullable = false
+
+[entities.Voucher]
+extends = [ "kinkotech.common.infrastructure.models.base.KinkoTechModelBase", "kinkotech.common.infrastructure.models.base.CreateModifyMixinModel",]
+table_name = "kkt_rfc_order_voucher"
+package = "kinkotech.rfc_backend.domains.rfc_order.models.voucher"
+[[entities.Voucher.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+unique = true
+
+[[entities.Voucher.columns]]
+name = "entitlement"
+type = "string"
+db_column = "entitlement_id"
+unique = true
+
+[[entities.Voucher.columns]]
+name = "code"
+type = "string"
+nullable = false
+unique = true
+max_length = 128
+comment = "券码（二维码内容，一次性兑换凭证）"
+
+[[entities.Voucher.columns]]
+name = "order"
+type = "string"
+db_column = "order_id"
+comment = "来源订单（文创购买券：关联订单；挑战奖品券：可为空）"
+
+[[entities.Voucher.columns]]
+name = "order_item"
+type = "string"
+db_column = "order_item_id"
+comment = "来源订单行,voucher_type=REDEEM 建议必填,CHALLENGE_PRIZE 可为空"
+
+[[entities.Voucher.columns]]
+name = "voucher_type"
+type = "string"
+nullable = false
+max_length = 30
+
+[[entities.Voucher.columns]]
+name = "sell_item"
+type = "string"
+db_column = "sell_item_id"
+
+[[entities.Voucher.columns]]
+name = "issued_seq"
+type = "int"
+nullable = false
+default = 1
+
+[[entities.Voucher.columns]]
+name = "meta"
+type = "json"
+nullable = false
+comment = "扩展信息"
+
+[entities.SellItem]
+extends = [ "kinkotech.common.infrastructure.models.base.KinkoTechModelBase", "kinkotech.common.infrastructure.models.base.CreateModifyMixinModel",]
+table_name = "kkt_rfc_order_sell_item"
+package = "kinkotech.rfc_backend.domains.rfc_order.models.sell_item"
+[[entities.SellItem.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+unique = true
+
+[[entities.SellItem.columns]]
+name = "code"
+type = "string"
+nullable = false
+unique = true
+max_length = 128
+comment = "售卖项编码（用于配置/对接/运营导入）"
+
+[[entities.SellItem.columns]]
+name = "name"
+type = "string"
+db_column = "name_id"
+comment = "售卖项名称（短文案，多语言）"
+
+[[entities.SellItem.columns]]
+name = "is_bundle"
+type = "boolean"
+nullable = false
+default = false
+comment = "是否为\"组合套餐售卖项\"（false：普通单品；true：套餐，其组成由 sell_item_bundle_item 定义）"
+
+[[entities.SellItem.columns]]
+name = "sell_item_type_code"
+type = "string"
+max_length = 64
+comment = "售卖项类型编码（MEMORY/TICKET/FOOD_TOUR/CHALLENGE_PRIZE/ACTIVATION_CODE/CANVAS）"
+
+[[entities.SellItem.columns]]
+name = "activation_mode"
+type = "string"
+nullable = false
+default = "REDEEM_REQUIRED"
+max_length = 20
+comment = "激活/履约方式（REDEEM_REQUIRED=需核销；IMMEDIATE=购买/激活即生效，不生成voucher）"
+
+[[entities.SellItem.columns]]
+name = "category"
+type = "string"
+nullable = false
+default = "ADD_ON"
+max_length = 20
+comment = "售卖项类别（PACKAGE=套餐包，任何人可购买；ADD_ON=附加项，需登录态）"
+
+[[entities.SellItem.columns]]
+name = "purchasable_identity"
+type = "string"
+nullable = false
+default = "LOGGED_IN"
+max_length = 20
+comment = "可购买人群（ANY=任何人含email-only；LOGGED_IN=需登录态；ACTIVATION_CODE_ONLY=仅激活码用户；NFC_ONLY=仅NFC用户）"
+
+[[entities.SellItem.columns]]
+name = "description"
+type = "string"
+db_column = "description_id"
+comment = "售卖项详情描述（长文案，多语言，可选）"
+
+[[entities.SellItem.columns]]
+name = "route"
+type = "string"
+db_column = "route_id"
+comment = "可以关联一条游览线路"
+
+[[entities.SellItem.columns]]
+name = "amount"
+type = "decimal"
+precision = 10
+scale = 2
+comment = "售价（与 order 表保持一致）"
+
+[[entities.SellItem.columns]]
+name = "currency"
+type = "string"
+nullable = false
+default = "CNY"
+max_length = 8
+comment = "币种（与 order 表保持一致）"
+
+[[entities.SellItem.columns]]
+name = "meta"
+type = "json"
+nullable = false
+
+[entities.SellItemBundleItem]
+extends = [ "kinkotech.common.infrastructure.models.base.KinkoTechModelBase", "kinkotech.common.infrastructure.models.base.CreateModifyMixinModel",]
+table_name = "kkt_rfc_order_sell_item_bundle_item"
+package = "kinkotech.rfc_backend.domains.rfc_order.models.sell_item_bundle_item"
+[[entities.SellItemBundleItem.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+nullable = false
+unique = true
+
+[[entities.SellItemBundleItem.columns]]
+name = "bundle_sell_item"
+type = "string"
+db_column = "bundle_sell_item_id"
+nullable = false
+
+[[entities.SellItemBundleItem.columns]]
+name = "component_sell_item"
+type = "string"
+db_column = "component_sell_item_id"
+comment = "子售卖项（要求 sell_item.is_bundle=false）"
+
+[[entities.SellItemBundleItem.columns]]
+name = "qty"
+type = "int"
+nullable = false
+default = 1
+
+[[entities.SellItemBundleItem.columns]]
+name = "meta"
+type = "json"
+nullable = false
+

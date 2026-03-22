@@ -1,0 +1,129 @@
+# Implementation Plan
+
+- [x] 1. Write bug condition exploration test
+  - **Property 1: Fault Condition** - Third-Party Library Inheritance Import and File Generation
+  - **CRITICAL**: This test MUST FAIL on unfixed code - failure confirms the bug exists
+  - **DO NOT attempt to fix the test or the code when it fails**
+  - **NOTE**: This test encodes the expected behavior - it will validate the fix when it passes after implementation
+  - **GOAL**: Surface counterexamples that demonstrate the bug exists
+  - **Scoped PBT Approach**: For deterministic bugs, scope the property to the concrete failing case(s) to ensure reproducibility
+  - Test implementation details from Fault Condition in design
+  - The test assertions should match the Expected Behavior Properties from design
+  - Test Case 1: OAuth2 Provider inheritance - entity extends `oauth2_provider.models.AbstractAccessToken`
+    - Assert import statement contains `third.` prefix: `from third.oauth2_provider.models_sqlalchemy import AbstractAccessToken`
+    - Assert file generated at `third/oauth2_provider/models_sqlalchemy.py` with `AbstractAccessToken` class definition
+  - Test Case 2: Django Auth inheritance - entity extends `django.contrib.auth.models.AbstractUser`
+    - Assert import statement contains `third.` prefix: `from third.django.contrib.auth.models_sqlalchemy import AbstractUser`
+    - Assert file generated at `third/django/contrib/auth/models_sqlalchemy.py` with `AbstractUser` class definition
+  - Test Case 3: Multiple inheritance mix - entity extends both `oauth2_provider.models.AbstractAccessToken` and `TimestampMixin`
+    - Assert third-party import: `from third.oauth2_provider.models_sqlalchemy import AbstractAccessToken`
+    - Assert internal mixin import: `from mixins.timestamp_mixin import TimestampMixin`
+    - Assert both files generated correctly
+  - Test Case 4: Edge case - namespace with exactly 3 parts (e.g., `package.module.Class`)
+    - Assert third-party library detection works correctly
+    - Assert `third.` prefix is added
+  - Run test on UNFIXED code
+  - **EXPECTED OUTCOME**: Test FAILS (this is correct - it proves the bug exists)
+  - Document counterexamples found to understand root cause
+  - Mark task complete when test is written, run, and failure is documented
+  - _Requirements: 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 2.5_
+
+
+- [x] 2. Write preservation property tests (BEFORE implementing fix)
+  - **Property 2: Preservation** - Internal Templates and Other Modes Behavior
+  - **IMPORTANT**: Follow observation-first methodology
+  - Observe behavior on UNFIXED code for non-buggy inputs
+  - Write property-based tests capturing observed behavior patterns from Preservation Requirements
+  - Property-based testing generates many test cases for stronger guarantees
+  - Test Case 1: Internal Mixin preservation - entity extends `TimestampMixin` (2 parts)
+    - Observe: import statement does NOT have `third.` prefix
+    - Observe: file generated at `mixins/timestamp_mixin.py`
+    - Write property: for all internal templates (namespace parts < 3), import should not have `third.` prefix
+  - Test Case 2: Flatten mode preservation - `inheritance_mode='flatten'`
+    - Observe: no external class imports generated
+    - Observe: template fields are flattened into entity
+    - Write property: flatten mode behavior unchanged
+  - Test Case 3: Non-inheritance scenario preservation - entity without `extends` field
+    - Observe: model generation works normally
+    - Write property: non-inheritance scenarios unchanged
+  - Test Case 4: Namespace transformation preservation - `_sqlalchemy` suffix addition
+    - Observe: namespace transformation works correctly for both internal and third-party
+    - Write property: transformation logic works regardless of `third.` prefix
+  - Test Case 5: Internal mixin file generation preservation
+    - Observe: internal mixins continue to generate to `mixins/` directory
+    - Write property: internal mixin generation unchanged
+  - Test Case 6: Existing third-party mixin preservation (based on `package` attribute)
+    - Observe: existing third-party mixin logic continues to work
+    - Write property: existing third-party detection unchanged
+  - Run tests on UNFIXED code
+  - **EXPECTED OUTCOME**: Tests PASS (this confirms baseline behavior to preserve)
+  - Mark task complete when tests are written, run, and passing on unfixed code
+  - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
+
+
+- [x] 3. Fix for third-party library inheritance import and file generation
+
+  - [x] 3.1 Implement external class detection in `_generate_mixin_files`
+    - Add logic to traverse all entities' `extends` fields
+    - Identify external classes: `template_name not in model.templates` AND `len(template_name.split('.')) >= 3`
+    - Collect all unique external class references
+    - _Bug_Condition: isBugCondition(input) where input.inheritance_mode == 'reference' AND input.target_framework == 'sqlalchemy' AND EXISTS template_name IN input.entity.extends WHERE (template_name NOT IN input.templates AND countNamespaceParts(template_name) >= 3)_
+    - _Expected_Behavior: For all external classes, system SHALL generate correct import statements with `third.` prefix and generate corresponding files in `third/` directory_
+    - _Preservation: Internal templates (namespace parts < 3) continue to generate without `third.` prefix; flatten mode behavior unchanged; namespace transformation logic unchanged_
+    - _Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 2.3_
+
+  - [x] 3.2 Create temporary template info for external classes
+    - Parse external class full namespace (e.g., `oauth2_provider.models.AbstractAccessToken`)
+    - Extract `package` (e.g., `oauth2_provider.models`) and class name (e.g., `AbstractAccessToken`)
+    - Create temporary template_info structure with:
+      - `package`: extracted package path
+      - `export_path`: `third.{package}_sqlalchemy`
+      - `columns`: empty list (external classes don't need field definitions)
+    - Store in a dictionary for processing
+    - _Bug_Condition: External classes lack template_info structure needed for file generation_
+    - _Expected_Behavior: System SHALL create temporary template_info for external classes with correct `export_path` including `third.` prefix_
+    - _Preservation: Internal template processing logic unchanged_
+    - _Requirements: 1.3, 2.3, 2.4_
+
+  - [x] 3.3 Integrate external classes into template processing
+    - Merge external class temporary template_info with existing `model.templates`
+    - Ensure external classes are processed in the same loop as internal templates
+    - Apply third-party library detection: `is_third_party = len(package_parts) >= 3`
+    - Generate files to `third/` directory for external classes
+    - Set correct `export_path` with `third.` prefix for external classes
+    - _Bug_Condition: External classes not included in template processing loop_
+    - _Expected_Behavior: System SHALL process external classes alongside internal templates, generating correct files and import paths_
+    - _Preservation: Internal template processing unchanged; existing third-party mixin logic unchanged_
+    - _Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 2.4, 2.5_
+
+  - [x] 3.4 Verify bug condition exploration test now passes
+    - **Property 1: Expected Behavior** - Third-Party Library Inheritance Import and File Generation
+    - **IMPORTANT**: Re-run the SAME test from task 1 - do NOT write a new test
+    - The test from task 1 encodes the expected behavior
+    - When this test passes, it confirms the expected behavior is satisfied
+    - Run bug condition exploration test from step 1
+    - **EXPECTED OUTCOME**: Test PASSES (confirms bug is fixed)
+    - Verify all test cases pass:
+      - OAuth2 Provider inheritance generates correct import and file
+      - Django Auth inheritance generates correct import and file
+      - Multiple inheritance mix generates both imports correctly
+      - Edge case with 3-part namespace works correctly
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
+
+  - [x] 3.5 Verify preservation tests still pass
+    - **Property 2: Preservation** - Internal Templates and Other Modes Behavior
+    - **IMPORTANT**: Re-run the SAME tests from task 2 - do NOT write new tests
+    - Run preservation property tests from step 2
+    - **EXPECTED OUTCOME**: Tests PASS (confirms no regressions)
+    - Verify all preservation test cases pass:
+      - Internal mixin behavior unchanged
+      - Flatten mode behavior unchanged
+      - Non-inheritance scenarios unchanged
+      - Namespace transformation unchanged
+      - Internal mixin file generation unchanged
+      - Existing third-party mixin logic unchanged
+    - Confirm all tests still pass after fix (no regressions)
+    - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
+
+- [x] 4. Checkpoint - Ensure all tests pass
+  - Ensure all tests pass, ask the user if questions arise.

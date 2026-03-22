@@ -1,0 +1,129 @@
+# Implementation Plan
+
+- [x] 1. Write bug condition exploration test
+  - **Property 1: Fault Condition** - Inheritance Field Loss Detection
+  - **CRITICAL**: This test MUST FAIL on unfixed code - failure confirms the bug exists
+  - **DO NOT attempt to fix the test or the code when it fails**
+  - **NOTE**: This test encodes the expected behavior - it will validate the fix when it passes after implementation
+  - **GOAL**: Surface counterexamples that demonstrate inherited fields are missing from generated SQLAlchemy models
+  - **Scoped PBT Approach**: Test concrete failing cases with TOML entities that extend templates without export_path
+  - Test implementation details from Fault Condition in design:
+    - Create TOML with template containing columns (e.g., CreateModifyMixinModel with created_at, modified_at)
+    - Create entity that extends this template
+    - Parse and generate SQLAlchemy model
+    - Assert generated model contains inherited fields (created_at, modified_at)
+  - The test assertions should match the Expected Behavior Properties from design
+  - Run test on UNFIXED code
+  - **EXPECTED OUTCOME**: Test FAILS (this is correct - it proves the bug exists)
+  - Document counterexamples found to understand root cause (e.g., "Translation model missing created_at and modified_at fields from CreateModifyMixinModel")
+  - Mark task complete when test is written, run, and failure is documented
+  - _Requirements: 1.1, 1.2, 1.3_
+
+- [x] 2. Write preservation property tests (BEFORE implementing fix)
+  - **Property 2: Preservation** - Non-Inheritance Behavior Preservation
+  - **IMPORTANT**: Follow observation-first methodology
+  - Observe behavior on UNFIXED code for non-buggy inputs:
+    - Entities without extends field generate correctly
+    - Entities with export_path inheritance work correctly
+    - Field type mappings work correctly
+    - Relationship definitions generate correctly
+    - Django-style naming conventions work correctly
+  - Write property-based tests capturing observed behavior patterns from Preservation Requirements:
+    - Test entities without inheritance generate same output in both modes
+    - Test field type mappings (string → String, bigint → BigInteger, etc.) remain unchanged
+    - Test relationship and foreign key generation remains unchanged
+    - Test Django-style naming (logical names like 'code' not 'i18ncode_rel') remains unchanged
+    - Test field attributes (nullable, unique, primary_key, comment) handling remains unchanged
+  - Property-based testing generates many test cases for stronger guarantees
+  - Run tests on UNFIXED code
+  - **EXPECTED OUTCOME**: Tests PASS (this confirms baseline behavior to preserve)
+  - Mark task complete when tests are written, run, and passing on unfixed code
+  - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
+
+- [ ] 3. Fix for Django inheritance field preservation
+
+  - [x] 3.1 Add CLI parameter for inheritance mode
+    - Add `--inheritance-mode` / `-i` parameter to convert command in `packages/er-gen-tool/src/x007007007/er_tool/convert.py`
+    - Accept values: 'reference' (default) or 'flatten'
+    - Add parameter validation with click.Choice
+    - Add help text explaining the two modes
+    - Pass parameter to parser and generator
+    - _Bug_Condition: isBugCondition(entity, templates, inheritance_mode) where entity.extends references templates without export_path_
+    - _Expected_Behavior: CLI accepts inheritance_mode parameter and passes it through the pipeline_
+    - _Preservation: Existing CLI parameters and behavior remain unchanged_
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
+
+  - [x] 3.2 Modify parser to handle inheritance modes
+    - Update `TomlERParser.__init__` in `packages/er-gen-core/src/x007007007/er/parser/toml_parser.py` to accept inheritance_mode parameter
+    - Modify `_parse_entities` method to implement mode-specific field expansion logic:
+      - Reference mode: Generate default export_path for templates without one, expand their fields to entity.columns
+      - Flatten mode: Expand all template fields to entity.columns (except external classes), add _source_template metadata
+    - Preserve existing field override logic (child overrides parent, later template overrides earlier)
+    - Handle edge cases: mixed inheritance, circular references, external class detection
+    - _Bug_Condition: Templates without export_path have their fields skipped during parsing_
+    - _Expected_Behavior: Parser expands template fields according to selected inheritance mode_
+    - _Preservation: Field type mapping, relationship parsing, and field attributes remain unchanged_
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
+
+  - [x] 3.3 Modify generator to support inheritance modes
+    - Update SQLAlchemy generator in `packages/er-gen-core/src/x007007007/er/renderers/python/sqlalchemy/generator.py` to accept inheritance_mode parameter
+    - Implement reference mode logic:
+      - Generate separate mixin class files for templates
+      - Add inheritance declarations to entity classes
+      - Generate correct import statements
+      - Use inherited_column_names to filter fields
+    - Implement flatten mode logic:
+      - Skip mixin file generation
+      - Render all fields in entity class
+      - Add source comments for inherited fields
+      - Maintain field order (inherited first, then own)
+    - _Bug_Condition: Generator doesn't create mixin files or expand inherited fields_
+    - _Expected_Behavior: Generator produces correct output for both inheritance modes_
+    - _Preservation: Existing generator behavior for non-inheritance cases remains unchanged_
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
+
+  - [x] 3.4 Update Jinja2 templates for mode-specific rendering
+    - Modify `sqlalchemy_model.j2` and `sqlalchemy_single_model.j2` in `packages/er-gen-core/src/x007007007/er/renderers/python/sqlalchemy/templates/`
+    - Add inheritance_mode variable to template context
+    - Implement conditional rendering:
+      - Reference mode: Render inheritance statements, filter inherited fields
+      - Flatten mode: Render all fields with source comments
+    - Create new `sqlalchemy_mixin.j2` template for mixin class generation
+    - Ensure proper indentation and formatting in both modes
+    - _Bug_Condition: Templates don't handle inherited fields correctly_
+    - _Expected_Behavior: Templates render correct Python code for both inheritance modes_
+    - _Preservation: Template rendering for non-inheritance cases remains unchanged_
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
+
+  - [x] 3.5 Verify bug condition exploration test now passes
+    - **Property 1: Expected Behavior** - Inherited Fields Present in Generated Models
+    - **IMPORTANT**: Re-run the SAME test from task 1 - do NOT write a new test
+    - The test from task 1 encodes the expected behavior
+    - When this test passes, it confirms the expected behavior is satisfied
+    - Run bug condition exploration test from step 1
+    - Test should pass in both reference and flatten modes
+    - Verify generated models contain all inherited fields
+    - **EXPECTED OUTCOME**: Test PASSES (confirms bug is fixed)
+    - _Requirements: Expected Behavior Properties from design - 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
+
+  - [x] 3.6 Verify preservation tests still pass
+    - **Property 2: Preservation** - Non-Inheritance Behavior Unchanged
+    - **IMPORTANT**: Re-run the SAME tests from task 2 - do NOT write new tests
+    - Run preservation property tests from step 2
+    - Verify entities without inheritance produce same output in both modes
+    - Verify field type mappings remain unchanged
+    - Verify relationship generation remains unchanged
+    - Verify Django-style naming remains unchanged
+    - Verify field attributes handling remains unchanged
+    - **EXPECTED OUTCOME**: Tests PASS (confirms no regressions)
+    - Confirm all tests still pass after fix (no regressions)
+    - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
+
+- [x] 4. Checkpoint - Ensure all tests pass
+  - Run all unit tests for parser, generator, and templates
+  - Run all property-based tests for both inheritance modes
+  - Run all integration tests with real-world TOML files
+  - Verify reference mode generates correct mixin files and inheritance structure
+  - Verify flatten mode generates correct self-contained entity files
+  - Verify default mode is reference (backward compatibility)
+  - Ensure all tests pass, ask the user if questions arise

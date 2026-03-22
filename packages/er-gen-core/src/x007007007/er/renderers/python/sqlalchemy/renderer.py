@@ -121,7 +121,13 @@ class SQLAlchemyRenderer(PythonRenderer):
         if self.inheritance_mode == 'reference':
             for entity_name, entity in model.entities.items():
                 for template_name in entity.extends:
-                    if template_name not in model.templates:
+                    # Extract class name from full namespace
+                    # e.g., "kinkotech.common.models.base.MyClass" -> "MyClass"
+                    class_name = template_name.split('.')[-1]
+                    
+                    # Check if this class is NOT in model.templates
+                    # (both full namespace and class name)
+                    if template_name not in model.templates and class_name not in model.templates:
                         namespace_parts = template_name.split('.')
                         if len(namespace_parts) >= 3:
                             has_external_classes = True
@@ -197,8 +203,13 @@ class SQLAlchemyRenderer(PythonRenderer):
         
         for entity_name, entity in model.entities.items():
             for template_name in entity.extends:
+                # Extract class name from full namespace
+                # e.g., "kinkotech.common.models.base.MyClass" -> "MyClass"
+                class_name = template_name.split('.')[-1]
+                
                 # Check if this is an external class
-                if template_name not in model.templates:
+                # It's external if BOTH the full namespace AND the class name are not in model.templates
+                if template_name not in model.templates and class_name not in model.templates:
                     # Count namespace parts
                     namespace_parts = template_name.split('.')
                     if len(namespace_parts) >= 3:

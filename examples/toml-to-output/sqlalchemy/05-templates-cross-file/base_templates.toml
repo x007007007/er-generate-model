@@ -1,0 +1,34 @@
+# Base Templates File
+# This file contains shared templates that can be referenced from other TOML files
+
+[templates.AuditMixin]
+package = "company.common.models.base"
+# export_path auto-derived: company.common.models.base_sqlalchemy
+
+[[templates.AuditMixin.columns]]
+name = "created_at"
+type = "datetime"
+comment = "Creation timestamp"
+
+[[templates.AuditMixin.columns]]
+name = "created_by"
+type = "string"
+comment = "User who created this record"
+
+[[templates.AuditMixin.columns]]
+name = "updated_at"
+type = "datetime"
+comment = "Last update timestamp"
+
+[[templates.AuditMixin.columns]]
+name = "updated_by"
+type = "string"
+comment = "User who last updated this record"
+
+[templates.VersionMixin]
+package = "company.common.models.base"
+
+[[templates.VersionMixin.columns]]
+name = "version"
+type = "int"
+comment = "Optimistic locking version"

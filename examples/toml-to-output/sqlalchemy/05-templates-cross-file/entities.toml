@@ -1,0 +1,44 @@
+# Entities File
+# This file defines entities that reference templates from base_templates.toml
+
+# Entity referencing templates from another file
+[entities.PRODUCT]
+extends = ["AuditMixin", "VersionMixin"]
+comment = "Product entity with audit trail and versioning"
+columns = [
+    {name = "id", type = "uuid", is_pk = true, comment = "Primary key"},
+    {name = "name", type = "string", comment = "Product name"},
+    {name = "price", type = "decimal", comment = "Product price"},
+    {name = "description", type = "text", comment = "Product description"},
+]
+
+[entities.CATEGORY]
+extends = ["AuditMixin"]
+comment = "Category entity with audit trail"
+columns = [
+    {name = "id", type = "uuid", is_pk = true, comment = "Primary key"},
+    {name = "name", type = "string", unique = true, comment = "Category name"},
+    {name = "parent_id", type = "uuid", nullable = true, is_fk = true, comment = "Parent category"},
+]
+
+[entities.INVENTORY]
+extends = ["AuditMixin", "VersionMixin"]
+comment = "Inventory tracking with audit and versioning"
+columns = [
+    {name = "id", type = "uuid", is_pk = true, comment = "Primary key"},
+    {name = "product_id", type = "uuid", is_fk = true, comment = "Foreign key to Product"},
+    {name = "quantity", type = "int", comment = "Available quantity"},
+    {name = "warehouse", type = "string", comment = "Warehouse location"},
+]
+
+[[relationships]]
+left = "PRODUCT"
+right = "INVENTORY"
+type = "one-to-many"
+right_column = "product_id"
+
+[[relationships]]
+left = "CATEGORY"
+right = "CATEGORY"
+type = "one-to-many"
+right_column = "parent_id"

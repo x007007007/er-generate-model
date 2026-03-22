@@ -13,12 +13,24 @@ Base = declarative_base()
 {%- set external_imports = {} %}
 {%- set mixin_imports = [] %}
 {%- for template_name in entity.extends %}
-{%- if template_name in model.templates and not model.templates[template_name].get('_is_external', False) %}
+{#- 提取类名（最后一个点后面的部分） -#}
+{%- set class_name = template_name.split('.')[-1] %}
+{#- 检查是否在 model.templates 中（使用类名或完整命名空间） -#}
+{%- if (template_name in model.templates or class_name in model.templates) %}
+{#- 获取模板信息（优先使用完整命名空间，否则使用类名） -#}
+{%- if template_name in model.templates %}
+{%- set template_info = model.templates[template_name] %}
+{%- else %}
+{%- set template_info = model.templates[class_name] %}
+{%- endif %}
+{#- 检查是否为外部类 -#}
+{%- if not template_info.get('_is_external', False) %}
 {#- 内部模板 (不是外部类) -#}
-{%- if inheritance_mode == 'reference' and model.templates[template_name].export_path %}
-{%- set base_class_name = template_name %}
-{%- set export_path = model.templates[template_name].export_path %}
+{%- if inheritance_mode == 'reference' and template_info.export_path %}
+{%- set base_class_name = class_name %}
+{%- set export_path = template_info.export_path %}
 {%- set _ = mixin_imports.append((export_path, base_class_name)) %}
+{%- endif %}
 {%- endif %}
 {%- else %}
 {#- 外部类：从完整路径中提取模块和类名 -#}
@@ -72,23 +84,31 @@ from {{ export_path }} import {{ base_class_name }}
 {%- if entity.extends %}
 {#- 处理继承 -#}
 {%- for template_name in entity.extends %}
-{%- if template_name in model.templates and not model.templates[template_name].get('_is_external', False) %}
+{#- 提取类名 -#}
+{%- set class_name = template_name.split('.')[-1] %}
+{#- 检查是否在 model.templates 中 -#}
+{%- if (template_name in model.templates or class_name in model.templates) %}
+{#- 获取模板信息 -#}
+{%- if template_name in model.templates %}
+{%- set template_info = model.templates[template_name] %}
+{%- else %}
+{%- set template_info = model.templates[class_name] %}
+{%- endif %}
+{#- 检查是否为外部类 -#}
+{%- if not template_info.get('_is_external', False) %}
 {#- 模板在templates中定义且不是外部类 -#}
-{%- if inheritance_mode == 'reference' and model.templates[template_name].export_path %}
+{%- if inheritance_mode == 'reference' and template_info.export_path %}
 {#- Reference mode: 添加到基类列表 -#}
-{%- set base_class_name = template_name %}
-{%- set _ = base_classes.append(base_class_name) %}
+{%- set _ = base_classes.append(class_name) %}
+{%- endif %}
 {%- endif %}
 {%- else %}
 {#- 模板不在templates中，或者是外部类 -#}
 {#- 只在 reference 模式下添加外部类到继承列表 -#}
 {%- if inheritance_mode == 'reference' %}
-{%- set parts = template_name.rsplit('.', 1) %}
-{%- if parts | length == 2 %}
-{%- set _ = base_classes.append(parts[1]) %}
+{%- set _ = base_classes.append(class_name) %}
 {%- else %}
 {%- set _ = base_classes.append(template_name) %}
-{%- endif %}
 {%- endif %}
 {%- endif %}
 {%- endfor %}

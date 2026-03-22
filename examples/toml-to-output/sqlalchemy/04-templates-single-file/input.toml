@@ -1,0 +1,59 @@
+# Template Example - Single File
+# This example demonstrates using templates to share common fields across entities
+
+# Define a template with common timestamp fields
+[templates.TimestampMixin]
+package = "myapp.models.base"
+# export_path will be auto-derived as: myapp.models.base_sqlalchemy
+
+[[templates.TimestampMixin.columns]]
+name = "created_at"
+type = "datetime"
+comment = "Creation timestamp"
+
+[[templates.TimestampMixin.columns]]
+name = "updated_at"
+type = "datetime"
+comment = "Last update timestamp"
+
+# Define another template with soft delete functionality
+[templates.SoftDeleteMixin]
+package = "myapp.models.base"
+
+[[templates.SoftDeleteMixin.columns]]
+name = "is_deleted"
+type = "boolean"
+comment = "Soft delete flag"
+
+[[templates.SoftDeleteMixin.columns]]
+name = "deleted_at"
+type = "datetime"
+nullable = true
+comment = "Deletion timestamp"
+
+# Entity that extends both templates
+[entities.USER]
+extends = ["TimestampMixin", "SoftDeleteMixin"]
+comment = "User entity with timestamps and soft delete"
+columns = [
+    {name = "id", type = "uuid", is_pk = true, comment = "Primary key"},
+    {name = "username", type = "string", unique = true, comment = "Unique username"},
+    {name = "email", type = "string", unique = true, comment = "User email address"},
+]
+
+# Another entity extending the same templates
+[entities.POST]
+extends = ["TimestampMixin", "SoftDeleteMixin"]
+comment = "Post entity with timestamps and soft delete"
+columns = [
+    {name = "id", type = "uuid", is_pk = true, comment = "Primary key"},
+    {name = "author_id", type = "uuid", is_fk = true, comment = "Foreign key to User"},
+    {name = "title", type = "string", comment = "Post title"},
+    {name = "content", type = "text", comment = "Post content"},
+]
+
+[[relationships]]
+left = "USER"
+right = "POST"
+type = "one-to-many"
+right_column = "author_id"
