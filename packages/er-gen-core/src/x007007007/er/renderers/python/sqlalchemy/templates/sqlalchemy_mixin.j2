@@ -5,6 +5,9 @@ Base = declarative_base()
 
 
 class {{ mixin_name }}(Base):
+{%- if comment %}
+    """{{ comment }}"""
+{%- endif %}
     __abstract__ = True
     
 {%- for col in columns %}

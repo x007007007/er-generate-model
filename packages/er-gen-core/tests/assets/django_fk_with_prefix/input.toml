@@ -1,7 +1,5 @@
-# Foreign keys with table prefix
-# Tests that ForeignKey constraints respect table prefixes
-
-table_prefix = "app"
+[config]
+namespace = "test.django_fk_with_prefix"
 
 [[relationships]]
 left = "User"

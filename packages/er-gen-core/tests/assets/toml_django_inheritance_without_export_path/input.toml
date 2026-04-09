@@ -1,13 +1,16 @@
+[config]
+namespace = "test.django_inheritance_without_export_path"
+
 [templates.create_update_time]
-# 没有export_path，不导出
-columns = [
-    {name = "created_at", type = "datetime"},
-]
+
+[[templates.create_update_time.columns]]
+name = "created_at"
+type = "datetime"
 
 [entities.USER]
 table_name = "test_user"
 extends = ["create_update_time"]
-columns = [
-    {name = "username", type = "string"},
-]
 
+[[entities.USER.columns]]
+name = "username"
+type = "string"

@@ -1,15 +1,20 @@
+[config]
+namespace = "test.template_override_order"
+
 [templates.template1]
-columns = [
-    {name = "name", type = "string", comment = "Template 1 name"},
-]
+
+[[templates.template1.columns]]
+name = "name"
+type = "string"
+comment = "Template 1 name"
 
 [templates.template2]
-columns = [
-    {name = "name", type = "string", comment = "Template 2 name"},
-]
+
+[[templates.template2.columns]]
+name = "name"
+type = "string"
+comment = "Template 2 name"
 
 [entities.USER]
-table_name = "user"
+table_name = "test_user"
 extends = ["template1", "template2"]
-columns = []
-

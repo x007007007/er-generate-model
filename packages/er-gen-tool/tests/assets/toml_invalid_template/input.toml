@@ -1,7 +1,10 @@
-[entities.USER]
-table_name = "user"
-extends = ["nonexistent_template"]
-columns = [
-    {name = "id", type = "int"},
-]
+[config]
+namespace = "test.invalid_template"
 
+[entities.USER]
+table_name = "test_user"
+extends = ["nonexistent_template"]
+
+[[entities.USER.columns]]
+name = "id"
+type = "int"

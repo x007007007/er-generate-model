@@ -1,26 +1,72 @@
-# Relationship Model Example
-# This example demonstrates a one-to-many relationship between User and Post tables
+[config]
+namespace = "examples.relationships"
 
 [entities.USER]
 comment = "User entity - authors of posts"
-columns = [
-    {name = "id", type = "uuid", is_pk = true, comment = "Primary key"},
-    {name = "username", type = "string", unique = true, comment = "Unique username"},
-    {name = "email", type = "string", unique = true, comment = "User email address"},
-    {name = "age", type = "int", comment = "User age"},
-    {name = "is_active", type = "boolean", comment = "Whether the user account is active"},
-    {name = "created_at", type = "datetime", comment = "Account creation timestamp"},
-]
+table_name = "user"
+
+[[entities.USER.columns]]
+name = "id"
+type = "uuid"
+primary_key = true
+comment = "Primary key"
+
+[[entities.USER.columns]]
+name = "username"
+type = "string"
+unique = true
+comment = "Unique username"
+
+[[entities.USER.columns]]
+name = "email"
+type = "string"
+unique = true
+comment = "User email address"
+
+[[entities.USER.columns]]
+name = "age"
+type = "int"
+comment = "User age"
+
+[[entities.USER.columns]]
+name = "is_active"
+type = "boolean"
+comment = "Whether the user account is active"
+
+[[entities.USER.columns]]
+name = "created_at"
+type = "datetime"
+comment = "Account creation timestamp"
 
 [entities.POST]
 comment = "Post entity - blog posts written by users"
-columns = [
-    {name = "id", type = "uuid", is_pk = true, comment = "Primary key"},
-    {name = "author_id", type = "uuid", is_fk = true, comment = "Foreign key to User"},
-    {name = "title", type = "string", comment = "Post title"},
-    {name = "content", type = "text", comment = "Post content"},
-    {name = "created_at", type = "datetime", comment = "Post creation timestamp"},
-]
+table_name = "post"
+
+[[entities.POST.columns]]
+name = "id"
+type = "uuid"
+primary_key = true
+comment = "Primary key"
+
+[[entities.POST.columns]]
+name = "author_id"
+type = "uuid"
+comment = "Foreign key to User"
+
+[[entities.POST.columns]]
+name = "title"
+type = "string"
+comment = "Post title"
+
+[[entities.POST.columns]]
+name = "content"
+type = "text"
+comment = "Post content"
+
+[[entities.POST.columns]]
+name = "created_at"
+type = "datetime"
+comment = "Post creation timestamp"
 
 [[relationships]]
 left = "USER"

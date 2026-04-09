@@ -4,7 +4,7 @@ Django template-based renderers for ER diagrams
 from django.template.loader import get_template
 from django.template import Context
 from x007007007.er.models import ERModel
-import toml
+from x007007007.er.toml_writer import _serialize_toml_new_format, _toml_escape_string
 
 
 class DjangoTemplateRenderer:
@@ -14,89 +14,61 @@ class DjangoTemplateRenderer:
         self.template_name = template_name
     
     def render(self, er_model: ERModel) -> str:
-        """
-        Render ER model using Django template
-        
-        Args:
-            er_model: ERModel instance
-            
-        Returns:
-            Rendered diagram as string
-        """
-        # Load template
         template = get_template(f'er_django/{self.template_name}')
-        
-        # Prepare context
         context = {
             'entities': list(er_model.entities.values()),
             'relationships': er_model.relationships,
         }
-        
-        # Render template
         return template.render(context)
 
 
 class MermaidRenderer(DjangoTemplateRenderer):
-    """Render Mermaid ER diagrams using Django templates"""
-    
     def __init__(self):
         super().__init__('mermaid_er.html')
 
 
 class PlantUMLRenderer(DjangoTemplateRenderer):
-    """Render PlantUML ER diagrams using Django templates"""
-    
     def __init__(self):
         super().__init__('plantuml_er.html')
 
 
 class TOMLRenderer:
-    """Render ER model as TOML format"""
+    """Render ER model as TOML format (new spec)"""
     
     def render(self, er_model: ERModel) -> str:
-        """
-        Render ER model as TOML format
+        config = {}
+        if er_model.namespace:
+            config['namespace'] = er_model.namespace
+        if er_model.base_package:
+            config['base_package'] = er_model.base_package
+        if er_model.extends_aliases:
+            config['extends_aliases'] = er_model.extends_aliases
         
-        Args:
-            er_model: ERModel instance
-            
-        Returns:
-            TOML formatted string
-        """
-        data = {}
-        
-        # Add entities
         entities_data = {}
         for entity_name, entity in er_model.entities.items():
-            entity_dict = {
-                'columns': []
-            }
+            entity_dict = {}
             
-            # Add inheritance information
             if entity.extends:
                 entity_dict['extends'] = entity.extends
             
-            # Add table_name (always output since it's required)
             entity_dict['table_name'] = entity.table_name
             
-            # Add package information
             if hasattr(entity, 'package') and entity.package:
                 entity_dict['package'] = entity.package
             
-            # Note: export_path is no longer generated (removed for portability)
+            if entity.comment:
+                entity_dict['comment'] = entity.comment
             
-            # Add columns
+            entity_dict['columns'] = []
             for col in entity.columns:
                 col_dict = {
                     'name': col.name,
                     'type': col.type,
                 }
                 
-                # Add db_column only if different from name
                 if col.db_column != col.name:
                     col_dict['db_column'] = col.db_column
                 
-                # Add optional fields
                 if col.is_pk:
                     col_dict['primary_key'] = True
                 if not col.nullable:
@@ -118,27 +90,22 @@ class TOMLRenderer:
             
             entities_data[entity_name] = entity_dict
         
-        if entities_data:
-            data['entities'] = entities_data
+        relationships_data = []
+        for rel in er_model.relationships:
+            rel_dict = {
+                'left': rel.left_entity,
+                'right': rel.right_entity,
+                'type': rel.relation_type,
+            }
+            if rel.left_column:
+                rel_dict['left_column'] = rel.left_column
+            if rel.right_column:
+                rel_dict['right_column'] = rel.right_column
+            relationships_data.append(rel_dict)
         
-        # Add relationships
-        if er_model.relationships:
-            relationships_data = []
-            for rel in er_model.relationships:
-                rel_dict = {
-                    'left': rel.left_entity,
-                    'right': rel.right_entity,
-                    'type': rel.relation_type,
-                }
-                
-                if rel.left_column:
-                    rel_dict['left_column'] = rel.left_column
-                if rel.right_column:
-                    rel_dict['right_column'] = rel.right_column
-                
-                relationships_data.append(rel_dict)
-            
-            data['relationships'] = relationships_data
+        output_data = {
+            'entities': entities_data,
+            'relationships': relationships_data,
+        }
         
-        # Convert to TOML string
-        return toml.dumps(data)
+        return _serialize_toml_new_format(output_data, config if config else None)

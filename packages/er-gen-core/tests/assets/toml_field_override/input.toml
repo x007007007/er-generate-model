@@ -1,14 +1,27 @@
+[config]
+namespace = "test.field_override"
+
 [templates.base]
-columns = [
-    {name = "id", type = "int", is_pk = true},
-    {name = "name", type = "string", comment = "Base name"},
-]
+
+[[templates.base.columns]]
+name = "id"
+type = "int"
+primary_key = true
+
+[[templates.base.columns]]
+name = "name"
+type = "string"
+comment = "Base name"
 
 [entities.USER]
 table_name = "test_user"
 extends = ["base"]
-columns = [
-    {name = "name", type = "string", comment = "Overridden name"},
-    {name = "email", type = "string"},
-]
 
+[[entities.USER.columns]]
+name = "name"
+type = "string"
+comment = "Overridden name"
+
+[[entities.USER.columns]]
+name = "email"
+type = "string"

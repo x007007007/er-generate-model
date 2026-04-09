@@ -1,65 +1,172 @@
-# Blog App Models - Converted from Django Models
-# This example demonstrates converting Django models to TOML format
-# Original: models/models.py
+[config]
+namespace = "blog"
 
 [entities.Category]
 comment = "文章分类"
-columns = [
-    {name = "id", type = "int", is_pk = true, comment = "Auto-generated primary key"},
-    {name = "name", type = "string", max_length = 100, unique = true, comment = "分类名称"},
-    {name = "slug", type = "string", max_length = 100, unique = true, comment = "URL别名"},
-    {name = "description", type = "text", nullable = true, comment = "分类描述"},
-    {name = "created_at", type = "datetime", comment = "创建时间"},
-]
+table_name = "category"
+
+[[entities.Category.columns]]
+name = "id"
+type = "int"
+primary_key = true
+comment = "Auto-generated primary key"
+
+[[entities.Category.columns]]
+name = "name"
+type = "string"
+max_length = 100
+unique = true
+comment = "分类名称"
+
+[[entities.Category.columns]]
+name = "slug"
+type = "string"
+max_length = 100
+unique = true
+comment = "URL别名"
+
+[[entities.Category.columns]]
+name = "description"
+type = "text"
+nullable = true
+comment = "分类描述"
+
+[[entities.Category.columns]]
+name = "created_at"
+type = "datetime"
+comment = "创建时间"
 
 [entities.Post]
 comment = "博客文章"
-columns = [
-    {name = "id", type = "int", is_pk = true, comment = "Auto-generated primary key"},
-    {name = "title", type = "string", max_length = 200, comment = "文章标题"},
-    {name = "slug", type = "string", max_length = 200, unique = true, comment = "URL别名"},
-    {name = "content", type = "text", comment = "文章内容"},
-    {name = "excerpt", type = "string", max_length = 500, nullable = true, comment = "文章摘要"},
-    {name = "author_id", type = "int", is_fk = true, comment = "作者"},
-    {name = "category_id", type = "int", is_fk = true, nullable = true, comment = "分类"},
-    {name = "status", type = "string", max_length = 20, default = "draft", comment = "文章状态"},
-    {name = "view_count", type = "int", default = 0, comment = "浏览次数"},
-    {name = "created_at", type = "datetime", comment = "创建时间"},
-    {name = "updated_at", type = "datetime", comment = "更新时间"},
-    {name = "published_at", type = "datetime", nullable = true, comment = "发布时间"},
-]
+table_name = "post"
+
+[[entities.Post.columns]]
+name = "id"
+type = "int"
+primary_key = true
+comment = "Auto-generated primary key"
+
+[[entities.Post.columns]]
+name = "title"
+type = "string"
+max_length = 200
+comment = "文章标题"
+
+[[entities.Post.columns]]
+name = "slug"
+type = "string"
+max_length = 200
+unique = true
+comment = "URL别名"
+
+[[entities.Post.columns]]
+name = "content"
+type = "text"
+comment = "文章内容"
+
+[[entities.Post.columns]]
+name = "excerpt"
+type = "string"
+max_length = 500
+nullable = true
+comment = "文章摘要"
+
+[[entities.Post.columns]]
+name = "author_id"
+type = "int"
+comment = "作者"
+
+[[entities.Post.columns]]
+name = "category_id"
+type = "int"
+nullable = true
+comment = "分类"
+
+[[entities.Post.columns]]
+name = "status"
+type = "string"
+max_length = 20
+default = "draft"
+comment = "文章状态"
+
+[[entities.Post.columns]]
+name = "view_count"
+type = "int"
+default = 0
+comment = "浏览次数"
+
+[[entities.Post.columns]]
+name = "created_at"
+type = "datetime"
+comment = "创建时间"
+
+[[entities.Post.columns]]
+name = "updated_at"
+type = "datetime"
+comment = "更新时间"
+
+[[entities.Post.columns]]
+name = "published_at"
+type = "datetime"
+nullable = true
+comment = "发布时间"
 
 [entities.Comment]
 comment = "文章评论"
-columns = [
-    {name = "id", type = "int", is_pk = true, comment = "Auto-generated primary key"},
-    {name = "post_id", type = "int", is_fk = true, comment = "所属文章"},
-    {name = "author_id", type = "int", is_fk = true, comment = "评论者"},
-    {name = "content", type = "text", comment = "评论内容"},
-    {name = "is_approved", type = "boolean", default = true, comment = "是否已审核"},
-    {name = "created_at", type = "datetime", comment = "创建时间"},
-]
+table_name = "comment"
+
+[[entities.Comment.columns]]
+name = "id"
+type = "int"
+primary_key = true
+comment = "Auto-generated primary key"
+
+[[entities.Comment.columns]]
+name = "post_id"
+type = "int"
+comment = "所属文章"
+
+[[entities.Comment.columns]]
+name = "author_id"
+type = "int"
+comment = "评论者"
+
+[[entities.Comment.columns]]
+name = "content"
+type = "text"
+comment = "评论内容"
+
+[[entities.Comment.columns]]
+name = "is_approved"
+type = "boolean"
+default = true
+comment = "是否已审核"
+
+[[entities.Comment.columns]]
+name = "created_at"
+type = "datetime"
+comment = "创建时间"
 
 [[relationships]]
-left_entity = "User"
-right_entity = "Post"
-relation_type = "one-to-many"
+left = "User"
+right = "Post"
+type = "one-to-many"
 right_column = "author_id"
 
 [[relationships]]
-left_entity = "Category"
-right_entity = "Post"
-relation_type = "one-to-many"
+left = "Category"
+right = "Post"
+type = "one-to-many"
 right_column = "category_id"
 
 [[relationships]]
-left_entity = "Post"
-right_entity = "Comment"
-relation_type = "one-to-many"
+left = "Post"
+right = "Comment"
+type = "one-to-many"
 right_column = "post_id"
 
 [[relationships]]
-left_entity = "User"
-right_entity = "Comment"
-relation_type = "one-to-many"
+left = "User"
+right = "Comment"
+type = "one-to-many"
 right_column = "author_id"

@@ -1,9 +1,9 @@
-# Base Templates File
-# This file contains shared templates that can be referenced from other TOML files
+[config]
+namespace = "company.common"
+base_package = "company.common.models"
 
 [templates.AuditMixin]
-package = "company.common.models.base"
-# export_path auto-derived: company.common.models.base_sqlalchemy
+package = "base"
 
 [[templates.AuditMixin.columns]]
 name = "created_at"
@@ -26,7 +26,7 @@ type = "string"
 comment = "User who last updated this record"
 
 [templates.VersionMixin]
-package = "company.common.models.base"
+package = "base"
 
 [[templates.VersionMixin.columns]]
 name = "version"

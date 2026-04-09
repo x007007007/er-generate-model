@@ -1,5 +1,5 @@
-# Multiple foreign keys in a single entity
-# Translation entity has foreign keys to both I18nCode and I18nBlock
+[config]
+namespace = "test.django_fk_multiple"
 
 [[relationships]]
 left = "I18nCode"

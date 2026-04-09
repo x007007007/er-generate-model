@@ -1,118 +1,266 @@
-# File Upload System - Converted from Mermaid ER Diagram
-# This example demonstrates converting a complex Mermaid ER diagram to TOML format
-# Original: input.mmd
+[config]
+namespace = "examples.file_upload_system"
 
 [entities.User]
 comment = "User entity"
-columns = [
-    {name = "id", type = "int", is_pk = true},
-    {name = "username", type = "string"},
-    {name = "email", type = "string"},
-]
+table_name = "user"
+
+[[entities.User.columns]]
+name = "id"
+type = "int"
+primary_key = true
+
+[[entities.User.columns]]
+name = "username"
+type = "string"
+
+[[entities.User.columns]]
+name = "email"
+type = "string"
 
 [entities.ConversationSessionModel]
 comment = "Conversation session entity"
-columns = [
-    {name = "session_uuid", type = "uuid", is_pk = true},
-    {name = "user_id", type = "uuid", is_fk = true},
-    {name = "title", type = "string"},
-    {name = "is_active", type = "boolean"},
-]
+table_name = "conversation_session"
+
+[[entities.ConversationSessionModel.columns]]
+name = "session_uuid"
+type = "uuid"
+primary_key = true
+
+[[entities.ConversationSessionModel.columns]]
+name = "user_id"
+type = "uuid"
+
+[[entities.ConversationSessionModel.columns]]
+name = "title"
+type = "string"
+
+[[entities.ConversationSessionModel.columns]]
+name = "is_active"
+type = "boolean"
 
 [entities.FileTypeModel]
 comment = "File type entity"
-columns = [
-    {name = "id", type = "uuid", is_pk = true},
-    {name = "name", type = "string", unique = true, comment = "文件类型名称"},
-    {name = "mime_type", type = "string", unique = true, comment = "MIME类型"},
-    {name = "created_at", type = "datetime"},
-    {name = "updated_at", type = "datetime"},
-]
+table_name = "file_type"
+
+[[entities.FileTypeModel.columns]]
+name = "id"
+type = "uuid"
+primary_key = true
+
+[[entities.FileTypeModel.columns]]
+name = "name"
+type = "string"
+unique = true
+comment = "文件类型名称"
+
+[[entities.FileTypeModel.columns]]
+name = "mime_type"
+type = "string"
+unique = true
+comment = "MIME类型"
+
+[[entities.FileTypeModel.columns]]
+name = "created_at"
+type = "datetime"
+
+[[entities.FileTypeModel.columns]]
+name = "updated_at"
+type = "datetime"
 
 [entities.UploadedFileModel]
 comment = "Uploaded file entity"
-columns = [
-    {name = "id", type = "uuid", is_pk = true},
-    {name = "user_id", type = "uuid", is_fk = true, comment = "用户(必须)"},
-    {name = "session_id", type = "uuid", is_fk = true, comment = "会话(可选)"},
-    {name = "parent_file_id", type = "uuid", is_fk = true, comment = "父文件(层级关系)"},
-    {name = "file_type_id", type = "uuid", is_fk = true, comment = "文件类型"},
-    {name = "file", type = "file", comment = "文件存储(S3)"},
-    {name = "filename", type = "string", comment = "文件名"},
-    {name = "file_size", type = "bigint", comment = "文件大小"},
-    {name = "detected_mime_type", type = "string", comment = "检测到的MIME类型"},
-    {name = "detected_charset", type = "string", comment = "检测到的字符集(文本)"},
-    {name = "created_at", type = "datetime"},
-    {name = "updated_at", type = "datetime"},
-]
+table_name = "uploaded_file"
+
+[[entities.UploadedFileModel.columns]]
+name = "id"
+type = "uuid"
+primary_key = true
+
+[[entities.UploadedFileModel.columns]]
+name = "user_id"
+type = "uuid"
+comment = "用户(必须)"
+
+[[entities.UploadedFileModel.columns]]
+name = "session_id"
+type = "uuid"
+comment = "会话(可选)"
+
+[[entities.UploadedFileModel.columns]]
+name = "parent_file_id"
+type = "uuid"
+comment = "父文件(层级关系)"
+
+[[entities.UploadedFileModel.columns]]
+name = "file_type_id"
+type = "uuid"
+comment = "文件类型"
+
+[[entities.UploadedFileModel.columns]]
+name = "file"
+type = "file"
+comment = "文件存储(S3)"
+
+[[entities.UploadedFileModel.columns]]
+name = "filename"
+type = "string"
+comment = "文件名"
+
+[[entities.UploadedFileModel.columns]]
+name = "file_size"
+type = "bigint"
+comment = "文件大小"
+
+[[entities.UploadedFileModel.columns]]
+name = "detected_mime_type"
+type = "string"
+comment = "检测到的MIME类型"
+
+[[entities.UploadedFileModel.columns]]
+name = "detected_charset"
+type = "string"
+comment = "检测到的字符集(文本)"
+
+[[entities.UploadedFileModel.columns]]
+name = "created_at"
+type = "datetime"
+
+[[entities.UploadedFileModel.columns]]
+name = "updated_at"
+type = "datetime"
 
 [entities.FileProcessingTaskModel]
 comment = "File processing task entity"
-columns = [
-    {name = "id", type = "uuid", is_pk = true},
-    {name = "uploaded_file_id", type = "uuid", is_fk = true, comment = "上传文件(一对一)"},
-    {name = "status", type = "string", comment = "处理状态: pending/processing/completed/failed/cancelled"},
-    {name = "progress", type = "int", comment = "处理进度(0-100)"},
-    {name = "started_at", type = "datetime", comment = "开始时间"},
-    {name = "completed_at", type = "datetime", comment = "完成时间"},
-    {name = "error_message", type = "text", comment = "错误信息"},
-    {name = "processing_config", type = "json", comment = "处理配置"},
-    {name = "created_at", type = "datetime"},
-    {name = "updated_at", type = "datetime"},
-]
+table_name = "file_processing_task"
+
+[[entities.FileProcessingTaskModel.columns]]
+name = "id"
+type = "uuid"
+primary_key = true
+
+[[entities.FileProcessingTaskModel.columns]]
+name = "uploaded_file_id"
+type = "uuid"
+comment = "上传文件(一对一)"
+
+[[entities.FileProcessingTaskModel.columns]]
+name = "status"
+type = "string"
+comment = "处理状态: pending/processing/completed/failed/cancelled"
+
+[[entities.FileProcessingTaskModel.columns]]
+name = "progress"
+type = "int"
+comment = "处理进度(0-100)"
+
+[[entities.FileProcessingTaskModel.columns]]
+name = "started_at"
+type = "datetime"
+comment = "开始时间"
+
+[[entities.FileProcessingTaskModel.columns]]
+name = "completed_at"
+type = "datetime"
+comment = "完成时间"
+
+[[entities.FileProcessingTaskModel.columns]]
+name = "error_message"
+type = "text"
+comment = "错误信息"
+
+[[entities.FileProcessingTaskModel.columns]]
+name = "processing_config"
+type = "json"
+comment = "处理配置"
+
+[[entities.FileProcessingTaskModel.columns]]
+name = "created_at"
+type = "datetime"
+
+[[entities.FileProcessingTaskModel.columns]]
+name = "updated_at"
+type = "datetime"
 
 [entities.FileProcessingResultModel]
 comment = "File processing result entity"
-columns = [
-    {name = "id", type = "uuid", is_pk = true},
-    {name = "processing_task_id", type = "uuid", is_fk = true, comment = "处理任务"},
-    {name = "result_type", type = "string", comment = "结果类型: text/table/image/structured/mixed"},
-    {name = "content", type = "json", comment = "结果内容(JSON)"},
-    {name = "summary", type = "text", comment = "内容摘要"},
-    {name = "is_indexed", type = "boolean", comment = "是否已索引到知识库"},
-    {name = "index_info", type = "json", comment = "索引信息(向量ID/图节点ID等)"},
-    {name = "created_at", type = "datetime"},
-    {name = "updated_at", type = "datetime"},
-]
+table_name = "file_processing_result"
+
+[[entities.FileProcessingResultModel.columns]]
+name = "id"
+type = "uuid"
+primary_key = true
+
+[[entities.FileProcessingResultModel.columns]]
+name = "processing_task_id"
+type = "uuid"
+comment = "处理任务"
+
+[[entities.FileProcessingResultModel.columns]]
+name = "result_type"
+type = "string"
+comment = "结果类型: text/table/image/structured/mixed"
+
+[[entities.FileProcessingResultModel.columns]]
+name = "content"
+type = "json"
+comment = "结果内容(JSON)"
+
+[[entities.FileProcessingResultModel.columns]]
+name = "summary"
+type = "text"
+comment = "内容摘要"
+
+[[entities.FileProcessingResultModel.columns]]
+name = "is_indexed"
+type = "boolean"
+comment = "是否已索引到知识库"
+
+[[entities.FileProcessingResultModel.columns]]
+name = "index_info"
+type = "json"
+comment = "索引信息(向量ID/图节点ID等)"
+
+[[entities.FileProcessingResultModel.columns]]
+name = "created_at"
+type = "datetime"
+
+[[entities.FileProcessingResultModel.columns]]
+name = "updated_at"
+type = "datetime"
 
 [[relationships]]
-left_entity = "User"
-right_entity = "UploadedFileModel"
-relation_type = "one-to-many"
-right_label = "上传"
+left = "User"
+right = "UploadedFileModel"
+type = "one-to-many"
 right_column = "user_id"
 
 [[relationships]]
-left_entity = "ConversationSessionModel"
-right_entity = "UploadedFileModel"
-relation_type = "one-to-many"
-right_label = "关联(可选)"
+left = "ConversationSessionModel"
+right = "UploadedFileModel"
+type = "one-to-many"
 right_column = "session_id"
 
 [[relationships]]
-left_entity = "FileTypeModel"
-right_entity = "UploadedFileModel"
-relation_type = "one-to-many"
-right_label = "类型识别"
+left = "FileTypeModel"
+right = "UploadedFileModel"
+type = "one-to-many"
 right_column = "file_type_id"
 
 [[relationships]]
-left_entity = "UploadedFileModel"
-right_entity = "UploadedFileModel"
-relation_type = "one-to-many"
-right_label = "父子关系"
+left = "UploadedFileModel"
+right = "UploadedFileModel"
+type = "one-to-many"
 right_column = "parent_file_id"
 
 [[relationships]]
-left_entity = "UploadedFileModel"
-right_entity = "FileProcessingTaskModel"
-relation_type = "one-to-one"
-right_label = "处理任务"
+left = "UploadedFileModel"
+right = "FileProcessingTaskModel"
+type = "one-to-one"
 right_column = "uploaded_file_id"
 
 [[relationships]]
-left_entity = "FileProcessingTaskModel"
-right_entity = "FileProcessingResultModel"
-relation_type = "one-to-many"
-right_label = "处理结果"
+left = "FileProcessingTaskModel"
+right = "FileProcessingResultModel"
+type = "one-to-many"
 right_column = "processing_task_id"

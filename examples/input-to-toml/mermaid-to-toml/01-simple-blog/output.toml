@@ -1,30 +1,74 @@
-# Simple Blog Model - Converted from Mermaid ER Diagram
-# This example demonstrates converting a Mermaid ER diagram to TOML format
-# Original: input.mmd
+[config]
+namespace = "examples.simple_blog"
 
 [entities.User]
 comment = "User entity"
-columns = [
-    {name = "id", type = "uuid", is_pk = true, comment = "主键-唯一标识符"},
-    {name = "username", type = "string", unique = true, comment = "用户名-唯一"},
-    {name = "email", type = "string", unique = true, comment = "邮箱-唯一"},
-    {name = "age", type = "int", comment = "年龄"},
-    {name = "is_active", type = "boolean", comment = "是否激活"},
-    {name = "created_at", type = "datetime", comment = "创建时间"},
-]
+table_name = "user"
+
+[[entities.User.columns]]
+name = "id"
+type = "uuid"
+primary_key = true
+comment = "主键-唯一标识符"
+
+[[entities.User.columns]]
+name = "username"
+type = "string"
+unique = true
+comment = "用户名-唯一"
+
+[[entities.User.columns]]
+name = "email"
+type = "string"
+unique = true
+comment = "邮箱-唯一"
+
+[[entities.User.columns]]
+name = "age"
+type = "int"
+comment = "年龄"
+
+[[entities.User.columns]]
+name = "is_active"
+type = "boolean"
+comment = "是否激活"
+
+[[entities.User.columns]]
+name = "created_at"
+type = "datetime"
+comment = "创建时间"
 
 [entities.Post]
 comment = "Post entity"
-columns = [
-    {name = "id", type = "uuid", is_pk = true, comment = "主键-唯一标识符"},
-    {name = "author_id", type = "uuid", is_fk = true, comment = "作者ID-外键"},
-    {name = "title", type = "string", comment = "标题"},
-    {name = "content", type = "text", comment = "内容"},
-    {name = "created_at", type = "datetime", comment = "创建时间"},
-]
+table_name = "post"
+
+[[entities.Post.columns]]
+name = "id"
+type = "uuid"
+primary_key = true
+comment = "主键-唯一标识符"
+
+[[entities.Post.columns]]
+name = "author_id"
+type = "uuid"
+comment = "作者ID-外键"
+
+[[entities.Post.columns]]
+name = "title"
+type = "string"
+comment = "标题"
+
+[[entities.Post.columns]]
+name = "content"
+type = "text"
+comment = "内容"
+
+[[entities.Post.columns]]
+name = "created_at"
+type = "datetime"
+comment = "创建时间"
 
 [[relationships]]
-left_entity = "User"
-right_entity = "Post"
-relation_type = "one-to-many"
-right_label = "writes"
+left = "User"
+right = "Post"
+type = "one-to-many"

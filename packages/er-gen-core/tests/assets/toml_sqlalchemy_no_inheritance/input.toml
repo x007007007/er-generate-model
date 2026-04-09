@@ -1,6 +1,9 @@
+[config]
+namespace = "test.sqlalchemy_no_inheritance"
+
 [entities.USER]
 table_name = "test_user"
-columns = [
-    {name = "username", type = "string"},
-]
 
+[[entities.USER.columns]]
+name = "username"
+type = "string"

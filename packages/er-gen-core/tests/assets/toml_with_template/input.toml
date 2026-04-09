@@ -1,13 +1,21 @@
+[config]
+namespace = "test.with_template"
+
 [templates.audit_fields]
-columns = [
-    {name = "id", type = "int", is_pk = true},
-    {name = "created_at", type = "datetime"},
-]
+
+[[templates.audit_fields.columns]]
+name = "id"
+type = "int"
+primary_key = true
+
+[[templates.audit_fields.columns]]
+name = "created_at"
+type = "datetime"
 
 [entities.USER]
 table_name = "test_user"
 extends = ["audit_fields"]
-columns = [
-    {name = "username", type = "string"},
-]
 
+[[entities.USER.columns]]
+name = "username"
+type = "string"

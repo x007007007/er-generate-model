@@ -1,6 +1,5 @@
-# Basic Django-style foreign key naming
-# Translation entity with foreign key to I18nCode
-# This is the primary example from the requirements
+[config]
+namespace = "test.django_fk_basic"
 
 [[relationships]]
 left = "I18nCode"

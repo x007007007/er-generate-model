@@ -1,18 +1,27 @@
+[config]
+namespace = "test.basic"
+
 [entities.USER]
-table_name = "user"
-columns = [
-    {name = "id", type = "int", is_pk = true},
-    {name = "username", type = "string"},
-]
+table_name = "test_user"
+
+[[entities.USER.columns]]
+name = "id"
+type = "int"
+primary_key = true
+
+[[entities.USER.columns]]
+name = "username"
+type = "string"
 
 [entities.POST]
-table_name = "post"
-columns = [
-    {name = "id", type = "int", is_pk = true},
-]
+table_name = "test_post"
+
+[[entities.POST.columns]]
+name = "id"
+type = "int"
+primary_key = true
 
 [[relationships]]
 left = "USER"
 right = "POST"
 type = "one-to-many"
-

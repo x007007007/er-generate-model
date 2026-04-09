@@ -1,10 +1,12 @@
+[config]
+namespace = "test.single_extends_not_allowed"
+
 [templates.audit_fields]
-columns = [
-    {name = "id", type = "int"},
-]
+
+[[templates.audit_fields.columns]]
+name = "id"
+type = "int"
 
 [entities.USER]
-table_name = "user"
+table_name = "test_user"
 extends = "audit_fields"
-columns = []
-

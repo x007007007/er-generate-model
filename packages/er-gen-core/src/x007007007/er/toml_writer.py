@@ -1,19 +1,17 @@
 """
 TOML Writer for namespace-driven model export
 
-This module provides the TOMLWriter class for writing model definitions to TOML files
-during the Export stage. Key features:
-- Atomic file writes (temp file + rename)
-- Directory creation as needed
-- Multiple entities/templates in same namespace go to same file
-- Use namespace format for extends references (not file paths)
+Outputs TOML files in the new format per toml-format-spec.md:
+- [config] section with namespace, base_package, extends_aliases
+- [[entities.X.columns]] array-table syntax
+- primary_key instead of is_pk
+- No is_fk output
+- No template export_path output
 """
 
 import os
 import tempfile
-from pathlib import Path
 from typing import Dict, List, Optional
-import toml
 
 from x007007007.er.namespace_models import (
     EntityDefinition,
@@ -22,101 +20,172 @@ from x007007007.er.namespace_models import (
 )
 
 
+def _toml_escape_string(s: str) -> str:
+    return s.replace('\\', '\\\\').replace('"', '\\"')
+
+
+def _format_value(val) -> str:
+    if isinstance(val, bool):
+        return 'true' if val else 'false'
+    if isinstance(val, int):
+        return str(val)
+    if isinstance(val, float):
+        return str(val)
+    if isinstance(val, str):
+        return f'"{_toml_escape_string(val)}"'
+    raise ValueError(f"Unsupported TOML value type: {type(val)}")
+
+
+def _serialize_toml_new_format(data: Dict, config: Optional[Dict] = None) -> str:
+    lines = []
+    
+    if config:
+        lines.append("[config]")
+        if config.get('namespace'):
+            lines.append(f'namespace = "{_toml_escape_string(config["namespace"])}"')
+        if config.get('base_package'):
+            lines.append(f'base_package = "{_toml_escape_string(config["base_package"])}"')
+        aliases = config.get('extends_aliases', {})
+        if aliases:
+            lines.append("")
+            for alias_name, alias_path in aliases.items():
+                lines.append(f'[config.extends_aliases]')
+                lines.append(f'{alias_name} = "{_toml_escape_string(alias_path)}"')
+        lines.append("")
+    
+    templates = data.get('templates', {})
+    for tmpl_name, tmpl_data in templates.items():
+        lines.append(f"[templates.{tmpl_name}]")
+        if tmpl_data.get('comment'):
+            lines.append(f'comment = "{_toml_escape_string(tmpl_data["comment"])}"')
+        lines.append("")
+        
+        for col in tmpl_data.get('columns', []):
+            lines.append(f"[[templates.{tmpl_name}.columns]]")
+            _write_column(lines, col)
+            lines.append("")
+    
+    entities = data.get('entities', {})
+    for ent_name, ent_data in entities.items():
+        lines.append(f"[entities.{ent_name}]")
+        
+        if ent_data.get('extends'):
+            extends = ent_data['extends']
+            extends_str = ', '.join(f'"{_toml_escape_string(e)}"' for e in extends)
+            lines.append(f'extends = [{extends_str}]')
+        
+        if ent_data.get('table_name'):
+            lines.append(f'table_name = "{_toml_escape_string(ent_data["table_name"])}"')
+        
+        if ent_data.get('package'):
+            lines.append(f'package = "{_toml_escape_string(ent_data["package"])}"')
+        
+        if ent_data.get('comment'):
+            lines.append(f'comment = "{_toml_escape_string(ent_data["comment"])}"')
+        
+        lines.append("")
+        
+        for col in ent_data.get('columns', []):
+            lines.append(f"[[entities.{ent_name}.columns]]")
+            _write_column(lines, col)
+            lines.append("")
+    
+    relationships = data.get('relationships', [])
+    for rel in relationships:
+        lines.append("[[relationships]]")
+        lines.append(f'left = "{_toml_escape_string(rel["left"])}"')
+        lines.append(f'right = "{_toml_escape_string(rel["right"])}"')
+        lines.append(f'type = "{_toml_escape_string(rel["type"])}"')
+        if rel.get('left_column'):
+            lines.append(f'left_column = "{_toml_escape_string(rel["left_column"])}"')
+        if rel.get('right_column'):
+            lines.append(f'right_column = "{_toml_escape_string(rel["right_column"])}"')
+        lines.append("")
+    
+    return '\n'.join(lines)
+
+
+def _write_column(lines: list, col: dict) -> None:
+    lines.append(f'name = "{_toml_escape_string(col["name"])}"')
+    lines.append(f'type = "{_toml_escape_string(col["type"])}"')
+    
+    if col.get('primary_key'):
+        lines.append('primary_key = true')
+    
+    if 'db_column' in col:
+        lines.append(f'db_column = "{_toml_escape_string(col["db_column"])}"')
+    
+    if 'nullable' in col and not col['nullable']:
+        lines.append('nullable = false')
+    
+    if 'unique' in col and col['unique']:
+        lines.append('unique = true')
+    
+    if 'default' in col and col['default'] is not None:
+        lines.append(f'default = {_format_value(col["default"])}')
+    
+    if 'max_length' in col and col['max_length'] is not None:
+        lines.append(f'max_length = {col["max_length"]}')
+    
+    if 'precision' in col and col['precision'] is not None:
+        lines.append(f'precision = {col["precision"]}')
+    
+    if 'scale' in col and col['scale'] is not None:
+        lines.append(f'scale = {col["scale"]}')
+    
+    if col.get('comment'):
+        lines.append(f'comment = "{_toml_escape_string(col["comment"])}"')
+
+
 class TOMLWriter:
-    """TOML 写入器
+    """TOML 写入器（新格式）
     
-    负责将模型定义写入到正确的 TOML 文件中。
-    
-    Features:
-    - 根据命名空间确定文件路径
-    - 创建必要的目录结构
-    - 将模型定义序列化为 TOML 格式
-    - 处理同一命名空间的多个模型（追加到同一文件）
-    - 使用原子性写入（临时文件 + 重命名）
-    
-    Attributes:
-        base_dir: 基础目录，"src/" 或 "src/third/"
+    输出符合 toml-format-spec.md 的 TOML 文件格式：
+    - 包含 [config] 段
+    - 使用 [[entities.X.columns]] 数组表语法
+    - 使用 primary_key 替代 is_pk
+    - 不输出 is_fk
+    - 不输出模板 export_path
     """
     
-    def __init__(self, base_dir: str):
-        """初始化 TOML 写入器
-        
-        Args:
-            base_dir: 基础目录，例如 "src/" 或 "src/third/"
-        """
+    def __init__(self, base_dir: str, namespace: Optional[str] = None,
+                 base_package: Optional[str] = None,
+                 extends_aliases: Optional[Dict[str, str]] = None):
         self.base_dir = base_dir
-        # Cache to track which files have been written to avoid redundant reads
+        self.namespace = namespace
+        self.base_package = base_package
+        self.extends_aliases = extends_aliases or {}
         self._file_cache: Dict[str, Dict] = {}
+        self._config_cache: Dict[str, Dict] = {}
     
     def _get_file_path(self, namespace: str) -> str:
-        """根据命名空间生成文件路径
-        
-        将命名空间转换为文件路径，例如：
-        "kinkotech.common.models.base" -> "src/kinkotech/common/models/base.toml"
-        
-        Args:
-            namespace: Python 模块命名空间
-            
-        Returns:
-            完整的文件路径
-        """
-        # Convert namespace dots to path separators
         relative_path = namespace.replace('.', os.sep) + '.toml'
-        
-        # Combine with base directory
         file_path = os.path.join(self.base_dir, relative_path)
-        
         return file_path
     
     def _ensure_directory(self, file_path: str) -> None:
-        """确保文件所在目录存在
-        
-        Args:
-            file_path: 文件路径
-        """
         directory = os.path.dirname(file_path)
         if directory:
             os.makedirs(directory, mode=0o755, exist_ok=True)
     
     def _read_existing_file(self, file_path: str) -> Dict:
-        """读取现有的 TOML 文件内容
-        
-        Args:
-            file_path: 文件路径
-            
-        Returns:
-            TOML 文件内容字典，如果文件不存在则返回空字典
-        """
-        # Check cache first
         if file_path in self._file_cache:
             return self._file_cache[file_path]
         
-        # Read from file if exists
         if os.path.exists(file_path):
+            import toml
             with open(file_path, 'r', encoding='utf-8') as f:
                 data = toml.load(f)
                 self._file_cache[file_path] = data
                 return data
         
-        # Return empty structure
         empty_data = {}
         self._file_cache[file_path] = empty_data
         return empty_data
     
-    def _write_file_atomically(self, file_path: str, data: Dict) -> None:
-        """原子性写入 TOML 文件
-        
-        使用临时文件 + 重命名的方式确保写入的原子性，
-        避免在写入过程中出错导致文件损坏。
-        
-        Args:
-            file_path: 目标文件路径
-            data: 要写入的数据字典
-        """
-        # Ensure directory exists
+    def _write_file_atomically(self, file_path: str, content: str) -> None:
         self._ensure_directory(file_path)
         
-        # Create temporary file in the same directory
         directory = os.path.dirname(file_path)
         fd, temp_path = tempfile.mkstemp(
             suffix='.toml.tmp',
@@ -124,48 +193,29 @@ class TOMLWriter:
         )
         
         try:
-            # Write to temporary file
             with os.fdopen(fd, 'w', encoding='utf-8') as f:
-                toml.dump(data, f)
+                f.write(content)
             
-            # Set file permissions
             os.chmod(temp_path, 0o644)
-            
-            # Atomic rename
             os.replace(temp_path, file_path)
-            
-            # Update cache
-            self._file_cache[file_path] = data
+            self._file_cache.pop(file_path, None)
             
         except Exception:
-            # Clean up temporary file on error
             if os.path.exists(temp_path):
                 os.remove(temp_path)
             raise
     
     def _column_to_dict(self, column: ColumnDefinition) -> Dict:
-        """将 ColumnDefinition 转换为字典格式
-        
-        Args:
-            column: 字段定义对象
-            
-        Returns:
-            字段的字典表示
-        """
         col_dict = {
             'name': column.name,
             'type': column.type,
         }
         
-        # Add optional fields only if they have non-default values
         if column.db_column != column.name:
             col_dict['db_column'] = column.db_column
         
         if column.is_pk:
-            col_dict['is_pk'] = True
-        
-        if column.is_fk:
-            col_dict['is_fk'] = True
+            col_dict['primary_key'] = True
         
         if not column.nullable:
             col_dict['nullable'] = False
@@ -182,108 +232,166 @@ class TOMLWriter:
         if column.unique:
             col_dict['unique'] = True
         
-        if column.indexed:
-            col_dict['indexed'] = True
+        if column.precision is not None:
+            col_dict['precision'] = column.precision
+        
+        if column.scale is not None:
+            col_dict['scale'] = column.scale
         
         return col_dict
     
+    def _extract_base_package_info(
+        self, entities: Dict[str, dict], templates: Dict[str, dict]
+    ) -> tuple:
+        all_packages = []
+        for ent_data in entities.values():
+            pkg = ent_data.get('package')
+            if pkg:
+                all_packages.append(pkg)
+        
+        if not all_packages:
+            return None, {}
+        
+        parts_list = [pkg.split('.') for pkg in all_packages]
+        common_parts = []
+        for segments in zip(*parts_list):
+            if len(set(segments)) == 1:
+                common_parts.append(segments[0])
+            else:
+                break
+        
+        base_pkg = '.'.join(common_parts) if common_parts else None
+        
+        if not base_pkg or '.' not in base_pkg:
+            return None, {}
+        
+        aliases = {}
+        all_extends = set()
+        for ent_data in entities.values():
+            for ext in ent_data.get('extends', []):
+                all_extends.add(ext)
+        
+        for ext in all_extends:
+            if '.' in ext:
+                short = ext.rsplit('.', 1)[-1]
+                if short not in entities and short not in templates:
+                    aliases[short] = ext
+        
+        return base_pkg, aliases
+    
+    def _compute_relative_packages(
+        self, entities: Dict[str, dict], base_pkg: Optional[str]
+    ) -> Dict[str, dict]:
+        if not base_pkg:
+            return entities
+        
+        prefix = base_pkg + '.'
+        result = {}
+        for name, ent_data in entities.items():
+            new_data = dict(ent_data)
+            pkg = ent_data.get('package')
+            if pkg and pkg.startswith(prefix):
+                relative = pkg[len(prefix):]
+                if relative:
+                    new_data['package'] = relative
+                else:
+                    new_data.pop('package', None)
+            result[name] = new_data
+        return result
+    
+    def _compute_alias_extends(
+        self, entities: Dict[str, dict], aliases: Dict[str, str]
+    ) -> Dict[str, dict]:
+        if not aliases:
+            return entities
+        
+        reverse = {v: k for k, v in aliases.items()}
+        result = {}
+        for name, ent_data in entities.items():
+            new_data = dict(ent_data)
+            extends = ent_data.get('extends', [])
+            new_extends = []
+            for ext in extends:
+                new_extends.append(reverse.get(ext, ext))
+            if new_extends:
+                new_data['extends'] = new_extends
+            result[name] = new_data
+        return result
+    
     def write_entity(self, namespace: str, entity: EntityDefinition) -> str:
-        """写入实体定义
-        
-        将实体序列化为 TOML 格式并写入文件。
-        如果同一命名空间已有其他实体，则追加到同一文件中。
-        使用命名空间格式表示 extends 引用。
-        
-        Args:
-            namespace: 实体的命名空间
-            entity: 实体定义对象
-            
-        Returns:
-            写入的文件路径
-        """
         file_path = self._get_file_path(namespace)
-        
-        # Read existing file content
         data = self._read_existing_file(file_path)
         
-        # Ensure entities section exists
         if 'entities' not in data:
             data['entities'] = {}
+        if 'relationships' not in data:
+            data['relationships'] = []
         
-        # Build entity data
         entity_data = {}
         
-        # Add comment if present
         if entity.comment:
             entity_data['comment'] = entity.comment
         
-        # Add table name if different from entity name
-        if entity.table_name != entity.name.lower():
-            entity_data['table_name'] = entity.table_name
+        entity_data['table_name'] = entity.table_name
         
-        # Add extends if present (using namespace format)
         if entity.extends:
             entity_data['extends'] = entity.extends
         
-        # Add columns
         entity_data['columns'] = [
             self._column_to_dict(col) for col in entity.columns
         ]
         
-        # Add package if present
         if entity.package:
             entity_data['package'] = entity.package
         
-        # Add entity to data
         data['entities'][entity.name] = entity_data
         
-        # Write file atomically
-        self._write_file_atomically(file_path, data)
+        self._serialize_and_write(file_path, data, namespace)
         
         return file_path
     
     def write_template(self, namespace: str, template: TemplateDefinition) -> str:
-        """写入模板定义
-        
-        将模板序列化为 TOML 格式并写入文件。
-        模板用于表示抽象类或 Mixin 类的字段定义。
-        
-        Args:
-            namespace: 模板的命名空间
-            template: 模板定义对象
-            
-        Returns:
-            写入的文件路径
-        """
         file_path = self._get_file_path(namespace)
-        
-        # Read existing file content
         data = self._read_existing_file(file_path)
         
-        # Ensure templates section exists
         if 'templates' not in data:
             data['templates'] = {}
         
-        # Build template data
         template_data = {}
         
-        # Add package if present
-        if template.package:
-            template_data['package'] = template.package
+        if template.comment:
+            template_data['comment'] = template.comment
         
-        # Add export_path if present
-        if template.export_path:
-            template_data['export_path'] = template.export_path
-        
-        # Add columns
         template_data['columns'] = [
             self._column_to_dict(col) for col in template.columns
         ]
         
-        # Add template to data
         data['templates'][template.name] = template_data
         
-        # Write file atomically
-        self._write_file_atomically(file_path, data)
+        self._serialize_and_write(file_path, data, namespace)
         
         return file_path
+    
+    def _serialize_and_write(self, file_path: str, data: Dict, namespace: str) -> None:
+        base_pkg, aliases = self._extract_base_package_info(
+            data.get('entities', {}), data.get('templates', {})
+        )
+        
+        config = {
+            'namespace': namespace,
+            'base_package': base_pkg,
+            'extends_aliases': aliases,
+        }
+        
+        entities = data.get('entities', {})
+        entities = self._compute_relative_packages(entities, base_pkg)
+        entities = self._compute_alias_extends(entities, aliases)
+        
+        output_data = {
+            'templates': data.get('templates', {}),
+            'entities': entities,
+            'relationships': data.get('relationships', []),
+        }
+        
+        content = _serialize_toml_new_format(output_data, config)
+        self._write_file_atomically(file_path, content)

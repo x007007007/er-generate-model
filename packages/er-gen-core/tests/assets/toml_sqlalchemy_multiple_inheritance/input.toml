@@ -1,20 +1,26 @@
+[config]
+namespace = "test.sqlalchemy_multiple_inheritance"
+
 [templates.create_update_time]
-export_path = "common.mixins"
-columns = [
-    {name = "created_at", type = "datetime"},
-    {name = "updated_at", type = "datetime"},
-]
+
+[[templates.create_update_time.columns]]
+name = "created_at"
+type = "datetime"
+
+[[templates.create_update_time.columns]]
+name = "updated_at"
+type = "datetime"
 
 [templates.enable]
-export_path = "common.mixins"
-columns = [
-    {name = "is_enabled", type = "boolean"},
-]
+
+[[templates.enable.columns]]
+name = "is_enabled"
+type = "boolean"
 
 [entities.USER]
 table_name = "test_user"
 extends = ["create_update_time", "enable"]
-columns = [
-    {name = "email", type = "string"},
-]
 
+[[entities.USER.columns]]
+name = "email"
+type = "string"

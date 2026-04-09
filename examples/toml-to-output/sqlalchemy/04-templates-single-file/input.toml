@@ -1,10 +1,9 @@
-# Template Example - Single File
-# This example demonstrates using templates to share common fields across entities
+[config]
+namespace = "examples.templates_single_file"
+base_package = "myapp.models"
 
-# Define a template with common timestamp fields
 [templates.TimestampMixin]
-package = "myapp.models.base"
-# export_path will be auto-derived as: myapp.models.base_sqlalchemy
+package = "base"
 
 [[templates.TimestampMixin.columns]]
 name = "created_at"
@@ -16,9 +15,8 @@ name = "updated_at"
 type = "datetime"
 comment = "Last update timestamp"
 
-# Define another template with soft delete functionality
 [templates.SoftDeleteMixin]
-package = "myapp.models.base"
+package = "base"
 
 [[templates.SoftDeleteMixin.columns]]
 name = "is_deleted"
@@ -31,26 +29,54 @@ type = "datetime"
 nullable = true
 comment = "Deletion timestamp"
 
-# Entity that extends both templates
 [entities.USER]
 extends = ["TimestampMixin", "SoftDeleteMixin"]
 comment = "User entity with timestamps and soft delete"
-columns = [
-    {name = "id", type = "uuid", is_pk = true, comment = "Primary key"},
-    {name = "username", type = "string", unique = true, comment = "Unique username"},
-    {name = "email", type = "string", unique = true, comment = "User email address"},
-]
+table_name = "user"
 
-# Another entity extending the same templates
+[[entities.USER.columns]]
+name = "id"
+type = "uuid"
+primary_key = true
+comment = "Primary key"
+
+[[entities.USER.columns]]
+name = "username"
+type = "string"
+unique = true
+comment = "Unique username"
+
+[[entities.USER.columns]]
+name = "email"
+type = "string"
+unique = true
+comment = "User email address"
+
 [entities.POST]
 extends = ["TimestampMixin", "SoftDeleteMixin"]
 comment = "Post entity with timestamps and soft delete"
-columns = [
-    {name = "id", type = "uuid", is_pk = true, comment = "Primary key"},
-    {name = "author_id", type = "uuid", is_fk = true, comment = "Foreign key to User"},
-    {name = "title", type = "string", comment = "Post title"},
-    {name = "content", type = "text", comment = "Post content"},
-]
+table_name = "post"
+
+[[entities.POST.columns]]
+name = "id"
+type = "uuid"
+primary_key = true
+comment = "Primary key"
+
+[[entities.POST.columns]]
+name = "author_id"
+type = "uuid"
+comment = "Foreign key to User"
+
+[[entities.POST.columns]]
+name = "title"
+type = "string"
+comment = "Post title"
+
+[[entities.POST.columns]]
+name = "content"
+type = "text"
+comment = "Post content"
 
 [[relationships]]
 left = "USER"

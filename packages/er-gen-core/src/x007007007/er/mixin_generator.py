@@ -143,7 +143,8 @@ class MixinGenerator:
             mixin_name=template_name,
             columns=template_info.columns,
             column_types=sorted(column_types),
-            package=template_info.package
+            package=template_info.package,
+            comment=template_info.comment
         )
         
         # Step 7: Write file

@@ -1,21 +1,18 @@
-# Template Example - Explicit Export Path
-# This example demonstrates using explicit export_path instead of auto-derived paths
+[config]
+namespace = "examples.templates_explicit_export"
+base_package = "myapp.models"
 
-# Template with auto-derived export_path (from package)
 [templates.AutoDerivedMixin]
-package = "myapp.models.base"
-# export_path will be auto-derived as: myapp.models.base_sqlalchemy
+package = "base"
 
 [[templates.AutoDerivedMixin.columns]]
 name = "id"
 type = "uuid"
-is_pk = true
+primary_key = true
 comment = "Primary key"
 
-# Template with explicit export_path (overrides auto-derivation)
 [templates.CustomLocationMixin]
-package = "myapp.models.base"
-export_path = "myapp.custom.mixins"  # Explicit path, not auto-derived
+package = "base"
 
 [[templates.CustomLocationMixin.columns]]
 name = "status"
@@ -27,9 +24,7 @@ name = "priority"
 type = "int"
 comment = "Priority level"
 
-# Template with only export_path (no package field)
 [templates.DirectExportMixin]
-export_path = "shared.common.base"  # Direct export path
 
 [[templates.DirectExportMixin.columns]]
 name = "created_at"
@@ -41,20 +36,38 @@ name = "updated_at"
 type = "datetime"
 comment = "Update timestamp"
 
-# Entity using all three template types
 [entities.TASK]
 extends = ["AutoDerivedMixin", "CustomLocationMixin", "DirectExportMixin"]
 comment = "Task entity demonstrating different template path strategies"
-columns = [
-    {name = "title", type = "string", comment = "Task title"},
-    {name = "description", type = "text", comment = "Task description"},
-    {name = "due_date", type = "datetime", nullable = true, comment = "Due date"},
-]
+table_name = "task"
+
+[[entities.TASK.columns]]
+name = "title"
+type = "string"
+comment = "Task title"
+
+[[entities.TASK.columns]]
+name = "description"
+type = "text"
+comment = "Task description"
+
+[[entities.TASK.columns]]
+name = "due_date"
+type = "datetime"
+nullable = true
+comment = "Due date"
 
 [entities.PROJECT]
 extends = ["AutoDerivedMixin", "DirectExportMixin"]
 comment = "Project entity"
-columns = [
-    {name = "name", type = "string", comment = "Project name"},
-    {name = "budget", type = "decimal", comment = "Project budget"},
-]
+table_name = "project"
+
+[[entities.PROJECT.columns]]
+name = "name"
+type = "string"
+comment = "Project name"
+
+[[entities.PROJECT.columns]]
+name = "budget"
+type = "decimal"
+comment = "Project budget"

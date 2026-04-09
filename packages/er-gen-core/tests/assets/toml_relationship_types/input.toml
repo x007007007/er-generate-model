@@ -1,22 +1,36 @@
+[config]
+namespace = "test.relationship_types"
+
 [entities.USER]
 table_name = "test_user"
-columns = [{name = "id", type = "int", is_pk = true}]
+
+[[entities.USER.columns]]
+name = "id"
+type = "int"
+primary_key = true
 
 [entities.POST]
 table_name = "test_post"
-columns = [{name = "id", type = "int", is_pk = true}]
+
+[[entities.POST.columns]]
+name = "id"
+type = "int"
+primary_key = true
 
 [entities.TAG]
 table_name = "test_tag"
-columns = [{name = "id", type = "int", is_pk = true}]
+
+[[entities.TAG.columns]]
+name = "id"
+type = "int"
+primary_key = true
 
 [[relationships]]
 left = "USER"
 right = "POST"
-type = "1:N"
+type = "one-to-many"
 
 [[relationships]]
 left = "POST"
 right = "TAG"
-type = "N:M"
-
+type = "many-to-many"

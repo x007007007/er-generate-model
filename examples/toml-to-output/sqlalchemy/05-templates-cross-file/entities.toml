@@ -1,35 +1,81 @@
-# Entities File
-# This file defines entities that reference templates from base_templates.toml
+[config]
+namespace = "company.products"
+base_package = "company.products.models"
 
-# Entity referencing templates from another file
 [entities.PRODUCT]
 extends = ["AuditMixin", "VersionMixin"]
 comment = "Product entity with audit trail and versioning"
-columns = [
-    {name = "id", type = "uuid", is_pk = true, comment = "Primary key"},
-    {name = "name", type = "string", comment = "Product name"},
-    {name = "price", type = "decimal", comment = "Product price"},
-    {name = "description", type = "text", comment = "Product description"},
-]
+table_name = "product"
+
+[[entities.PRODUCT.columns]]
+name = "id"
+type = "uuid"
+primary_key = true
+comment = "Primary key"
+
+[[entities.PRODUCT.columns]]
+name = "name"
+type = "string"
+comment = "Product name"
+
+[[entities.PRODUCT.columns]]
+name = "price"
+type = "decimal"
+comment = "Product price"
+
+[[entities.PRODUCT.columns]]
+name = "description"
+type = "text"
+comment = "Product description"
 
 [entities.CATEGORY]
 extends = ["AuditMixin"]
 comment = "Category entity with audit trail"
-columns = [
-    {name = "id", type = "uuid", is_pk = true, comment = "Primary key"},
-    {name = "name", type = "string", unique = true, comment = "Category name"},
-    {name = "parent_id", type = "uuid", nullable = true, is_fk = true, comment = "Parent category"},
-]
+table_name = "category"
+
+[[entities.CATEGORY.columns]]
+name = "id"
+type = "uuid"
+primary_key = true
+comment = "Primary key"
+
+[[entities.CATEGORY.columns]]
+name = "name"
+type = "string"
+unique = true
+comment = "Category name"
+
+[[entities.CATEGORY.columns]]
+name = "parent_id"
+type = "uuid"
+nullable = true
+comment = "Parent category"
 
 [entities.INVENTORY]
 extends = ["AuditMixin", "VersionMixin"]
 comment = "Inventory tracking with audit and versioning"
-columns = [
-    {name = "id", type = "uuid", is_pk = true, comment = "Primary key"},
-    {name = "product_id", type = "uuid", is_fk = true, comment = "Foreign key to Product"},
-    {name = "quantity", type = "int", comment = "Available quantity"},
-    {name = "warehouse", type = "string", comment = "Warehouse location"},
-]
+table_name = "inventory"
+
+[[entities.INVENTORY.columns]]
+name = "id"
+type = "uuid"
+primary_key = true
+comment = "Primary key"
+
+[[entities.INVENTORY.columns]]
+name = "product_id"
+type = "uuid"
+comment = "Foreign key to Product"
+
+[[entities.INVENTORY.columns]]
+name = "quantity"
+type = "int"
+comment = "Available quantity"
+
+[[entities.INVENTORY.columns]]
+name = "warehouse"
+type = "string"
+comment = "Warehouse location"
 
 [[relationships]]
 left = "PRODUCT"

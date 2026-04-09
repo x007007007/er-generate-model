@@ -1,11 +1,28 @@
-# Simple User Model Example
-# This example demonstrates a basic single-table model with common field types
+[config]
+namespace = "examples.simple_model"
 
 [entities.USER]
 comment = "User entity with basic fields"
-columns = [
-    {name = "id", type = "int", is_pk = true, comment = "Primary key"},
-    {name = "username", type = "string", unique = true, comment = "Unique username"},
-    {name = "email", type = "string", comment = "User email address"},
-    {name = "created_at", type = "datetime", comment = "Account creation timestamp"},
-]
+table_name = "user"
+
+[[entities.USER.columns]]
+name = "id"
+type = "int"
+primary_key = true
+comment = "Primary key"
+
+[[entities.USER.columns]]
+name = "username"
+type = "string"
+unique = true
+comment = "Unique username"
+
+[[entities.USER.columns]]
+name = "email"
+type = "string"
+comment = "User email address"
+
+[[entities.USER.columns]]
+name = "created_at"
+type = "datetime"
+comment = "Account creation timestamp"

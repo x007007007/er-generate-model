@@ -1,6 +1,11 @@
 """
 TOML格式ER图解析器，支持继承和模板功能。
+
+支持新旧两种TOML格式：
+- 新格式：包含 [config] 段，使用 primary_key，数组表 [[entities.X.columns]]
+- 旧格式：无 [config] 段，使用 is_pk，行内 columns = [{...}]
 """
+import warnings
 import toml
 from typing import Dict, List, Optional, Any
 from x007007007.er.base import Parser
@@ -12,41 +17,20 @@ class TomlERParser(Parser):
     TOML格式ER图解析器。
     
     支持特性：
-    - 实体模板（templates）：可复用的字段集合，支持export_path配置
-    - 实体继承（extends）：实体可以继承多个模板的字段（仅支持数组）
-    - 多模板继承：extends必须是数组
+    - [config] 段：namespace、base_package、extends_aliases
+    - 实体模板（templates）：可复用的字段集合
+    - 实体继承（extends）：支持别名解析（aliases → templates/entities → 完整路径）
     - 字段覆盖：继承的字段可以被覆盖，后面的模板覆盖前面的
-    - 导出路径：模板和实体可以配置export_path，用于生成继承代码
-    - 格式验证：使用断言进行数据验证
     - 继承模式：支持reference和flatten两种模式
+    - 向后兼容：支持旧格式（is_pk、行内columns、无config段）
     """
     
     def __init__(self, inheritance_mode: str = 'reference'):
-        """
-        初始化解析器。
-        
-        Args:
-            inheritance_mode: 继承处理模式，'reference' 或 'flatten'
-                - reference: 为没有export_path的模板生成默认路径，通过Python继承引用
-                - flatten: 展开所有模板字段到实体中（除了外部类）
-        """
         if inheritance_mode not in ('reference', 'flatten'):
             raise ValueError(f"Invalid inheritance_mode: {inheritance_mode}. Must be 'reference' or 'flatten'")
         self.inheritance_mode = inheritance_mode
     
     def parse(self, content: str) -> ERModel:
-        """
-        解析TOML格式的ER图内容。
-        
-        Args:
-            content: TOML格式的字符串内容
-            
-        Returns:
-            ERModel: 解析后的ER模型
-            
-        Raises:
-            ValueError: 如果TOML格式错误或数据验证失败
-        """
         assert isinstance(content, str), "content must be a string"
         assert len(content) > 0, "content cannot be empty"
         
@@ -57,18 +41,20 @@ class TomlERParser(Parser):
         
         model = ERModel()
         
-        # 解析模板
+        config = self._parse_config(data.get('config', {}))
+        model.namespace = config.get('namespace')
+        model.base_package = config.get('base_package')
+        model.extends_aliases = config.get('extends_aliases', {})
+        
         templates = self._parse_templates(data.get('templates', {}))
-        # 保存模板信息到模型（供渲染器使用）
         model.templates = templates
         
-        # 解析关系
         relationships = self._parse_relationships(data.get('relationships', []))
         
-        # 解析实体（支持继承）
-        entities = self._parse_entities(data.get('entities', {}), templates)
+        entities = self._parse_entities(
+            data.get('entities', {}), templates, config
+        )
         
-        # Mark columns as foreign keys based on relationships
         self._mark_foreign_keys(entities, relationships)
         
         for entity in entities.values():
@@ -79,121 +65,141 @@ class TomlERParser(Parser):
         
         return model
     
-    def _parse_templates(self, templates_data: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
-        """
-        解析模板定义。
+    def _parse_config(self, config_data: Any) -> Dict[str, Any]:
+        if not config_data or not isinstance(config_data, dict):
+            return {}
         
-        Args:
-            templates_data: 模板数据字典
-            
-        Returns:
-            Dict[str, Dict]: 模板名称到模板信息的映射，包含columns、export_path和package
-        """
+        config = {
+            'namespace': config_data.get('namespace'),
+            'base_package': config_data.get('base_package'),
+            'extends_aliases': dict(config_data.get('extends_aliases', {})),
+        }
+        
+        return config
+    
+    def _resolve_extends(
+        self, extends_list: List[str], templates: Dict[str, Dict[str, Any]],
+        entities_data: Dict[str, Any], config: Dict[str, Any]
+    ) -> List[str]:
+        aliases = config.get('extends_aliases', {})
+        resolved = []
+        for name in extends_list:
+            if name in aliases:
+                resolved.append(aliases[name])
+            elif name in templates:
+                resolved.append(name)
+            elif name in entities_data:
+                resolved.append(name)
+            else:
+                resolved.append(name)
+        return resolved
+    
+    def _resolve_package(
+        self, entity_package: Optional[str], config: Dict[str, Any]
+    ) -> Optional[str]:
+        base_package = config.get('base_package')
+        if not base_package:
+            return entity_package
+        if entity_package:
+            return f"{base_package}.{entity_package}"
+        return base_package
+    
+    def _parse_templates(self, templates_data: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
         templates = {}
         for template_name, template_data in templates_data.items():
             assert isinstance(template_data, dict), f"Template '{template_name}' must be a dictionary"
-            columns_data = template_data.get('columns', [])
-            assert isinstance(columns_data, list), f"Template '{template_name}.columns' must be a list"
             
-            columns = []
-            for col_data in columns_data:
-                assert isinstance(col_data, dict), f"Column in template '{template_name}' must be a dictionary"
-                column = self._parse_column(col_data)
-                columns.append(column)
+            columns = self._parse_columns_list(template_data, template_name)
             
             templates[template_name] = {
                 'columns': columns,
                 'export_path': template_data.get('export_path'),
-                'package': template_data.get('package')
+                'package': template_data.get('package'),
+                'comment': template_data.get('comment')
             }
         
         return templates
     
+    def _parse_columns_list(
+        self, parent_data: Dict[str, Any], parent_name: str
+    ) -> List[Column]:
+        columns = []
+        
+        if 'columns' not in parent_data:
+            return columns
+        
+        columns_data = parent_data['columns']
+        
+        if isinstance(columns_data, list):
+            for col_data in columns_data:
+                if isinstance(col_data, dict):
+                    columns.append(self._parse_column(col_data))
+        
+        return columns
+    
     def _parse_entities(
         self, 
         entities_data: Dict[str, Any], 
-        templates: Dict[str, Dict[str, Any]]
+        templates: Dict[str, Dict[str, Any]],
+        config: Dict[str, Any]
     ) -> Dict[str, Entity]:
-        """
-        解析实体定义，支持继承多个模板（仅支持数组）。
-        
-        根据inheritance_mode处理继承：
-        - reference模式：为没有export_path的模板生成默认路径，展开其字段
-        - flatten模式：展开所有模板字段（除了外部类），添加_source_template元数据
-        
-        Args:
-            entities_data: 实体数据字典
-            templates: 模板字典（包含columns和export_path）
-            
-        Returns:
-            Dict[str, Entity]: 实体名称到Entity对象的映射
-        """
         entities = {}
         
         for entity_name, entity_data in entities_data.items():
             assert isinstance(entity_data, dict), f"Entity '{entity_name}' must be a dictionary"
             
-            # 获取继承的模板（仅支持数组）
             extends = entity_data.get('extends')
             base_columns = []
             extends_list = []
             
             if extends:
-                # 只支持数组
                 if isinstance(extends, list):
                     extends_list = extends
                 else:
                     raise ValueError(f"Entity '{entity_name}.extends' must be an array (list)")
                 
-                # 按顺序合并所有模板的字段
                 for template_name in extends_list:
                     assert isinstance(template_name, str), f"Template name in extends must be a string"
                     
-                    # 如果模板存在于templates中，根据继承模式处理
-                    if template_name in templates:
-                        template = templates[template_name]
+                    resolved_name = self._resolve_extends(
+                        [template_name], templates, entities_data, config
+                    )[0]
+                    
+                    lookup_name = template_name
+                    if template_name not in templates and resolved_name != template_name:
+                        for tmpl_key in templates:
+                            if resolved_name.endswith(tmpl_key):
+                                lookup_name = tmpl_key
+                                break
+                    
+                    if lookup_name in templates:
+                        template = templates[lookup_name]
                         should_expand = False
                         
                         if self.inheritance_mode == 'flatten':
-                            # Flatten模式：展开所有有字段定义的模板
-                            # 只有没有字段定义的模板（外部类标记）才不展开
                             if template.get('columns'):
                                 should_expand = True
                         else:
-                            # Reference模式：只展开没有export_path的模板
                             if not template.get('export_path'):
-                                # 为没有export_path的模板生成默认路径
-                                # 使用小写的模板名作为模块名
-                                template['export_path'] = f'mixins.{template_name.lower()}'
+                                template['export_path'] = f'mixins.{lookup_name.lower()}'
                                 should_expand = True
                         
                         if should_expand:
-                            # 复制模板字段（深拷贝），按顺序添加
                             for col in template['columns']:
                                 col_copy = Column(**col.__dict__)
-                                # 在flatten模式下添加来源元数据
                                 if self.inheritance_mode == 'flatten':
-                                    col_copy._source_template = template_name
+                                    col_copy._source_template = lookup_name
                                 base_columns.append(col_copy)
-                    # 如果template_name不在templates中，说明是外部类（如AbstractUser）
-                    # 这种情况下，我们不展开字段，但保留extends关系供代码生成器使用
             
-            # 解析实体自己的字段
-            columns_data = entity_data.get('columns', [])
-            assert isinstance(columns_data, list), f"Entity '{entity_name}.columns' must be a list"
+            own_columns = self._parse_columns_list(entity_data, entity_name)
             
-            # 合并字段：先添加继承的字段，再添加自己的字段
-            # 如果字段名重复，后面的会覆盖前面的
             all_columns = {}
             for col in base_columns:
-                all_columns[col.name] = col  # 后面的模板会覆盖前面的同名字段
+                all_columns[col.name] = col
             
-            for col_data in columns_data:
-                assert isinstance(col_data, dict), f"Column in entity '{entity_name}' must be a dictionary"
-                column = self._parse_column(col_data)
-                all_columns[column.name] = column  # 实体自己的字段会覆盖继承的字段
+            for col in own_columns:
+                all_columns[col.name] = col
             
-            # 验证必需字段：table_name
             table_name = entity_data.get('table_name')
             if table_name is None:
                 raise ValueError(
@@ -202,14 +208,17 @@ class TomlERParser(Parser):
                     f"Please regenerate it using: python manage.py er_export <app_label> --output-dir=src"
                 )
             
+            raw_package = entity_data.get('package')
+            resolved_package = self._resolve_package(raw_package, config)
+            
             entity = Entity(
                 name=entity_name,
                 columns=list(all_columns.values()),
                 comment=entity_data.get('comment'),
-                extends=extends_list,  # 保存继承的模板列表
-                export_path=entity_data.get('export_path'),  # 保存导出路径（向后兼容，但忽略）
-                package=entity_data.get('package'),  # 保存Python模块路径
-                table_name=table_name  # 保存数据库真实表名
+                extends=extends_list,
+                export_path=entity_data.get('export_path'),
+                package=resolved_package,
+                table_name=table_name
             )
             
             entities[entity_name] = entity
@@ -217,20 +226,9 @@ class TomlERParser(Parser):
         return entities
     
     def _parse_column(self, col_data: Dict[str, Any]) -> Column:
-        """
-        解析单个字段定义。
-        
-        Args:
-            col_data: 字段数据字典
-            
-        Returns:
-            Column: Column对象
-        """
         assert 'name' in col_data, "Column must have 'name' field"
         assert 'type' in col_data, "Column must have 'type' field"
         
-        # Get db_column (required field)
-        # If not present in TOML, use name as default (for backward compatibility)
         db_column = col_data.get('db_column', col_data['name'])
         
         return Column(
@@ -250,15 +248,6 @@ class TomlERParser(Parser):
         )
     
     def _parse_relationships(self, relationships_data: List[Any]) -> List[Relationship]:
-        """
-        解析关系定义。
-        
-        Args:
-            relationships_data: 关系数据列表
-            
-        Returns:
-            List[Relationship]: Relationship对象列表
-        """
         relationships = []
         
         for rel_data in relationships_data:
@@ -267,7 +256,6 @@ class TomlERParser(Parser):
             assert 'right' in rel_data, "Relationship must have 'right' field"
             assert 'type' in rel_data, "Relationship must have 'type' field"
             
-            # 映射关系类型
             type_mapping = {
                 'one-to-one': 'one-to-one',
                 'one-to-many': 'one-to-many',
@@ -282,6 +270,14 @@ class TomlERParser(Parser):
             rel_type = rel_data['type']
             if rel_type not in type_mapping:
                 raise ValueError(f"Unknown relationship type: {rel_type}")
+            
+            if rel_type in ('1:1', '1:N', 'N:1', 'N:M'):
+                warnings.warn(
+                    f"Short-form relationship type '{rel_type}' is deprecated, "
+                    f"use '{type_mapping[rel_type]}' instead",
+                    DeprecationWarning,
+                    stacklevel=2
+                )
             
             relationship = Relationship(
                 left_entity=str(rel_data['left']),
@@ -304,27 +300,10 @@ class TomlERParser(Parser):
             entities: Dict[str, Entity], 
             relationships: List[Relationship]
         ) -> None:
-            """
-            Mark columns as foreign keys based on relationships and set their types.
-            Also infers db_column for FK columns if not explicitly specified.
-            
-            This method implements Django-style foreign key naming conventions:
-            - Matches relationship's right_column against both col.name and col.db_column
-            - Infers db_column as {name}_id if not explicitly specified for FK columns
-            - Ensures all foreign key columns have is_fk=True flag set correctly
-            - IMPORTANT: Only marks right_column as FK if it's not a primary key
-              (primary keys can be referenced by FKs but are not themselves FKs)
-
-            Args:
-                entities: Entity dictionary
-                relationships: List of relationships
-            """
             for rel in relationships:
-                # For one-to-many and one-to-one relationships, mark the right entity's column as FK
                 if rel.relation_type in ['one-to-many', 'one-to-one', 'many-to-one']:
                     if rel.right_entity in entities and rel.right_column:
                         entity = entities[rel.right_entity]
-                        # Find the referenced column to get its type
                         ref_type = None
                         if rel.left_entity in entities and rel.left_column:
                             ref_entity = entities[rel.left_entity]
@@ -334,27 +313,15 @@ class TomlERParser(Parser):
                                     break
 
                         for col in entity.columns:
-                            # Match by BOTH name and db_column against relationship's right_column
-                            # This handles cases where:
-                            # 1. right_column matches col.name (e.g., "code" matches name="code")
-                            # 2. right_column matches col.db_column (e.g., "code_id" matches db_column="code_id")
                             if col.name == rel.right_column or col.db_column == rel.right_column:
-                                # CRITICAL: Do not mark primary keys as foreign keys
-                                # Primary keys can be referenced by other tables' FKs, but they themselves are not FKs
                                 if col.is_pk:
-                                    # Skip marking this column as FK - it's a PK being referenced
                                     break
                                 
                                 col.is_fk = True
 
-                                # Infer db_column if it matches name (wasn't explicitly set for FK)
-                                # Django-style: if name doesn't end with _id but it's a FK, db_column should be name_id
                                 if col.db_column == col.name and not col.name.endswith('_id'):
                                     col.db_column = f"{col.name}_id"
 
-                                # Set the FK column type to match the referenced column type
                                 if ref_type:
                                     col.type = ref_type
                                 break
-
-

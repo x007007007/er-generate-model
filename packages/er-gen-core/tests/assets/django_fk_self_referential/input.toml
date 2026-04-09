@@ -1,5 +1,5 @@
-# Self-referential foreign key
-# Category entity with parent-child relationship to itself
+[config]
+namespace = "test.django_fk_self_referential"
 
 [[relationships]]
 left = "Category"

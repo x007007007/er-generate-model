@@ -46,6 +46,7 @@ class TemplateInfo:
     export_path: Optional[str]  # SQLAlchemy export path (auto-derived or explicit)
     columns: List[Column]
     source_file: str  # TOML file where template is defined
+    comment: Optional[str] = None  # Model description/comment
 
 @dataclass
 class Entity:
@@ -61,7 +62,10 @@ class Entity:
 class ERModel:
     entities: Dict[str, Entity] = field(default_factory=dict)
     relationships: List[Relationship] = field(default_factory=list)
-    templates: Dict[str, Dict[str, Any]] = field(default_factory=dict)  # 模板信息，包含columns和export_path
+    templates: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    namespace: Optional[str] = None
+    base_package: Optional[str] = None
+    extends_aliases: Dict[str, str] = field(default_factory=dict)
 
     def add_entity(self, entity: Entity):
         assert isinstance(entity, Entity), "entity must be an Entity instance"

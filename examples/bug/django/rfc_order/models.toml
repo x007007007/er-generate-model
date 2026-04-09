@@ -1,3 +1,12 @@
+[config]
+namespace = "kinkotech.rfc_backend.domains.rfc_order"
+base_package = "kinkotech.rfc_backend.domains.rfc_order.models"
+
+[config.extends_aliases]
+Base = "kinkotech.common.infrastructure.models.base.KinkoTechModelBase"
+CreateModify = "kinkotech.common.infrastructure.models.base.CreateModifyMixinModel"
+Enabled = "kinkotech.common.infrastructure.models.base.EnabledMixinModel"
+
 [[relationships]]
 left = "Order"
 right = "OrderItem"
@@ -118,9 +127,9 @@ left_column = "id"
 right_column = "component_sell_item_id"
 
 [entities.Order]
-extends = [ "kinkotech.common.infrastructure.models.base.KinkoTechModelBase", "kinkotech.common.infrastructure.models.base.CreateModifyMixinModel",]
+extends = ["Base", "CreateModify"]
 table_name = "kkt_rfc_order_order"
-package = "kinkotech.rfc_backend.domains.rfc_order.models.order"
+package = "order"
 [[entities.Order.columns]]
 name = "id"
 type = "bigint"
@@ -213,9 +222,9 @@ type = "json"
 nullable = false
 
 [entities.OrderItem]
-extends = [ "kinkotech.common.infrastructure.models.base.KinkoTechModelBase", "kinkotech.common.infrastructure.models.base.CreateModifyMixinModel",]
+extends = ["Base", "CreateModify"]
 table_name = "kkt_rfc_order_order_item"
-package = "kinkotech.rfc_backend.domains.rfc_order.models.order_item"
+package = "order_item"
 [[entities.OrderItem.columns]]
 name = "id"
 type = "bigint"
@@ -262,9 +271,9 @@ type = "json"
 nullable = false
 
 [entities.PromotionCode]
-extends = [ "kinkotech.common.infrastructure.models.base.KinkoTechModelBase", "kinkotech.common.infrastructure.models.base.CreateModifyMixinModel", "kinkotech.common.infrastructure.models.base.EnabledMixinModel",]
+extends = ["Base", "CreateModify", "Enabled"]
 table_name = "kkt_rfc_order_promotioncodemodel"
-package = "kinkotech.rfc_backend.domains.rfc_order.models.promotion_code"
+package = "promotion_code"
 [[entities.PromotionCode.columns]]
 name = "id"
 type = "bigint"
@@ -322,9 +331,9 @@ nullable = false
 comment = "扩展信息（适用商品范围、备注等）"
 
 [entities.PromotionCodeUsage]
-extends = [ "kinkotech.common.infrastructure.models.base.KinkoTechModelBase", "kinkotech.common.infrastructure.models.base.CreateModifyMixinModel",]
+extends = ["Base", "CreateModify"]
 table_name = "kkt_rfc_order_promotion_code_usage"
-package = "kinkotech.rfc_backend.domains.rfc_order.models.promotion_code_usage"
+package = "promotion_code_usage"
 [[entities.PromotionCodeUsage.columns]]
 name = "id"
 type = "bigint"
@@ -372,9 +381,9 @@ nullable = false
 comment = "扩展信息"
 
 [entities.Entitlement]
-extends = [ "kinkotech.common.infrastructure.models.base.KinkoTechModelBase", "kinkotech.common.infrastructure.models.base.CreateModifyMixinModel",]
+extends = ["Base", "CreateModify"]
 table_name = "kkt_rfc_order_entitlement"
-package = "kinkotech.rfc_backend.domains.rfc_order.models.entitlement"
+package = "entitlement"
 [[entities.Entitlement.columns]]
 name = "id"
 type = "bigint"
@@ -448,9 +457,9 @@ nullable = false
 comment = "扩展信息（规则快照、核销限制、配额明细等）"
 
 [entities.RedemptionLog]
-extends = [ "kinkotech.common.infrastructure.models.base.KinkoTechModelBase", "kinkotech.common.infrastructure.models.base.CreateModifyMixinModel",]
+extends = ["Base", "CreateModify"]
 table_name = "kkt_rfc_order_redemption_log"
-package = "kinkotech.rfc_backend.domains.rfc_order.models.redemption_log"
+package = "redemption_log"
 [[entities.RedemptionLog.columns]]
 name = "id"
 type = "bigint"
@@ -535,9 +544,9 @@ type = "json"
 nullable = false
 
 [entities.Voucher]
-extends = [ "kinkotech.common.infrastructure.models.base.KinkoTechModelBase", "kinkotech.common.infrastructure.models.base.CreateModifyMixinModel",]
+extends = ["Base", "CreateModify"]
 table_name = "kkt_rfc_order_voucher"
-package = "kinkotech.rfc_backend.domains.rfc_order.models.voucher"
+package = "voucher"
 [[entities.Voucher.columns]]
 name = "id"
 type = "bigint"
@@ -595,9 +604,9 @@ nullable = false
 comment = "扩展信息"
 
 [entities.SellItem]
-extends = [ "kinkotech.common.infrastructure.models.base.KinkoTechModelBase", "kinkotech.common.infrastructure.models.base.CreateModifyMixinModel",]
+extends = ["Base", "CreateModify"]
 table_name = "kkt_rfc_order_sell_item"
-package = "kinkotech.rfc_backend.domains.rfc_order.models.sell_item"
+package = "sell_item"
 [[entities.SellItem.columns]]
 name = "id"
 type = "bigint"
@@ -689,9 +698,9 @@ type = "json"
 nullable = false
 
 [entities.SellItemBundleItem]
-extends = [ "kinkotech.common.infrastructure.models.base.KinkoTechModelBase", "kinkotech.common.infrastructure.models.base.CreateModifyMixinModel",]
+extends = ["Base", "CreateModify"]
 table_name = "kkt_rfc_order_sell_item_bundle_item"
-package = "kinkotech.rfc_backend.domains.rfc_order.models.sell_item_bundle_item"
+package = "sell_item_bundle_item"
 [[entities.SellItemBundleItem.columns]]
 name = "id"
 type = "bigint"

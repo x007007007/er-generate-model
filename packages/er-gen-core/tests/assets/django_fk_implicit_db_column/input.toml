@@ -1,5 +1,5 @@
-# Foreign key without explicit db_column
-# Tests implicit inference of db_column from name + "_id"
+[config]
+namespace = "test.django_fk_implicit_db_column"
 
 [[relationships]]
 left = "Author"

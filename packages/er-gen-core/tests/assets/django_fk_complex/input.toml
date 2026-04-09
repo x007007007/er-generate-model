@@ -1,7 +1,5 @@
-# Complex scenario combining multiple features
-# Multiple FKs, table prefix, various attributes, and self-referential FK
-
-table_prefix = "blog"
+[config]
+namespace = "test.django_fk_complex"
 
 [[relationships]]
 left = "User"

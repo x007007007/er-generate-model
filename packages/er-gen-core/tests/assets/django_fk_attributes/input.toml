@@ -1,5 +1,5 @@
-# Foreign keys with various column attributes
-# Tests nullable, unique, indexed, default, and comment attributes
+[config]
+namespace = "test.django_fk_attributes"
 
 [[relationships]]
 left = "Company"
