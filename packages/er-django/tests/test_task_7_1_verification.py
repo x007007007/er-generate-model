@@ -120,7 +120,6 @@ extends = ["kinkotech.common.base.TimeStampedModel", "kinkotech.common.base.Soft
 [[entities.Profile.columns]]
 name = "user"
 type = "OneToOneField"
-is_fk = true
 nullable = false
 
 [[entities.Profile.columns]]

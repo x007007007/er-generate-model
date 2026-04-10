@@ -11,11 +11,6 @@ index-url = "https://mirrors.aliyun.com/pypi/simple/"
 [tool.pytest.ini_options]
 testpaths = ["packages/*/tests"]
 addopts = "--cov-report=term-missing --cov-report=html"
-# Ignore test files that depend on unimplemented functionality
-collect_ignore_glob = [
-    "packages/er-gen-tool/tests/test_cli_extended.py",
-    "packages/er-gen-tool/tests/test_er_migrate/*.py",
-]
 
 [tool.coverage.run]
 source = [

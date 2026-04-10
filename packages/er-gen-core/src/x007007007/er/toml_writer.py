@@ -21,7 +21,14 @@ from x007007007.er.namespace_models import (
 
 
 def _toml_escape_string(s: str) -> str:
-    return s.replace('\\', '\\\\').replace('"', '\\"')
+    return (
+        s
+        .replace('\\', '\\\\')
+        .replace('"', '\\"')
+        .replace('\n', '\\n')
+        .replace('\r', '\\r')
+        .replace('\t', '\\t')
+    )
 
 
 def _format_value(val) -> str:

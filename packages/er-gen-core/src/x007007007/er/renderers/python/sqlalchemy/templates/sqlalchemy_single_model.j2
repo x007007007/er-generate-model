@@ -31,6 +31,13 @@ Base = declarative_base()
 {%- set export_path = template_info.export_path %}
 {%- set _ = mixin_imports.append((export_path, base_class_name)) %}
 {%- endif %}
+{%- else %}
+{#- 外部类在 model.templates 中（由 _generate_mixin_files 添加） -#}
+{%- if inheritance_mode == 'reference' %}
+{%- set export_path = template_info.export_path %}
+{%- set base_class_name = class_name %}
+{%- set _ = mixin_imports.append((export_path, base_class_name)) %}
+{%- endif %}
 {%- endif %}
 {%- else %}
 {#- 外部类：从完整路径中提取模块和类名 -#}
@@ -101,10 +108,16 @@ from {{ export_path }} import {{ base_class_name }}
 {#- Reference mode: 添加到基类列表 -#}
 {%- set _ = base_classes.append(class_name) %}
 {%- endif %}
+{%- else %}
+{#- 外部类在 model.templates 中（由 _generate_mixin_files 添加） -#}
+{%- if inheritance_mode == 'reference' %}
+{%- set _ = base_classes.append(class_name) %}
+{%- else %}
+{%- set _ = base_classes.append(template_name) %}
+{%- endif %}
 {%- endif %}
 {%- else %}
 {#- 模板不在templates中，或者是外部类 -#}
-{#- 只在 reference 模式下添加外部类到继承列表 -#}
 {%- if inheritance_mode == 'reference' %}
 {%- set _ = base_classes.append(class_name) %}
 {%- else %}

@@ -431,10 +431,13 @@ class ERMCPServer:
         
         # Reconstruct entities
         for name, entity_data in model_dict.get("entities", {}).items():
+            entity_name = entity_data.get("name", name)
+            table_name = entity_data.get("table_name") or entity_name.lower()
             columns = [
                 Column(
                     name=col_data.get("name", ""),
                     type=col_data.get("type", "string"),
+                    db_column=col_data.get("db_column", col_data.get("name", "")),
                     is_pk=col_data.get("is_pk", False),
                     is_fk=col_data.get("is_fk", False),
                     nullable=col_data.get("nullable", True),
@@ -449,11 +452,13 @@ class ERMCPServer:
                 for col_data in entity_data.get("columns", [])
             ]
             entity = Entity(
-                name=entity_data.get("name", name),
+                name=entity_name,
+                table_name=table_name,
                 columns=columns,
                 comment=entity_data.get("comment"),
                 extends=entity_data.get("extends", []),
-                export_path=entity_data.get("export_path")
+                export_path=entity_data.get("export_path"),
+                package=entity_data.get("package")
             )
             model.add_entity(entity)
         
@@ -509,10 +514,13 @@ class ERMCPServer:
         try:
             # Reconstruct entities
             for name, entity_data in model_dict.get("entities", {}).items():
+                entity_name = entity_data.get("name", name)
+                table_name = entity_data.get("table_name") or entity_name.lower()
                 columns = [
                     Column(
                         name=col_data.get("name", ""),
                         type=col_data.get("type", "string"),
+                        db_column=col_data.get("db_column", col_data.get("name", "")),
                         is_pk=col_data.get("is_pk", False),
                         is_fk=col_data.get("is_fk", False),
                         nullable=col_data.get("nullable", True),
@@ -527,11 +535,13 @@ class ERMCPServer:
                     for col_data in entity_data.get("columns", [])
                 ]
                 entity = Entity(
-                    name=entity_data.get("name", name),
+                    name=entity_name,
+                    table_name=table_name,
                     columns=columns,
                     comment=entity_data.get("comment"),
                     extends=entity_data.get("extends", []),
-                    export_path=entity_data.get("export_path")
+                    export_path=entity_data.get("export_path"),
+                    package=entity_data.get("package")
                 )
                 model.add_entity(entity)
             
@@ -657,4 +667,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
