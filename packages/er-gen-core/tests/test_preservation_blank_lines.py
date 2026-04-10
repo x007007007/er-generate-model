@@ -374,17 +374,26 @@ class TestProperty2Preservation:
         # Create a model with template inheritance
         toml_content = """
 [templates.BaseModel]
-columns = [
-    {name = "id", type = "int", is_pk = true},
-    {name = "created_at", type = "datetime", nullable = false},
-]
+
+[[templates.BaseModel.columns]]
+name = "id"
+type = "int"
+primary_key = true
+
+[[templates.BaseModel.columns]]
+name = "created_at"
+type = "datetime"
+nullable = false
 
 [entities.User]
 table_name = "users"
 extends = ["BaseModel"]
-columns = [
-    {name = "name", type = "string", max_length = 100, nullable = false},
-]
+
+[[entities.User.columns]]
+name = "name"
+type = "string"
+max_length = 100
+nullable = false
 """
         
         # Parse the TOML
@@ -418,17 +427,26 @@ columns = [
         toml_content = """
 [templates.BaseModel]
 export_path = "myapp.base"
-columns = [
-    {name = "id", type = "int", is_pk = true},
-    {name = "created_at", type = "datetime", nullable = false},
-]
+
+[[templates.BaseModel.columns]]
+name = "id"
+type = "int"
+primary_key = true
+
+[[templates.BaseModel.columns]]
+name = "created_at"
+type = "datetime"
+nullable = false
 
 [entities.User]
 table_name = "users"
 extends = ["BaseModel"]
-columns = [
-    {name = "name", type = "string", max_length = 100, nullable = false},
-]
+
+[[entities.User.columns]]
+name = "name"
+type = "string"
+max_length = 100
+nullable = false
 """
         
         # Parse the TOML

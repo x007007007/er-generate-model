@@ -9,10 +9,15 @@ def test_validate_toml_syntax_valid():
     """测试有效的TOML语法。"""
     valid_toml = """
 [entities.USER]
-columns = [
-    {name = "id", type = "int", is_pk = true},
-    {name = "username", type = "string"},
-]
+
+[[entities.USER.columns]]
+name = "id"
+type = "int"
+primary_key = true
+
+[[entities.USER.columns]]
+name = "username"
+type = "string"
 """
     is_valid, error = validate_toml_syntax(valid_toml)
     assert is_valid is True

@@ -58,6 +58,8 @@ def _serialize_toml_new_format(data: Dict, config: Optional[Dict] = None) -> str
         lines.append(f"[templates.{tmpl_name}]")
         if tmpl_data.get('comment'):
             lines.append(f'comment = "{_toml_escape_string(tmpl_data["comment"])}"')
+        if tmpl_data.get('package'):
+            lines.append(f'package = "{_toml_escape_string(tmpl_data["package"])}"')
         lines.append("")
         
         for col in tmpl_data.get('columns', []):
@@ -361,6 +363,9 @@ class TOMLWriter:
         
         if template.comment:
             template_data['comment'] = template.comment
+        
+        if template.package:
+            template_data['package'] = template.package
         
         template_data['columns'] = [
             self._column_to_dict(col) for col in template.columns

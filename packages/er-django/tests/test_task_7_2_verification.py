@@ -122,7 +122,6 @@ package = "kinkotech.common.domains.account.models"
 [[entities.Profile.columns]]
 name = "user"
 type = "OneToOneField"
-is_fk = true
 nullable = false
 """
     

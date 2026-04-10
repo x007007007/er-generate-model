@@ -2,6 +2,7 @@
 namespace = "test.export_path"
 
 [templates.create_update_time]
+export_path = "common.mixins"
 
 [[templates.create_update_time.columns]]
 name = "created_at"

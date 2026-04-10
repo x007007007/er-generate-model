@@ -62,10 +62,16 @@ def test_convert_er_diagram_toml_input():
     server = create_mcp_server()
     
     toml_content = """[entities.USER]
-columns = [
-    {name = "id", type = "int", is_pk = true},
-    {name = "name", type = "string"}
-]"""
+
+[[entities.USER.columns]]
+name = "id"
+type = "int"
+primary_key = true
+
+[[entities.USER.columns]]
+name = "name"
+type = "string"
+"""
     
     request = {
         "jsonrpc": "2.0",

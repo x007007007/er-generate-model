@@ -44,10 +44,16 @@ type = "datetime"
 [entities.USER]
 table_name = "users"
 extends = ["TimestampMixin"]
-columns = [
-    {name = "id", type = "uuid", is_pk = true},
-    {name = "username", type = "string", unique = true},
-]
+
+[[entities.USER.columns]]
+name = "id"
+type = "uuid"
+primary_key = true
+
+[[entities.USER.columns]]
+name = "username"
+type = "string"
+unique = true
 """
         toml_file = Path(temp_dir) / "models.toml"
         toml_file.write_text(toml_content)
@@ -111,10 +117,15 @@ type = "datetime"
 [entities.PRODUCT]
 table_name = "products"
 extends = ["AuditMixin"]
-columns = [
-    {name = "id", type = "uuid", is_pk = true},
-    {name = "name", type = "string"},
-]
+
+[[entities.PRODUCT.columns]]
+name = "id"
+type = "uuid"
+primary_key = true
+
+[[entities.PRODUCT.columns]]
+name = "name"
+type = "string"
 """
         base_file = Path(temp_dir) / "base.toml"
         entities_file = Path(temp_dir) / "entities.toml"
@@ -157,9 +168,11 @@ type = "string"
 [entities.TASK]
 table_name = "tasks"
 extends = ["CustomMixin"]
-columns = [
-    {name = "id", type = "bigint", is_pk = true},
-]
+
+[[entities.TASK.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
 """
         toml_file = Path(temp_dir) / "models.toml"
         toml_file.write_text(toml_content)
@@ -193,14 +206,15 @@ package = "app.models.base"
 [[templates.BaseMixin.columns]]
 name = "id"
 type = "bigint"
-is_pk = true
+primary_key = true
 
 [entities.DOCUMENT]
 table_name = "documents"
 extends = ["BaseMixin"]
-columns = [
-    {name = "title", type = "string"},
-]
+
+[[entities.DOCUMENT.columns]]
+name = "title"
+type = "string"
 """
         toml_file = Path(temp_dir) / "models.toml"
         toml_file.write_text(toml_content)
@@ -247,14 +261,15 @@ package = "test.models.base"
 [[templates.ImportTestMixin.columns]]
 name = "test_id"
 type = "bigint"
-is_pk = true
+primary_key = true
 
 [entities.TESTENTITY]
 table_name = "test_entities"
 extends = ["ImportTestMixin"]
-columns = [
-    {name = "name", type = "string"},
-]
+
+[[entities.TESTENTITY.columns]]
+name = "name"
+type = "string"
 """
         toml_file = Path(temp_dir) / "models.toml"
         toml_file.write_text(toml_content)
@@ -309,19 +324,33 @@ type = "datetime"
 [entities.USER]
 table_name = "users"
 extends = ["AuditMixin"]
-columns = [
-    {name = "id", type = "bigint", is_pk = true},
-    {name = "username", type = "string"},
-]
+
+[[entities.USER.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+
+[[entities.USER.columns]]
+name = "username"
+type = "string"
 
 [entities.POST]
 table_name = "posts"
 extends = ["AuditMixin"]
-columns = [
-    {name = "id", type = "bigint", is_pk = true},
-    {name = "author", type = "bigint", is_fk = true, db_column = "author_id"},
-    {name = "title", type = "string"},
-]
+
+[[entities.POST.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+
+[[entities.POST.columns]]
+name = "author"
+type = "bigint"
+db_column = "author_id"
+
+[[entities.POST.columns]]
+name = "title"
+type = "string"
 
 [[relationships]]
 left = "USER"

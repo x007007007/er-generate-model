@@ -16,10 +16,18 @@ def test_cli_default_input_type_is_toml():
         f.write("""
 [entities.User]
 table_name = "user"
-columns = [
-    { name = "id", type = "int", is_pk = true, nullable = false },
-    { name = "name", type = "varchar", max_length = 100, nullable = false }
-]
+
+[[entities.User.columns]]
+name = "id"
+type = "int"
+primary_key = true
+nullable = false
+
+[[entities.User.columns]]
+name = "name"
+type = "varchar"
+max_length = 100
+nullable = false
 """)
         toml_file = f.name
     
@@ -111,11 +119,25 @@ def test_cli_toml_with_default_values():
         f.write("""
 [entities.Post]
 table_name = "post"
-columns = [
-    { name = "id", type = "int", is_pk = true, nullable = false },
-    { name = "title", type = "varchar", max_length = 200, nullable = false, default = "Untitled" },
-    { name = "published", type = "boolean", nullable = false, default = false }
-]
+
+[[entities.Post.columns]]
+name = "id"
+type = "int"
+primary_key = true
+nullable = false
+
+[[entities.Post.columns]]
+name = "title"
+type = "varchar"
+max_length = 200
+nullable = false
+default = "Untitled"
+
+[[entities.Post.columns]]
+name = "published"
+type = "boolean"
+nullable = false
+default = false
 """)
         toml_file = f.name
     
@@ -143,10 +165,18 @@ def test_cli_toml_with_comments():
         f.write("""
 [entities.Article]
 table_name = "article"
-columns = [
-    { name = "id", type = "int", is_pk = true, nullable = false },
-    { name = "content", type = "text", nullable = false, comment = "Article content" }
-]
+
+[[entities.Article.columns]]
+name = "id"
+type = "int"
+primary_key = true
+nullable = false
+
+[[entities.Article.columns]]
+name = "content"
+type = "text"
+nullable = false
+comment = "Article content"
 """)
         toml_file = f.name
     
@@ -172,10 +202,19 @@ def test_cli_toml_with_quotes_in_values():
         f.write("""
 [entities.Product]
 table_name = "product"
-columns = [
-    { name = "id", type = "int", is_pk = true, nullable = false },
-    { name = "name", type = "varchar", max_length = 100, nullable = false, comment = 'Product "name"' }
-]
+
+[[entities.Product.columns]]
+name = "id"
+type = "int"
+primary_key = true
+nullable = false
+
+[[entities.Product.columns]]
+name = "name"
+type = "varchar"
+max_length = 100
+nullable = false
+comment = 'Product "name"'
 """)
         toml_file = f.name
     
@@ -229,10 +268,18 @@ def test_cli_sqlalchemy_with_toml_default():
         f.write("""
 [entities.User]
 table_name = "user"
-columns = [
-    { name = "id", type = "int", is_pk = true, nullable = false },
-    { name = "email", type = "varchar", max_length = 255, nullable = false }
-]
+
+[[entities.User.columns]]
+name = "id"
+type = "int"
+primary_key = true
+nullable = false
+
+[[entities.User.columns]]
+name = "email"
+type = "varchar"
+max_length = 255
+nullable = false
 """)
         toml_file = f.name
     

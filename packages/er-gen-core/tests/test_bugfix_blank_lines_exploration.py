@@ -51,20 +51,47 @@ class TestBugConditionExploration:
         toml_content = """
 [entities.User]
 table_name = "users"
-columns = [
-    {name = "id", type = "int", is_pk = true},
-    {name = "name", type = "string", max_length = 100, nullable = false},
-    {name = "email", type = "string", max_length = 255, nullable = false},
-]
+
+[[entities.User.columns]]
+name = "id"
+type = "int"
+primary_key = true
+
+[[entities.User.columns]]
+name = "name"
+type = "string"
+max_length = 100
+nullable = false
+
+[[entities.User.columns]]
+name = "email"
+type = "string"
+max_length = 255
+nullable = false
 
 [entities.Post]
 table_name = "posts"
-columns = [
-    {name = "id", type = "int", is_pk = true},
-    {name = "title", type = "string", max_length = 200, nullable = false},
-    {name = "content", type = "text", nullable = false},
-    {name = "user_id", type = "int", is_fk = true, nullable = false},
-]
+
+[[entities.Post.columns]]
+name = "id"
+type = "int"
+primary_key = true
+
+[[entities.Post.columns]]
+name = "title"
+type = "string"
+max_length = 200
+nullable = false
+
+[[entities.Post.columns]]
+name = "content"
+type = "text"
+nullable = false
+
+[[entities.Post.columns]]
+name = "user_id"
+type = "int"
+nullable = false
 
 [[relationships]]
 left = "User"
@@ -206,10 +233,17 @@ type = "1:N"
 [entities.MyModel]
 table_name = "my_model"
 extends = ["external.models.ExternalClass"]
-columns = [
-    {name = "id", type = "int", is_pk = true},
-    {name = "name", type = "string", max_length = 100, nullable = false},
-]
+
+[[entities.MyModel.columns]]
+name = "id"
+type = "int"
+primary_key = true
+
+[[entities.MyModel.columns]]
+name = "name"
+type = "string"
+max_length = 100
+nullable = false
 """
         
         # Parse the TOML

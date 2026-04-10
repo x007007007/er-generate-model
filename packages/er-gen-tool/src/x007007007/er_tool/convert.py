@@ -5,6 +5,8 @@ import click
 import logging
 import sys
 import os
+import tempfile
+import zipfile
 from pathlib import Path
 from x007007007.er.version import get_version
 from x007007007.er.parser.antlr.plantuml_antlr_parser import PlantUMLAntlrParser
@@ -16,6 +18,26 @@ from x007007007.er.converters import MermaidConverter, PlantUMLConverter
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
+
+
+def _extract_zip_toml_files(input_source: str) -> tuple[str, list[str], str]:
+    assert isinstance(input_source, str), "input_source must be a string"
+    tmp_dir = tempfile.mkdtemp(prefix='er_gen_zip_')
+    toml_files: list[str] = []
+    with zipfile.ZipFile(input_source, 'r') as zf:
+        zf.extractall(tmp_dir)
+        for name in sorted(zf.namelist()):
+            if name.endswith('.toml') and not name.startswith('__MACOSX'):
+                toml_files.append(os.path.join(tmp_dir, name))
+
+    if not toml_files:
+        logger.error(f"No .toml files found in ZIP archive: {input_source}")
+        sys.exit(1)
+
+    main_file = toml_files[0]
+    extra_files = toml_files[1:]
+    logger.info(f"Extracted {len(toml_files)} TOML file(s) from ZIP: {[os.path.basename(f) for f in toml_files]}")
+    return main_file, extra_files, tmp_dir
 
 
 def get_default_app_label(input_source: str) -> str:
@@ -44,7 +66,7 @@ def get_default_table_prefix(input_source: str) -> str:
 
 @click.command()
 @click.argument('input_source')
-@click.option('--input-type', '-t', type=click.Choice(['mermaid', 'plantuml', 'db', 'toml']), default='mermaid', help='Input type')
+@click.option('--input-type', '-t', type=click.Choice(['mermaid', 'plantuml', 'db', 'toml']), default=None, help='Input type (auto-detected for .zip files)')
 @click.option('--format', '-f', type=click.Choice(['django', 'sqlalchemy', 'mermaid', 'plantuml']), default='django', help='Output format')
 @click.option('--framework', type=click.Choice(['django', 'sqlalchemy']), default=None, help='Target framework (alias for --format)')
 @click.option('--output', '-o', type=click.Path(), default=None, help='Output file path (default: stdout, UTF-8 encoded)')
@@ -59,6 +81,31 @@ def convert_cmd(input_source, input_type, format, framework, output, output_dir,
     """Convert ER diagram file to code."""
     assert isinstance(input_source, str), "input_source must be a string"
     assert len(input_source) > 0, "input_source cannot be empty"
+
+    zip_tmp_dir = None
+    zip_extra_files: list[str] = []
+
+    if input_source.endswith('.zip'):
+        if input_type in ('mermaid', 'plantuml', 'db'):
+            logger.error(f"ZIP input is only supported with --input-type toml (got: {input_type})")
+            sys.exit(1)
+        input_source, zip_extra_files, zip_tmp_dir = _extract_zip_toml_files(input_source)
+        input_type = 'toml'
+        logger.info(f"Using ZIP-extracted TOML as input: {os.path.basename(input_source)}")
+
+    if zip_extra_files:
+        toml_files = list(toml_files) + zip_extra_files
+
+    if input_type is None:
+        if input_source.endswith('.toml'):
+            input_type = 'toml'
+        elif input_source.endswith('.mmd'):
+            input_type = 'mermaid'
+        elif input_source.endswith('.puml') or input_source.endswith('.plantuml'):
+            input_type = 'plantuml'
+        else:
+            input_type = 'mermaid'
+
     assert input_type in ['mermaid', 'plantuml', 'db', 'toml'], "Invalid input_type"
     assert format in ['django', 'sqlalchemy', 'mermaid', 'plantuml'], "Invalid format"
     

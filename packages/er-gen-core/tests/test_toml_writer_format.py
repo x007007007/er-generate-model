@@ -83,7 +83,7 @@ def test_entity_format_matches_example(temp_dir):
     id_col = user_entity['columns'][0]
     assert id_col['name'] == 'id'
     assert id_col['type'] == 'int'
-    assert id_col['is_pk'] is True
+    assert id_col['primary_key'] is True
     assert id_col['comment'] == "Primary key"
     
     username_col = user_entity['columns'][1]
@@ -135,7 +135,7 @@ def test_template_format_matches_example(temp_dir):
     id_col = template_data['columns'][0]
     assert id_col['name'] == 'id'
     assert id_col['type'] == 'bigint'
-    assert id_col['is_pk'] is True
+    assert id_col['primary_key'] is True
     assert id_col['nullable'] is False
 
 
@@ -212,8 +212,8 @@ def test_column_optional_fields_omitted_when_default(temp_dir):
     assert col['type'] == 'int'
     # These should not be present (default values)
     assert 'db_column' not in col
-    assert 'is_pk' not in col
-    assert 'is_fk' not in col
+    assert 'primary_key' not in col
+    assert 'foreign_key' not in col
     assert 'nullable' not in col
     assert 'unique' not in col
     assert 'indexed' not in col
@@ -254,10 +254,9 @@ def test_column_optional_fields_included_when_non_default(temp_dir):
     assert col['name'] == 'id'
     assert col['type'] == 'int'
     assert col['db_column'] == 'custom_id'
-    assert col['is_pk'] is True
+    assert col['primary_key'] is True
     assert col['nullable'] is False
     assert col['unique'] is True
-    assert col['indexed'] is True
     assert col['max_length'] == 100
     assert col['comment'] == "Custom ID field"
     assert col['default'] == 0

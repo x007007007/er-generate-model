@@ -137,18 +137,18 @@
 - [x] **2.4.26** `examples/bug/django/rfc_order/models.toml`
 - [x] **2.4.27** `examples/toml-to-output/django/01-simple-model/input.toml`
 - [x] **2.4.28** `examples/toml-to-output/django/02-relationships/input.toml`
-- [ ] **2.4.29** `examples/toml-to-output/django/03-all-data-types/input.toml`
-- [ ] **2.4.30** `examples/toml-to-output/mermaid/01-simple-model/input.toml`
-- [ ] **2.4.31** `examples/toml-to-output/mermaid/02-relationships/input.toml`
-- [ ] **2.4.32** `examples/toml-to-output/mermaid/03-all-data-types/input.toml`
-- [ ] **2.4.33** `examples/toml-to-output/sqlalchemy/01-simple-model/input.toml`
-- [ ] **2.4.34** `examples/toml-to-output/sqlalchemy/02-relationships/input.toml`
-- [ ] **2.4.35** `examples/toml-to-output/sqlalchemy/03-all-data-types/input.toml`
-- [ ] **2.4.36** `examples/toml-to-output/sqlalchemy/04-templates-single-file/input.toml`
-- [ ] **2.4.37** `examples/toml-to-output/sqlalchemy/05-templates-cross-file/base_templates.toml`
-- [ ] **2.4.38** `examples/toml-to-output/sqlalchemy/05-templates-cross-file/entities.toml`
-- [ ] **2.4.39** `examples/toml-to-output/sqlalchemy/06-templates-explicit-export/input.toml`
-- [ ] **2.4.40** `examples/input-to-toml/` 下所有 TOML 文件
+- [x] **2.4.29** `examples/toml-to-output/django/03-all-data-types/input.toml`
+- [x] **2.4.30** `examples/toml-to-output/mermaid/01-simple-model/input.toml`
+- [x] **2.4.31** `examples/toml-to-output/mermaid/02-relationships/input.toml`
+- [x] **2.4.32** `examples/toml-to-output/mermaid/03-all-data-types/input.toml`
+- [x] **2.4.33** `examples/toml-to-output/sqlalchemy/01-simple-model/input.toml`
+- [x] **2.4.34** `examples/toml-to-output/sqlalchemy/02-relationships/input.toml`
+- [x] **2.4.35** `examples/toml-to-output/sqlalchemy/03-all-data-types/input.toml`
+- [x] **2.4.36** `examples/toml-to-output/sqlalchemy/04-templates-single-file/input.toml`
+- [x] **2.4.37** `examples/toml-to-output/sqlalchemy/05-templates-cross-file/base_templates.toml`
+- [x] **2.4.38** `examples/toml-to-output/sqlalchemy/05-templates-cross-file/entities.toml`
+- [x] **2.4.39** `examples/toml-to-output/sqlalchemy/06-templates-explicit-export/input.toml`
+- [x] **2.4.40** `examples/input-to-toml/` 下所有 TOML 文件
 
 ### Phase 5: 测试代码适配（依赖 Phase 1, 2, 4）
 

@@ -13,12 +13,31 @@ def test_full_pipeline_toml_to_django_with_quotes():
 [entities.User]
 table_name = "user"
 comment = "User model with special quotes"
-columns = [
-    {name = "id", type = "int", is_pk = true},
-    {name = "name", type = "string", max_length = 100, default = "John Doe", comment = "User full name"},
-    {name = "bio", type = "text", default = "Say hello to the world", comment = "User biography"},
-    {name = "status", type = "string", max_length = 20, default = "active", comment = "Status field"},
-]
+
+[[entities.User.columns]]
+name = "id"
+type = "int"
+primary_key = true
+
+[[entities.User.columns]]
+name = "name"
+type = "string"
+max_length = 100
+default = "John Doe"
+comment = "User full name"
+
+[[entities.User.columns]]
+name = "bio"
+type = "text"
+default = "Say hello to the world"
+comment = "User biography"
+
+[[entities.User.columns]]
+name = "status"
+type = "string"
+max_length = 20
+default = "active"
+comment = "Status field"
 '''
     
     # Parse TOML
@@ -50,11 +69,24 @@ def test_full_pipeline_toml_to_django_package_with_quotes():
 [entities.Product]
 table_name = "product"
 comment = "Product with special pricing"
-columns = [
-    {name = "id", type = "int", is_pk = true},
-    {name = "name", type = "string", max_length = 200, default = "New Product", comment = "Product name"},
-    {name = "description", type = "text", default = "Description with quotes inside", comment = "Product description"},
-]
+
+[[entities.Product.columns]]
+name = "id"
+type = "int"
+primary_key = true
+
+[[entities.Product.columns]]
+name = "name"
+type = "string"
+max_length = 200
+default = "New Product"
+comment = "Product name"
+
+[[entities.Product.columns]]
+name = "description"
+type = "text"
+default = "Description with quotes inside"
+comment = "Product description"
 '''
     
     # Parse TOML
@@ -91,12 +123,31 @@ def test_full_pipeline_with_special_characters():
 [entities.Config]
 table_name = "config"
 comment = "Configuration settings"
-columns = [
-    {name = "id", type = "int", is_pk = true},
-    {name = "path", type = "string", max_length = 500, default = "C:\\\\Users\\\\Admin\\\\Documents", comment = "File path with backslashes"},
-    {name = "multiline", type = "text", default = "Line 1\\nLine 2\\nLine 3", comment = "Multiline text"},
-    {name = "tabbed", type = "string", max_length = 100, default = "Col1\\tCol2\\tCol3", comment = "Tab-separated values"},
-]
+
+[[entities.Config.columns]]
+name = "id"
+type = "int"
+primary_key = true
+
+[[entities.Config.columns]]
+name = "path"
+type = "string"
+max_length = 500
+default = "C:\\\\Users\\\\Admin\\\\Documents"
+comment = "File path with backslashes"
+
+[[entities.Config.columns]]
+name = "multiline"
+type = "text"
+default = "Line 1\\nLine 2\\nLine 3"
+comment = "Multiline text"
+
+[[entities.Config.columns]]
+name = "tabbed"
+type = "string"
+max_length = 100
+default = "Col1\\tCol2\\tCol3"
+comment = "Tab-separated values"
 '''
     
     # Parse TOML
@@ -132,7 +183,7 @@ comment = "Simple test model"
 name = "id"
 type = "int"
 db_column = "id"
-is_pk = true
+primary_key = true
 
 [[entities.SimpleModel.columns]]
 name = "name"
@@ -164,18 +215,30 @@ def test_full_pipeline_with_write_to_directory():
 [entities.Author]
 table_name = "author"
 comment = "Author model"
-columns = [
-    {name = "id", type = "int", is_pk = true},
-    {name = "name", type = "string", max_length = 100},
-]
+
+[[entities.Author.columns]]
+name = "id"
+type = "int"
+primary_key = true
+
+[[entities.Author.columns]]
+name = "name"
+type = "string"
+max_length = 100
 
 [entities.Book]
 table_name = "book"
 comment = "Book model"
-columns = [
-    {name = "id", type = "int", is_pk = true},
-    {name = "title", type = "string", max_length = 200},
-]
+
+[[entities.Book.columns]]
+name = "id"
+type = "int"
+primary_key = true
+
+[[entities.Book.columns]]
+name = "title"
+type = "string"
+max_length = 200
 '''
     
     # Parse TOML

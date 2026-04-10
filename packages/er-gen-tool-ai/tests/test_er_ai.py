@@ -29,16 +29,22 @@ def test_er_modeler_generate_toml():
     mock_response = Mock()
     mock_response.content = """
 [templates.create_update_time]
-columns = [
-    {name = "created_at", type = "datetime"},
-]
+
+[[templates.create_update_time.columns]]
+name = "created_at"
+type = "datetime"
 
 [entities.USER]
 extends = ["create_update_time"]
-columns = [
-    {name = "id", type = "int", is_pk = true},
-    {name = "username", type = "string"},
-]
+
+[[entities.USER.columns]]
+name = "id"
+type = "int"
+primary_key = true
+
+[[entities.USER.columns]]
+name = "username"
+type = "string"
 """
     
     with patch('x007007007.er_ai.modeler.ChatOpenAI') as mock_chat_class:

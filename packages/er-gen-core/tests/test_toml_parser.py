@@ -239,7 +239,7 @@ extends = []
 [[entities.User.columns]]
 name = "id"
 type = "int"
-is_pk = true
+primary_key = true
 
 [[entities.User.columns]]
 name = "username"
@@ -267,7 +267,7 @@ extends = []
 [[entities.Product.columns]]
 name = "id"
 type = "int"
-is_pk = true
+primary_key = true
 """
     
     model = parser.parse(toml_content)
@@ -299,7 +299,7 @@ export_path = "src/myapp/orders/models.toml"
 [[entities.Order.columns]]
 name = "id"
 type = "int"
-is_pk = true
+primary_key = true
 """
     
     model = parser.parse(toml_content)
@@ -325,7 +325,7 @@ extends = []
 [[entities.Account.columns]]
 name = "id"
 type = "int"
-is_pk = true
+primary_key = true
 """
     
     # 应该抛出ValueError并包含清晰的错误信息
@@ -352,7 +352,7 @@ extends = []
 [[entities.Account.columns]]
 name = "id"
 type = "int"
-is_pk = true
+primary_key = true
 """
     
     model = parser.parse(toml_content)
@@ -377,7 +377,7 @@ extends = []
 [[entities.User.columns]]
 name = "id"
 type = "int"
-is_pk = true
+primary_key = true
 """
     
     # 应该能够正常解析，export_path被保留但不影响功能
