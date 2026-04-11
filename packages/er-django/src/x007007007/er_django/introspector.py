@@ -102,10 +102,14 @@ class DjangoModelIntrospector:
     
     @staticmethod
     def get_help_text(field: Field) -> Optional[str]:
-        """Get help text (comment) from field"""
+        """Get comment from field. Priority: help_text > verbose_name"""
         if field.help_text:
-            # Convert lazy text to string
             return str(field.help_text)
+        verbose_name = getattr(field, 'verbose_name', None)
+        if verbose_name:
+            name = str(verbose_name)
+            if name != field.name and name != field.name.replace('_', ' '):
+                return name
         return None
     
     @staticmethod
