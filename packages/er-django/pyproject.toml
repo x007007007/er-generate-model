@@ -9,6 +9,7 @@ authors = [
 requires-python = ">=3.11"
 dependencies = [
     "django>=4.2.0",
+    "x007007007-er-gen-core>=0.3.0",
     "pydantic>=2.0.0",
     "pyyaml>=6.0.0",
     "jinja2>=3.1.2",
@@ -23,9 +24,8 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/x007007007/er"
-Repository = "https://github.com/x007007007/er"
-Documentation = "https://github.com/x007007007/er/tree/main/packages/er-django"
+Homepage = "https://github.com/x007007007/er-django"
+Repository = "https://github.com/x007007007/er-django"
 
 [build-system]
 requires = ["setuptools>=45", "setuptools-scm[toml]>=6.2"]
@@ -37,6 +37,9 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.package-data]
 "x007007007.er_django" = ["management/commands/*.py"]
+
+[tool.uv.sources]
+x007007007-er-gen-core = { git = "ssh://git@github.com/x007007007/er-gen-core.git" }
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "tests.settings"

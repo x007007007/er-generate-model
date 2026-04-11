@@ -32,6 +32,10 @@ dependencies = [
     "pyyaml>=6.0.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/x007007007/er-gen-core"
+Repository = "https://github.com/x007007007/er-gen-core"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
