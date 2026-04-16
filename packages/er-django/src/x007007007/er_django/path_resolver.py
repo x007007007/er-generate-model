@@ -27,64 +27,36 @@ class PathResolver:
         is_third_party: bool = False
     ) -> Path:
         """
-        Resolve output path for an app's ER export based ONLY on Python package path.
-        
-        This method determines where to write the ER export file based EXCLUSIVELY on the app's
-        Python package path (app_config.name), completely independent of file system location.
-        
-        The output path is constructed by:
-        1. Taking the app's Python package name (e.g., 'kinkotech.common.domains.account')
-        2. Converting dots to directory separators (e.g., 'kinkotech/common/domains/account')
-        3. Appending 'models.{format}' to create the full path
-        
-        This ensures predictable, consistent output paths regardless of where the app
-        is physically located on the file system.
+        Resolve output path for an app's ER export based on namespace.
+
+        The output file is named directly after the app's Python package path
+        (namespace), placed flat in the output directory.
 
         Args:
             app_config: Django AppConfig instance
             format: Output format extension (toml, mermaid, plantuml)
-            is_third_party: Whether this is a third-party package (default: False)
+            is_third_party: Unused, kept for interface compatibility
 
         Returns:
             Path object for output file
 
-        Raises:
-            ValueError: If app package path cannot be determined
-            
         Examples:
             app_config.name = 'kinkotech.common.domains.account'
             format = 'toml'
-            is_third_party = False
-            → '{output_path}/kinkotech/common/domains/account/models.toml'
-            
-            app_config.name = 'django.contrib.auth'
-            format = 'toml'
-            is_third_party = True
-            → '{third_party_output_path}/django/contrib/auth/models.toml'
+            → '{output_path}/kinkotech.common.domains.account.toml'
         """
-        # Select base directory based on whether it's a third-party package
-        base_dir = (
-            self.config.third_party_output_path 
-            if is_third_party 
-            else self.config.output_path
-        )
-        
-        # Get app's Python package path
+        base_dir = self.config.output_path
+
         package_path = app_config.name
-        
+
         if not package_path:
             raise ValueError(
                 f"Cannot determine package path for app '{app_config.label}'. "
                 f"AppConfig.name is empty."
             )
-        
-        # Convert package path to directory structure
-        # e.g., 'kinkotech.common.domains.account' → 'kinkotech/common/domains/account'
-        relative_path = Path(package_path.replace('.', os.sep))
-        
-        # Construct output path based ONLY on package path
-        output_path = base_dir / relative_path / f'models.{format}'
-        
+
+        output_path = base_dir / f'{package_path}.{format}'
+
         return output_path
 
     def resolve_package_name(

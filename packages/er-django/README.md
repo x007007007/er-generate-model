@@ -76,6 +76,9 @@ python manage.py er_export blog --format toml --output-dir src
 生成的文件 `src/blog/models.toml`：
 
 ```toml
+[config]
+namespace = "blog"
+
 [entities.Post]
 table_name = "blog_post"
 
@@ -509,6 +512,110 @@ python manage.py er_convert --framework django
 
 # 查看迁移状态
 python manage.py er_showmigrations
+```
+
+### 场景 5：导出到 ER Graph Editor 服务
+
+将 Django 项目的数据结构导出为 TOML，然后导入到 [er-graph-gen-code](https://github.com/x007007007/er-graph-gen-code) 服务中进行可视化编辑和管理。
+
+#### 前提条件
+
+- 目标项目已安装 `x007007007-er-django`（参见安装章节）
+- er-graph-gen-code 服务正在运行（默认端口 19999）
+
+#### 步骤 1：在 Django 项目中添加依赖
+
+在目标 Django 项目的 `pyproject.toml` 中添加本地路径依赖：
+
+```toml
+[project]
+dependencies = [
+    "x007007007-er-django",
+]
+
+[tool.uv.sources]
+x007007007-er-django = { path = "/path/to/er-generate-model/packages/er-django" }
+```
+
+#### 步骤 2：导出 TOML
+
+使用 `er-django` CLI 导出项目的所有 Django Model 为 TOML 格式：
+
+```bash
+# 设置 Django settings（无需数据库连接）
+export DJANGO_SETTINGS_MODULE=myproject.settings.dev
+
+# 导出所有应用为 TOML
+uv run er-django --settings myproject.settings.dev \
+    er_export --format toml --output-dir /tmp/export
+```
+
+导出的 TOML 文件使用新格式，包含 `[config]` 段声明命名空间：
+
+```toml
+[config]
+namespace = "myproject.blog"
+
+[entities.Post]
+table_name = "blog_post"
+
+[[entities.Post.columns]]
+name = "id"
+type = "AutoField"
+primary_key = true
+
+[[entities.Post.columns]]
+name = "title"
+type = "CharField"
+max_length = 200
+```
+
+`namespace` 值来自 Django AppConfig 的 Python 包路径（如 `myproject.blog`），而非 Django 的 `app_label`。
+
+#### 步骤 3：导入到 er-graph-gen-code 服务
+
+使用 `er-cli` 工具将导出的 TOML 文件批量导入到 er-graph-gen-code 服务：
+
+```bash
+# 导入目录下所有 TOML 文件
+er-cli --directory /tmp/export --verbose
+```
+
+`er-cli` 会扫描目录下所有 `.toml` 文件，从每个文件的 `[config].namespace` 读取命名空间标识，自动创建命名空间、实体和属性。
+
+> **注意**：缺少 `[config].namespace` 的 TOML 文件会被跳过并报错。确保所有 TOML 文件都包含 `[config]` 段。
+
+#### 步骤 4：在 ER Graph Editor 中查看
+
+打开浏览器访问 `http://localhost:19999`，即可在可视化编辑器中查看和编辑导入的数据结构。
+
+#### 完整示例
+
+以 redfamilycorner-BE 项目为例：
+
+```bash
+# 1. 进入项目目录
+cd /path/to/redfamilycorner-BE
+
+# 2. 导出所有 Django Model 为 TOML
+DJANGO_SETTINGS_MODULE=kinkotech.rfc_backend.settings.environments.env_dev \
+uv run er-django \
+    --settings kinkotech.rfc_backend.settings.environments.env_dev \
+    er_export --format toml --output-dir /tmp/rfc_export
+
+# 3. 导入到 er-graph-gen-code 服务
+cd /path/to/er-graph-gen-code
+uv run er-cli --directory /tmp/rfc_export --verbose
+```
+
+输出示例：
+```
+📊 导入完成:
+  ✓ 处理文件数: 29
+  ✓ 创建命名空间: 29
+  ✓ 创建实体: 110
+  ✓ 创建普通属性: 667
+  ✓ 创建关系属性: 63
 ```
 
 ## 常见问题
