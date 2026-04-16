@@ -2162,6 +2162,7 @@ dependencies = [
     { name = "jinja2" },
     { name = "pydantic" },
     { name = "pyyaml" },
+    { name = "x007007007-er-gen-core" },
 ]
 
 [package.optional-dependencies]
@@ -2181,6 +2182,7 @@ requires-dist = [
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0.0" },
     { name = "pytest-django", marker = "extra == 'dev'", specifier = ">=4.5.0" },
     { name = "pyyaml", specifier = ">=6.0.0" },
+    { name = "x007007007-er-gen-core", editable = "packages/er-gen-core" },
 ]
 provides-extras = ["dev"]
 

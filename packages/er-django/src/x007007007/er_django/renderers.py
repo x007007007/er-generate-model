@@ -86,6 +86,9 @@ class TOMLRenderer:
                 if col.comment:
                     col_dict['comment'] = col.comment
                 
+                if hasattr(col, 'enum') and col.enum:
+                    col_dict['enum'] = col.enum
+                
                 entity_dict['columns'].append(col_dict)
             
             entities_data[entity_name] = entity_dict
@@ -106,6 +109,7 @@ class TOMLRenderer:
         output_data = {
             'entities': entities_data,
             'relationships': relationships_data,
+            'enums': dict(er_model.enums) if er_model.enums else {},
         }
         
         return _serialize_toml_new_format(output_data, config if config else None)

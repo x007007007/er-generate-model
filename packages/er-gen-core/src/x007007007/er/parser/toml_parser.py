@@ -63,6 +63,10 @@ class TomlERParser(Parser):
         for rel in relationships:
             model.add_relationship(rel)
         
+        enums_data = data.get('enums', {})
+        if enums_data and isinstance(enums_data, dict):
+            model.enums = enums_data
+        
         return model
     
     def _parse_config(self, config_data: Any) -> Dict[str, Any]:
@@ -244,7 +248,8 @@ class TomlERParser(Parser):
             precision=col_data.get('precision'),
             scale=col_data.get('scale'),
             unique=col_data.get('unique', False),
-            indexed=col_data.get('indexed', False)
+            indexed=col_data.get('indexed', False),
+            enum=col_data.get('enum'),
         )
     
     def _parse_relationships(self, relationships_data: List[Any]) -> List[Relationship]:

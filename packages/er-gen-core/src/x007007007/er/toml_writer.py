@@ -111,6 +111,13 @@ def _serialize_toml_new_format(data: Dict, config: Optional[Dict] = None) -> str
             lines.append(f'right_column = "{_toml_escape_string(rel["right_column"])}"')
         lines.append("")
     
+    enums = data.get('enums', {})
+    for enum_name, enum_values in enums.items():
+        lines.append(f'[enums.{enum_name}]')
+        for val, label in enum_values.items():
+            lines.append(f'{_toml_escape_string(val)} = "{_toml_escape_string(label)}"')
+        lines.append("")
+    
     return '\n'.join(lines)
 
 
@@ -144,6 +151,9 @@ def _write_column(lines: list, col: dict) -> None:
     
     if col.get('comment'):
         lines.append(f'comment = "{_toml_escape_string(col["comment"])}"')
+    
+    if col.get('enum'):
+        lines.append(f'enum = "{_toml_escape_string(col["enum"])}"')
 
 
 class TOMLWriter:
@@ -246,6 +256,9 @@ class TOMLWriter:
         
         if column.scale is not None:
             col_dict['scale'] = column.scale
+        
+        if column.enum is not None:
+            col_dict['enum'] = column.enum
         
         return col_dict
     

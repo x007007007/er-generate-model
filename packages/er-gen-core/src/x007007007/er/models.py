@@ -16,6 +16,7 @@ class Column:
     scale: Optional[int] = None  # For DECIMAL, NUMERIC
     unique: bool = False
     indexed: bool = False
+    enum: Optional[str] = None  # Reference to enum name in ERModel.enums
     
     @property
     def database_column_name(self) -> str:
@@ -66,6 +67,7 @@ class ERModel:
     namespace: Optional[str] = None
     base_package: Optional[str] = None
     extends_aliases: Dict[str, str] = field(default_factory=dict)
+    enums: Dict[str, Dict[str, str]] = field(default_factory=dict)
 
     def add_entity(self, entity: Entity):
         assert isinstance(entity, Entity), "entity must be an Entity instance"
