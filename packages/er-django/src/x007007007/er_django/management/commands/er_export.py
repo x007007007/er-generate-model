@@ -223,7 +223,7 @@ class Command(BaseCommand):
             # Apply entity naming rules
             er_model = self._apply_entity_naming(er_model, name_extractor)
             
-            er_model.namespace = app_label
+            er_model.namespace = app_config.module.__name__
             
             self.stdout.write(f"Found {len(er_model.entities)} models in app '{app_label}'")
             total_entities += len(er_model.entities)

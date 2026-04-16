@@ -9,6 +9,7 @@ Outputs TOML files in the new format per toml-format-spec.md:
 - No template export_path output
 """
 
+import datetime
 import os
 import tempfile
 from typing import Dict, List, Optional
@@ -40,6 +41,8 @@ def _format_value(val) -> str:
         return str(val)
     if isinstance(val, str):
         return f'"{_toml_escape_string(val)}"'
+    if isinstance(val, datetime.timedelta):
+        return f'"{val}"'
     raise ValueError(f"Unsupported TOML value type: {type(val)}")
 
 
