@@ -39,4 +39,4 @@ ai-assist = "x007007007.er_tool_ai.cli_plugin:ai_assist_cmd"
 where = ["src"]
 
 [tool.uv.sources]
-x007007007-er-gen-core = { workspace = true }
+x007007007-er-gen-core = { git = "ssh://git@github.com/x007007007/er-gen-core.git" }
