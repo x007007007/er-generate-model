@@ -99,18 +99,22 @@ src/x007007007/er_django/
 - `_convert_model_to_entity(model)`: 转换单个 model
 - `_convert_field_to_column(field)`: 转换字段为列
 - `_extract_relationships(model)`: 提取关系
+- `_collect_all_abstract_ancestors(model)`: 递归收集所有抽象祖先模型
+- `_convert_abstract_to_template(model)`: 将抽象模型转换为模板定义
 
 **工作流程**:
 1. 获取要解析的 models（从 app 或列表）
-2. 第一遍：创建所有 Entity
+2. 第一遍：创建所有 Entity + 递归收集所有抽象基类作为 templates
 3. 第二遍：创建所有 Relationship
+4. 第三遍：将抽象基类转换为 templates 并添加到 ERModel
 
 **设计考虑**:
 - 支持三种输入方式：
   - 指定 app_label
   - 提供 models_list
   - 解析所有 models
-- 两遍扫描确保关系正确建立
+- 三遍扫描确保关系正确建立，抽象模型完整收集
+- 递归遍历继承链确保多层抽象基类不遗漏
 
 ### 3. Management Commands
 
@@ -119,17 +123,33 @@ src/x007007007/er_django/
 **功能**: 导出 Django models 为 ER 图
 
 **参数**:
-- `app_label`: Django app 名称（必需）
-- `--format`: 输出格式（mermaid/plantuml）
+- `apps`: Django app 名称列表（可选）
+- `--format`: 输出格式（toml/mermaid/plantuml）
 - `--output`: 输出文件路径
+- `--output-dir`: 输出目录
+- `--models`: 只导出指定的 models
+- `--exclude-apps`: 排除指定的应用
+- `--include-django-apps`: 包含 Django 内置应用
 
 **实现**:
 ```python
-parser = DjangoModelParser(app_label=app_label)
-er_model = parser.parse()
-renderer = JinjaRenderer(template_name)
-diagram = renderer.render(er_model)
+# 1. 导出每个 app 的 concrete models
+for app_label in target_apps:
+    parser = DjangoModelParser(app_label=app_label)
+    er_model = parser.parse()
+    renderer = TOMLRenderer()
+    diagram = renderer.render(er_model)
+    # 写入 app 的 TOML 文件（含 templates 段）
+
+# 2. 收集所有抽象模板，按 Python 包路径分组导出
+_export_templates(all_templates, path_config)
 ```
+
+**抽象模型导出流程**:
+1. 遍历所有 app 的 concrete models
+2. 对每个 model 递归收集其所有抽象祖先（`_collect_all_abstract_ancestors`）
+3. 收集完成后按 `__module__` 分组
+4. 每组生成独立的 TOML 文件，namespace 为包路径
 
 #### er_makemigrations
 

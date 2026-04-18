@@ -7,6 +7,7 @@ Django models 与 ER 图双向转换工具。支持从 Django models 导出 ER �
 - **Django → TOML**: 从 Django models 导出为 TOML 格式的 ER 定义
 - **TOML → Django/SQLAlchemy**: 从 TOML 生成 Django models 或 SQLAlchemy 代码
 - **Django → Mermaid/PlantUML**: 导出 ER 图用于文档和可视化
+- **抽象模型自动导出**: 递归收集所有抽象基类（Mixin、AbstractModel），按 Python 包路径分组导出为 `[templates.*]` 段
 - **db_column 支持**: 正确处理 Django 字段的 `db_column` 参数
 - **三方包自动分离**: 自动检测并分离三方包（如 DRF、django-filter）的输出
 - **批量处理**: 一次性处理多个应用
@@ -260,6 +261,97 @@ python manage.py er_showmigrations blog
 ```
 
 ## 高级功能
+
+### 抽象模型自动导出
+
+ER Django 会递归收集所有 Django Model 的抽象基类（如 Mixin、AbstractModel），并将其作为 `[templates.*]` 段导出到 TOML 文件中。
+
+#### 工作原理
+
+1. **递归收集**：遍历每个 concrete model 的完整继承链（MRO），递归收集所有 `Meta.abstract = True` 的祖先模型
+2. **按包分组**：抽象模型按其所在的 Python 包路径（`__module__`）分组
+3. **独立导出**：每组抽象模型生成一个独立的 TOML 文件，文件名为包路径
+4. **自包含输出**：每个 app 的 TOML 文件中也包含其依赖的抽象模型作为 `[templates.*]` 段，确保文件可独立导入
+
+#### 示例
+
+假设有以下模型定义：
+
+```python
+# common/base.py
+class TimeStampedModel(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    class Meta:
+        abstract = True
+
+# blog/models.py
+class Post(TimeStampedModel):
+    title = models.CharField(max_length=200)
+    class Meta:
+        db_table = 'blog_post'
+```
+
+导出时会生成：
+
+**`blog.toml`**（包含模板和实体）：
+```toml
+[config]
+namespace = "blog"
+
+[templates.TimeStampedModel]
+package = "common.base"
+
+[[templates.TimeStampedModel.columns]]
+name = "created_at"
+type = "datetime"
+nullable = false
+
+[[templates.TimeStampedModel.columns]]
+name = "updated_at"
+type = "datetime"
+nullable = false
+
+[entities.Post]
+extends = ["common.base.TimeStampedModel"]
+table_name = "blog_post"
+
+[[entities.Post.columns]]
+name = "id"
+type = "bigint"
+primary_key = true
+
+[[entities.Post.columns]]
+name = "title"
+type = "string"
+max_length = 200
+```
+
+**`common.base.toml`**（独立模板文件）：
+```toml
+[config]
+namespace = "common.base"
+
+[templates.TimeStampedModel]
+package = "common.base"
+
+[[templates.TimeStampedModel.columns]]
+name = "created_at"
+type = "datetime"
+nullable = false
+
+[[templates.TimeStampedModel.columns]]
+name = "updated_at"
+type = "datetime"
+nullable = false
+```
+
+#### 特性
+
+- **递归继承链**：`Account → AbstractUser → AbstractBaseUser` 中的所有抽象模型都会被收集
+- **模板间继承**：抽象模型自身的 `extends` 也会被记录（如 `AbstractUser extends AbstractBaseUser, PermissionsMixin`）
+- **字段完整保留**：抽象模型的所有 concrete 字段都会导出
+- **Django 内置支持**：Django 自带的抽象模型（如 `AbstractUser`、`AbstractBaseUser`）也会被导出
 
 ### db_column 参数支持
 
@@ -611,10 +703,10 @@ uv run er-cli --directory /tmp/rfc_export --verbose
 输出示例：
 ```
 📊 导入完成:
-  ✓ 处理文件数: 29
-  ✓ 创建命名空间: 29
-  ✓ 创建实体: 110
-  ✓ 创建普通属性: 667
+  ✓ 处理文件数: 36
+  ✓ 创建命名空间: 36
+  ✓ 创建实体: 127
+  ✓ 创建普通属性: 730
   ✓ 创建关系属性: 63
 ```
 
@@ -642,6 +734,16 @@ uv run er-cli --directory /tmp/rfc_export --verbose
 ```bash
 python manage.py er_export --exclude-apps test,migrations
 ```
+
+### Q: 抽象模型（Mixin）没有被导出
+
+**A:** 确保使用最新版本的 `x007007007-er-django`（≥0.1.0）。抽象模型导出功能要求：
+1. 抽象模型定义了 `class Meta: abstract = True`
+2. 安装的是本地路径版本而非 PyPI 版本（使用 `uv sync --reinstall-package x007007007-er-django` 确保安装最新代码）
+
+### Q: extends 引用的抽象模型在 TOML 中找不到
+
+**A:** 抽象模型会按其 Python 包路径（`__module__`）分组导出为独立的 TOML 文件。检查输出目录中是否有对应包路径的 TOML 文件。每个 app 的 TOML 文件中也包含了其依赖的抽象模型作为 `[templates.*]` 段。
 
 ## 开发文档
 
