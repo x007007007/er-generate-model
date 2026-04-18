@@ -2,7 +2,7 @@
 Django Model Parser - Convert Django models to ER model format
 """
 import logging
-from typing import List, Dict, Type, Optional
+from typing import Any, List, Dict, Type, Optional
 from django.apps import apps
 from django.db import models
 from django.db.models import ForeignKey, OneToOneField, ManyToManyField
@@ -56,11 +56,18 @@ class DjangoModelParser(Parser):
         
         logger.info(f"Parsing {len(target_models)} Django models...")
         
-        # First pass: Create entities
+        abstract_bases: Dict[str, Type[models.Model]] = {}
+        
+        # First pass: Create entities and collect abstract base classes
         for model in target_models:
             entity = self._convert_model_to_entity(model)
             er_model.add_entity(entity)
             logger.debug(f"Added entity: {entity.name}")
+            
+            for ext_ref in entity.extends:
+                base = self._resolve_extends_to_model(ext_ref)
+                if base is not None and self._is_abstract_model(base):
+                    abstract_bases[ext_ref] = base
         
         # Second pass: Create relationships
         for model in target_models:
@@ -70,6 +77,14 @@ class DjangoModelParser(Parser):
                 if rel.left_entity in er_model.entities and rel.right_entity in er_model.entities:
                     er_model.add_relationship(rel)
                     logger.debug(f"Added relationship: {rel.left_entity} -> {rel.right_entity}")
+        
+        # Third pass: Add abstract base classes as templates
+        for ext_ref, base_model in abstract_bases.items():
+            template_key = base_model.__name__
+            if template_key not in er_model.templates:
+                template_data = self._convert_abstract_to_template(base_model)
+                er_model.templates[template_key] = template_data
+                logger.debug(f"Added template: {template_key} (from {ext_ref})")
         
         return er_model
     
@@ -345,3 +360,88 @@ class DjangoModelParser(Parser):
             relationships.append(rel)
         
         return relationships
+
+    def _resolve_extends_to_model(self, extends_ref: str) -> Optional[Type[models.Model]]:
+        """
+        Resolve an extends reference string (module.ClassName) to the actual model class.
+
+        Args:
+            extends_ref: Full dotted path like 'kinkotech.common.infrastructure.models.base.KinkoTechModelBase'
+
+        Returns:
+            The model class if found, None otherwise
+        """
+        try:
+            module_path, class_name = extends_ref.rsplit('.', 1)
+            import importlib
+            module = importlib.import_module(module_path)
+            cls = getattr(module, class_name, None)
+            if cls is not None and isinstance(cls, type) and issubclass(cls, models.Model):
+                return cls
+        except (ImportError, AttributeError, ValueError):
+            logger.debug(f"Could not resolve extends reference: {extends_ref}")
+        return None
+
+    def _is_abstract_model(self, model: Type[models.Model]) -> bool:
+        """
+        Check if a Django model is abstract.
+
+        Args:
+            model: Django model class
+
+        Returns:
+            True if the model has Meta.abstract = True
+        """
+        return getattr(model._meta, 'abstract', False)
+
+    def _convert_abstract_to_template(self, model: Type[models.Model]) -> Dict[str, Any]:
+        """
+        Convert a Django abstract model to a template dict for ERModel.templates.
+
+        Args:
+            model: Django abstract model class
+
+        Returns:
+            Dict with 'package', 'columns', and optional 'comment' keys
+        """
+        columns = []
+        for f in model._meta.get_fields():
+            if not f.concrete:
+                continue
+            if isinstance(f, ManyToManyField):
+                continue
+
+            col = self._convert_field_to_column(f)
+            columns.append({
+                'name': col.name,
+                'type': col.type,
+            })
+            if col.db_column != col.name:
+                columns[-1]['db_column'] = col.db_column
+            if col.is_pk:
+                columns[-1]['primary_key'] = True
+            if not col.nullable:
+                columns[-1]['nullable'] = False
+            if col.unique:
+                columns[-1]['unique'] = True
+            if col.default is not None:
+                columns[-1]['default'] = col.default
+            if col.max_length is not None:
+                columns[-1]['max_length'] = col.max_length
+            if col.precision is not None:
+                columns[-1]['precision'] = col.precision
+            if col.scale is not None:
+                columns[-1]['scale'] = col.scale
+            if col.comment:
+                columns[-1]['comment'] = col.comment
+
+        template_data: Dict[str, Any] = {
+            'package': model.__module__,
+            'columns': columns,
+        }
+
+        verbose_name = getattr(model._meta, 'verbose_name', None)
+        if verbose_name:
+            template_data['comment'] = str(verbose_name)
+
+        return template_data

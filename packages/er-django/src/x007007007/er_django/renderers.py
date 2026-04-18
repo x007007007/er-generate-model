@@ -44,6 +44,16 @@ class TOMLRenderer:
         if er_model.extends_aliases:
             config['extends_aliases'] = er_model.extends_aliases
         
+        templates_data = {}
+        for tmpl_name, tmpl_data in er_model.templates.items():
+            tmpl_dict = {}
+            if tmpl_data.get('comment'):
+                tmpl_dict['comment'] = tmpl_data['comment']
+            if tmpl_data.get('package'):
+                tmpl_dict['package'] = tmpl_data['package']
+            tmpl_dict['columns'] = tmpl_data.get('columns', [])
+            templates_data[tmpl_name] = tmpl_dict
+        
         entities_data = {}
         for entity_name, entity in er_model.entities.items():
             entity_dict = {}
@@ -107,6 +117,7 @@ class TOMLRenderer:
             relationships_data.append(rel_dict)
         
         output_data = {
+            'templates': templates_data,
             'entities': entities_data,
             'relationships': relationships_data,
             'enums': dict(er_model.enums) if er_model.enums else {},
