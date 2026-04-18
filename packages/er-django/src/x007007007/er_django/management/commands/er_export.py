@@ -4,6 +4,8 @@ Django management command: er_export
 Export Django models to ER diagram (Mermaid/PlantUML).
 """
 import os
+from collections import defaultdict
+from typing import Any, Dict, List
 from django.core.management.base import BaseCommand, CommandError
 from django.apps import apps
 from django.template import Template, Context
@@ -178,7 +180,8 @@ class Command(BaseCommand):
         # Export each app to a separate file
         exported_files = []
         total_entities = 0
-        
+        all_templates: Dict[str, Dict[str, Any]] = {}
+
         for app_label in target_apps:
             # Get app config for path resolution
             app_config = apps.get_app_config(app_label)
@@ -282,7 +285,18 @@ class Command(BaseCommand):
                 
             exported_files.append((app_label, output_file))
             self.stdout.write(self.style.SUCCESS(f"  → {output_file}"))
-        
+
+            for tmpl_name, tmpl_data in er_model.templates.items():
+                if tmpl_name not in all_templates:
+                    all_templates[tmpl_name] = tmpl_data
+
+        if output_format == 'toml' and all_templates:
+            template_files = self._export_templates(
+                all_templates, path_config, name_extractor
+            )
+            exported_files.extend(template_files)
+            total_entities += len(all_templates)
+
         # Summary
         if exported_files:
             self.stdout.write(self.style.SUCCESS(f"\nExported {total_entities} models from {len(exported_files)} apps:"))
@@ -295,6 +309,63 @@ class Command(BaseCommand):
         else:
             self.stdout.write(self.style.WARNING("No models found to export"))
     
+    def _export_templates(
+        self,
+        all_templates: Dict[str, Dict[str, Any]],
+        path_config: PathConfiguration,
+        name_extractor,
+    ) -> List:
+        """
+        Export abstract model templates grouped by their Python package.
+
+        Templates are grouped by their package path. Each group is written
+        to a separate TOML file named after the package namespace.
+
+        Args:
+            all_templates: Dict mapping template_name -> template_data
+            path_config: PathConfiguration for output directory
+            name_extractor: EntityNameExtractor for naming
+
+        Returns:
+            List of (label, Path) tuples for exported files
+        """
+        from x007007007.er.models import ERModel, Entity, Column
+        from x007007007.er_django.renderers import TOMLRenderer
+
+        package_groups: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(dict)
+        for tmpl_name, tmpl_data in all_templates.items():
+            package = tmpl_data.get('package', '')
+            package_groups[package][tmpl_name] = tmpl_data
+
+        renderer = TOMLRenderer()
+        exported = []
+
+        for package, templates in package_groups.items():
+            namespace = package if package else '_unknown'
+            output_file = path_config.output_path / f'{namespace}.toml'
+
+            er_model = ERModel()
+            er_model.namespace = namespace
+            er_model.templates = templates
+
+            diagram = renderer.render(er_model)
+
+            try:
+                output_file.parent.mkdir(parents=True, exist_ok=True)
+            except Exception as e:
+                raise CommandError(f"Failed to create directory {output_file.parent}: {e}")
+
+            try:
+                output_file.write_text(diagram, encoding='utf-8')
+            except Exception as e:
+                raise CommandError(f"Failed to write {output_file}: {e}")
+
+            exported.append((f'templates:{namespace}', output_file))
+            self.stdout.write(f"Found {len(templates)} abstract models in package '{namespace}'")
+            self.stdout.write(self.style.SUCCESS(f"  → {output_file}"))
+
+        return exported
+
     def _apply_entity_naming(self, er_model, name_extractor):
         """
         Apply business entity naming rules to ERModel.

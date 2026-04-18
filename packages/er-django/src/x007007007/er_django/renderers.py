@@ -51,6 +51,8 @@ class TOMLRenderer:
                 tmpl_dict['comment'] = tmpl_data['comment']
             if tmpl_data.get('package'):
                 tmpl_dict['package'] = tmpl_data['package']
+            if tmpl_data.get('extends'):
+                tmpl_dict['extends'] = tmpl_data['extends']
             tmpl_dict['columns'] = tmpl_data.get('columns', [])
             templates_data[tmpl_name] = tmpl_dict
         

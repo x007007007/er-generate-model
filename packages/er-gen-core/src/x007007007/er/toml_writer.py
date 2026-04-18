@@ -70,6 +70,10 @@ def _serialize_toml_new_format(data: Dict, config: Optional[Dict] = None) -> str
             lines.append(f'comment = "{_toml_escape_string(tmpl_data["comment"])}"')
         if tmpl_data.get('package'):
             lines.append(f'package = "{_toml_escape_string(tmpl_data["package"])}"')
+        if tmpl_data.get('extends'):
+            extends = tmpl_data['extends']
+            extends_str = ', '.join(f'"{_toml_escape_string(e)}"' for e in extends)
+            lines.append(f'extends = [{extends_str}]')
         lines.append("")
         
         for col in tmpl_data.get('columns', []):

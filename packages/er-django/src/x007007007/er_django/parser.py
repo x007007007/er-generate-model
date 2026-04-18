@@ -57,16 +57,16 @@ class DjangoModelParser(Parser):
         logger.info(f"Parsing {len(target_models)} Django models...")
         
         abstract_bases: Dict[str, Type[models.Model]] = {}
-        
-        # First pass: Create entities and collect abstract base classes
+
+        # First pass: Create entities and recursively collect all abstract ancestors
         for model in target_models:
             entity = self._convert_model_to_entity(model)
             er_model.add_entity(entity)
             logger.debug(f"Added entity: {entity.name}")
-            
-            for ext_ref in entity.extends:
-                base = self._resolve_extends_to_model(ext_ref)
-                if base is not None and self._is_abstract_model(base):
+
+            ancestors = self._collect_all_abstract_ancestors(model)
+            for ext_ref, base in ancestors.items():
+                if ext_ref not in abstract_bases:
                     abstract_bases[ext_ref] = base
         
         # Second pass: Create relationships
@@ -361,6 +361,38 @@ class DjangoModelParser(Parser):
         
         return relationships
 
+    def _collect_all_abstract_ancestors(self, model: Type[models.Model], seen: Optional[set] = None) -> Dict[str, Type[models.Model]]:
+        """
+        Recursively collect all abstract ancestor models from a concrete model.
+
+        Args:
+            model: Django model class to inspect
+            seen: Set of already-seen model class ids (prevents infinite recursion)
+
+        Returns:
+            Dict mapping full_path -> model class for all abstract ancestors
+        """
+        if seen is None:
+            seen = set()
+
+        result: Dict[str, Type[models.Model]] = {}
+
+        for base in model.__bases__:
+            if base is models.Model:
+                continue
+            if not hasattr(base, '_meta'):
+                continue
+            if id(base) in seen:
+                continue
+            seen.add(id(base))
+
+            if getattr(base._meta, 'abstract', False):
+                full_path = f"{base.__module__}.{base.__name__}"
+                result[full_path] = base
+                result.update(self._collect_all_abstract_ancestors(base, seen))
+
+        return result
+
     def _resolve_extends_to_model(self, extends_ref: str) -> Optional[Type[models.Model]]:
         """
         Resolve an extends reference string (module.ClassName) to the actual model class.
@@ -402,7 +434,7 @@ class DjangoModelParser(Parser):
             model: Django abstract model class
 
         Returns:
-            Dict with 'package', 'columns', and optional 'comment' keys
+            Dict with 'package', 'columns', optional 'comment', and optional 'extends' keys
         """
         columns = []
         for f in model._meta.get_fields():
@@ -443,5 +475,14 @@ class DjangoModelParser(Parser):
         verbose_name = getattr(model._meta, 'verbose_name', None)
         if verbose_name:
             template_data['comment'] = str(verbose_name)
+
+        extends = self._extract_inheritance(model)
+        abstract_extends = []
+        for ext in extends:
+            base = self._resolve_extends_to_model(ext)
+            if base is not None and self._is_abstract_model(base):
+                abstract_extends.append(ext)
+        if abstract_extends:
+            template_data['extends'] = abstract_extends
 
         return template_data
